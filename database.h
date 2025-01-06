@@ -37,6 +37,11 @@ signals:
     void eventmsg(QString);
     void cmdmsg(QString);
     void deletedmydatabase(QString);
+    void updateTableDisplay(QString);
+    void updatedataTableA(QString message);
+    void updatedataTableB(QString message);
+    void updatedataTableC(QString message);
+
 
 public slots:
     void getEventandAlarm(QString msg);
@@ -44,7 +49,13 @@ public slots:
     void DistanceandDetailPhaseB(QString msg);
     void DistanceandDetailPhaseC(QString msg);
     void getMySqlPhase(QString msg);
-    void deletedDataMySQL(QString msg);
+    void deletedDataMySQLPhaseA(QString msg);
+    void deletedDataMySQLPhaseB(QString msg);
+    void deletedDataMySQLPhaseC(QString msg);
+    void updateDataBaseDisplay(QString msg);
+    void updateTablePhaseA(QString);
+    void updateTablePhaseB(QString);
+    void updateTablePhaseC(QString);
 //    void emitEvent();
 
 private:

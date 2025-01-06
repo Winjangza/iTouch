@@ -7,11 +7,25 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     SocketServer = new ChatServer(1234);
     mysql = new Database("ITouch", "pi", "rpi3!2024", "localhost", this);
     connect(mysql, SIGNAL(eventmsg(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
-    connect(this, SIGNAL(getDistanceandDetail(QString)), mysql, SLOT(DistanceandDetailPhaseA(QString)));
-    connect(this, SIGNAL(getTablePhase(QString)), mysql, SLOT(getMySqlPhase(QString)));
+    connect(this, SIGNAL(getDistanceandDetailA(QString)), mysql, SLOT(DistanceandDetailPhaseA(QString)));
+    connect(this, SIGNAL(getDistanceandDetailB(QString)), mysql, SLOT(DistanceandDetailPhaseB(QString)));
+    connect(this, SIGNAL(getDistanceandDetailC(QString)), mysql, SLOT(DistanceandDetailPhaseC(QString)));
+    connect(this, SIGNAL(getTablePhaseA(QString)), mysql, SLOT(getMySqlPhase(QString)));
+    connect(this, SIGNAL(getTablePhaseB(QString)), mysql, SLOT(getMySqlPhase(QString)));
+    connect(this, SIGNAL(getTablePhaseC(QString)), mysql, SLOT(getMySqlPhase(QString)));
     connect(mysql, SIGNAL(cmdmsg(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
-    connect(this, SIGNAL(deletedMySQL(QString)), mysql, SLOT(deletedDataMySQL(QString)));
+    connect(mysql, SIGNAL(updateTableDisplay(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
+    connect(this, SIGNAL(deletedMySQLA(QString)), mysql, SLOT(deletedDataMySQLPhaseA(QString)));
+    connect(this, SIGNAL(deletedMySQLB(QString)), mysql, SLOT(deletedDataMySQLPhaseB(QString)));
+    connect(this, SIGNAL(deletedMySQLC(QString)), mysql, SLOT(deletedDataMySQLPhaseC(QString)));
     connect(mysql,SIGNAL(deletedmydatabase(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(this, SIGNAL(updateTablePhaseA(QString)), mysql, SLOT(updateTablePhaseA(QString)));
+    connect(this, SIGNAL(updateTablePhaseB(QString)), mysql, SLOT(updateTablePhaseB(QString)));
+    connect(this, SIGNAL(updateTablePhaseC(QString)), mysql, SLOT(updateTablePhaseC(QString)));
+    connect(mysql,SIGNAL(updatedataTableA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updatedataTableB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updatedataTableC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+
 
     mysql->getEventandAlarm("getEventandAlarm");
 
@@ -29,7 +43,7 @@ QString mainwindows::getSystemDateTime() {
 }
 void mainwindows::updateDateTime() {
     QString dateTimeRaw = getSystemDateTime();
-//    qDebug() << "Raw Date and Time: " << dateTimeRaw;
+   qDebug() << "Raw Date and Time: " << dateTimeRaw;
 
     QDateTime dateTime = QDateTime::fromString(dateTimeRaw, "ddd MMM dd HH:mm:ss t yyyy");
     if (dateTime.isValid()) {
@@ -151,7 +165,33 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                              "}").arg(distancecmd).arg(detailcmd).arg(phase);
 
         qDebug() << "cppSubmitTextFiled DetailsAndDistance:" << DetailsAndDistance << phase << distancecmd << detailcmd;
-        getDistanceandDetail(DetailsAndDistance);
+        getDistanceandDetailA(DetailsAndDistance);
+    }else if (getCommand.contains("getDistanceDetailB")) {
+        double distancecmd = QJsonValue(command["Distance"]).toDouble();
+        QString detailcmd = QJsonValue(command["Detail"]).toString();
+        QString phase = QJsonValue(command["PHASE"]).toString();
+        QString DetailsAndDistance = QString("{"
+                                             "\"objectName\":\"getDistanceDetailB\","
+                                             "\"Distance\":\%1,"
+                                             "\"Detail\":\"%2\","
+                                             "\"PHASE\":\"%3\""
+                                             "}").arg(distancecmd).arg(detailcmd).arg(phase);
+
+        qDebug() << "cppSubmitTextFiled DetailsAndDistance:" << DetailsAndDistance << phase << distancecmd << detailcmd;
+        getDistanceandDetailB(DetailsAndDistance);
+    }else if (getCommand.contains("getDistanceDetailC")) {
+        double distancecmd = QJsonValue(command["Distance"]).toDouble();
+        QString detailcmd = QJsonValue(command["Detail"]).toString();
+        QString phase = QJsonValue(command["PHASE"]).toString();
+        QString DetailsAndDistance = QString("{"
+                                             "\"objectName\":\"getDistanceDetailC\","
+                                             "\"Distance\":\%1,"
+                                             "\"Detail\":\"%2\","
+                                             "\"PHASE\":\"%3\""
+                                             "}").arg(distancecmd).arg(detailcmd).arg(phase);
+
+        qDebug() << "cppSubmitTextFiled DetailsAndDistance:" << DetailsAndDistance << phase << distancecmd << detailcmd;
+        getDistanceandDetailC(DetailsAndDistance);
     }else if (getCommand.contains("TaggingPhaseA")) {
         QString tableTaggingPhaseA = QJsonValue(command["tableTaggingPhaseA"]).toString();
         QString getTaggingPhaseA = QString("{"
@@ -160,21 +200,89 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                              "}").arg(tableTaggingPhaseA);
 
         qDebug() << "getTaggingPhaseA:" << getTaggingPhaseA;
-        getTablePhase(getTaggingPhaseA);
-    }else if (getCommand.contains("delectmysql")) {
+        getTablePhaseA(getTaggingPhaseA);
+    }else if (getCommand.contains("TaggingPhaseB")) {
+        QString tableTaggingPhaseB = QJsonValue(command["tableTaggingPhaseB"]).toString();
+        QString getTaggingPhaseB = QString("{"
+                                           "\"objectName\":\"TaggingPhaseB\","
+                                           "\"tableTaggingPhaseB\":\"%1\""
+                                           "}").arg(tableTaggingPhaseB);
+
+        qDebug() << "getTaggingPhaseB:" << tableTaggingPhaseB;
+        getTablePhaseB(getTaggingPhaseB);
+    }else if (getCommand.contains("TaggingPhaseC")) {
+        QString tableTaggingPhaseC = QJsonValue(command["tableTaggingPhaseC"]).toString();
+        QString getTaggingPhaseC = QString("{"
+                                           "\"objectName\":\"TaggingPhaseC\","
+                                           "\"tableTaggingPhaseC\":\"%1\""
+                                           "}").arg(tableTaggingPhaseC);
+
+        qDebug() << "getTaggingPhaseC:" << tableTaggingPhaseC;
+        getTablePhaseC(getTaggingPhaseC);
+    }else if (getCommand.contains("delectmysqlA")) {
         bool checkedStates = QJsonValue(command["checkedStates"]).toBool();
-        int list_device = QJsonValue(command["list_device"]).toInt();
+        int num_list = QJsonValue(command["num_listA"]).toInt();
 
-        QString deletedtmySQL = QString("{"
-                                         "\"objectName\":\"delectmysql\","
+        QString deletedtmySQLA = QString("{"
+                                         "\"objectName\":\"delectmysqlA\","
                                           "\"checkedStates\":\"%1\","
-                                          "\"list_device\":\"%2\""
-                                         "}").arg(checkedStates).arg(list_device);
+                                          "\"num_listA\":\"%2\""
+                                         "}").arg(checkedStates).arg(num_list);
 
-        qDebug() << "delectmySQL:" << deletedtmySQL;
-        deletedMySQL(deletedtmySQL);
+        qDebug() << "delectmySQLA:" << deletedtmySQLA;
+        deletedMySQLA(deletedtmySQLA);
+    }else if (getCommand.contains("delectmysqlB")) {
+        bool checkedStates = QJsonValue(command["checkedStates"]).toBool();
+        int num_list = QJsonValue(command["num_listB"]).toInt();
+
+        QString deletedtmySQLB = QString("{"
+                                        "\"objectName\":\"delectmysqlB\","
+                                        "\"checkedStates\":\"%1\","
+                                        "\"num_listB\":\"%2\""
+                                        "}").arg(checkedStates).arg(num_list);
+
+        qDebug() << "delectmySQLB:" << deletedtmySQLB;
+        deletedMySQLB(deletedtmySQLB);
+    }else if (getCommand.contains("delectmysqlC")) {
+        bool checkedStates = QJsonValue(command["checkedStates"]).toBool();
+        int num_list = QJsonValue(command["num_listC"]).toInt();
+
+        QString deletedtmySQLC = QString("{"
+                                        "\"objectName\":\"delectmysqlC\","
+                                        "\"checkedStates\":\"%1\","
+                                        "\"num_listC\":\"%2\""
+                                        "}").arg(checkedStates).arg(num_list);
+
+        qDebug() << "delectmySQLC:" << deletedtmySQLC;
+        deletedMySQLC(deletedtmySQLC);
+    }else if (getCommand.contains("UpdatePhaseA")) {
+        QString updatetablePhaseA = QJsonValue(command["updatetablePhaseA"]).toString();
+        QString getupdatePhaseA = QString("{"
+                                          "\"objectName\":\"UpdatePhaseA\","
+                                          "\"updatetablePhaseA\":\"%1\""
+                                          "}").arg(updatetablePhaseA);
+
+        qDebug() << "getupdatePhaseA:" << getupdatePhaseA;
+        updateTablePhaseA(getupdatePhaseA);
+    }else if (getCommand.contains("UpdatePhaseB")) {
+        QString updatetablePhaseB = QJsonValue(command["updatetablePhaseB"]).toString();
+        QString getupdatePhaseB = QString("{"
+                                          "\"objectName\":\"UpdatePhaseB\","
+                                          "\"updatetablePhaseB\":\"%1\""
+                                          "}").arg(updatetablePhaseB);
+
+        qDebug() << "getupdatePhaseB:" << getupdatePhaseB;
+        updateTablePhaseA(getupdatePhaseB);
+    }else if (getCommand.contains("UpdatePhaseC")) {
+        QString updatetablePhaseC = QJsonValue(command["updatetablePhaseC"]).toString();
+        QString getupdatePhaseC = QString("{"
+                                          "\"objectName\":\"UpdatePhaseC\","
+                                          "\"updatetablePhaseC\":\"%1\""
+                                          "}").arg(updatetablePhaseC);
+
+        qDebug() << "getupdatePhaseA:" << getupdatePhaseC;
+        updateTablePhaseA(getupdatePhaseC);
     }
-
 }
 
 

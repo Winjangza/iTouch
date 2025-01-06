@@ -28,9 +28,20 @@ class mainwindows : public QObject
 signals:
      void getEventandAlarm(QString msg);
      void cppCommand(QVariant jsonMsg);
-     void getDistanceandDetail(QString msg);
-     void getTablePhase(QString msg);
-     void deletedMySQL(QString msg);
+     void getDistanceandDetailA(QString msg);
+     void getDistanceandDetailB(QString msg);
+     void getDistanceandDetailC(QString msg);
+     void getTablePhaseA(QString msg);
+     void getTablePhaseB(QString msg);
+     void getTablePhaseC(QString msg);
+     void updateTablePhaseA(QString msg);
+     void updateTablePhaseB(QString msg);
+     void updateTablePhaseC(QString msg);
+
+     void deletedMySQLA(QString msg);
+     void deletedMySQLB(QString msg);
+     void deletedMySQLC(QString msg);
+
 public:
     explicit mainwindows(QObject *parent = nullptr);
     static mainwindows *instance();
@@ -41,6 +52,8 @@ public slots:
     void cppSubmitTextFiled(QString qmlJson);
     QString getSystemDateTime();
     void updateDateTime();
+
+
 
 
 private:

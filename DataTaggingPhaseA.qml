@@ -20,11 +20,12 @@ Item {
     property int originalY: 325
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
-    property bool tablestatus: status
-    property int tablenumber: number
-    property double tabledistance: distance
-    property string tabledetail: detail
-    property string tablephase: phase
+    property bool tablestatus: statusA
+    property int tablenumber: numberA
+    property double tabledistance: distanceA
+    property string tabledetail: detailA
+    property string tablephase: phaseA
+    property int tablenumlist: num_listA
 
     onFocustextInformationChanged: {
         if(focustextInformation == false){
@@ -68,8 +69,8 @@ Item {
             anchors.topMargin: 0
             anchors.bottomMargin: 140
             clip: true
-            model: newlistdatateble
-            TableViewColumn { role: "list_status"; title: "SELECT"; width: 100;
+            model: newlistdatatebleA
+            TableViewColumn { role: "list_statusA"; title: "SELECT"; width: 100;
                 delegate: Rectangle {
                     id: checkBoxDelegate
                     color: "#00000000"
@@ -88,19 +89,21 @@ Item {
                             anchors.fill: parent
                             onClicked: {
                                 checkBoxDelegate.isChecked = !checkBoxDelegate.isChecked
-                                console.log("checkBox ",checkBoxDelegate.isChecked )
+                                console.log("checkBox ",checkBoxDelegate.isChecked ,newlistdatatebleA.num_listA, newlistdatatebleA.numberA )
                                 setpropertyCheck(checkBoxDelegate.isChecked)
                             }
                         }
                     }
                 }
             }
-            TableViewColumn { role: "list_number"; title: "NO."; width: 80 }
-            TableViewColumn { role: "list_distance"; title: "DISTANCE"; width: 150 }
-            TableViewColumn { role: "list_detail"; title: "DETAIL"; width: 300}
+            TableViewColumn { role: "list_numberA"; title: "NO."; width: 80 }
+            TableViewColumn { role: "list_distanceA"; title: "DISTANCE"; width: 150 }
+            TableViewColumn { role: "list_detailA"; title: "DETAIL"; width: 300}
+            // TableViewColumn { role: "num_list"; title: "Number"; width: 150}
+
             onClicked: {
-                console.log("TableView",newlistdatateble.get(row).list_device)
-                setpropertyIDTable(newlistdatateble.get(row).list_device)
+                console.log("TableView",newlistdatatebleA.get(row).num_list)
+                setpropertyIDTable(newlistdatatebleA.get(row).num_list)
             }
         }
     }
@@ -126,6 +129,7 @@ Item {
                 var dataTagging = '{"objectName":"getDistanceDetailA","Distance": ' + distanceValue + ',"Detail": "' + detailValue + '", "PHASE": "A"}';
                 console.log("getDistanceDetail:", dataTagging);
                 qmlCommand(dataTagging);
+
             }
         }
 
@@ -143,14 +147,19 @@ Item {
         Button {
             text: "DELETE"
             onClicked: {
-                console.log("Deleted:",checkedStates,newlistdatateble.list_number)
-                if(checkedStates === true){
-                    var delectmySQL = '{"objectName":"delectmysql","checkedStates":'+checkedStates +',"list_device":'+newlistdatateble.list_number +'}'
-                    console.log("delectmySQL",delectmySQL)
-                    qmlCommand(delectmySQL)
+                console.log("Deleted:", checkedStates, newlistdatatebleA.num_listA,num_listA,numberA);
+                if (checkedStates === true) {
+                    // var numList = parseInt(newlistdatateble.num_list);
+                    var numListA = num_listA;
+                    var delectmySQL = '{"objectName":"delectmysqlA","checkedStates":'+checkedStates +',"num_listA":'+num_listA +'}';
+                    console.log("delectmySQLA", delectmySQL, numListA);
+                    qmlCommand(delectmySQL);
+                    // var updatetablePhaseA = '{"objectName":"UpdatePhaseA", "updatetablePhaseA": "dataPhaseA"}'
+                    // qmlCommand(updatetablePhaseA);
                 }
             }
         }
+
     }
 
     Row {
