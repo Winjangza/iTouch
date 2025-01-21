@@ -6,111 +6,193 @@ Item {
     width: 1024
     height: 600
     id: controlAndMonitor
-
-    property var distance: distanceRaw
-    property var plotdata: voltageRaw
+    property var distanceA: distanceRawA
+    property var plotdataA: voltageRawA
+    property var distanceB: distanceRawB
+    property var plotdataB: voltageRawB
+    property var distanceC: distanceRawC
+    property var plotdataC: voltageRawC
+    property var distancepatternA: distancePatternA
+    property var plotdatapatternA: voltagePatternA
+    property var distancepatternB: distancePatternB
+    property var plotdatapatternB: voltagePatternB
+    property var distancepatternC: distancePatternC
+    property var plotdatapatternC: voltagePatternC
     property int timestep: 0
     property double movetoleft: cursorleft
     property real pointerX: 0
     property real pointerY: 0
     property int globalNum: 0
     property int number: 0
-    property bool dataReceived: false
 
-//    onPlotdataChanged: {
-//        try {
-//            console.log("Extracted voltages:", plotdata);
-//            console.log("Extracted distances:", distance);
-
-//            if (plotdata && distance && plotdata.length === distance.length) {
-//                for (var i = 0; i < plotdata.length; i++) {
-//                    var Amplitude = plotdata[i];
-//                    var currentDistance = distance[i];
-
-//                    if (!isFinite(Amplitude) || !isFinite(currentDistance)) {
-//                        console.log("Invalid data at index:", i, "Amplitude:", Amplitude, "Distance:", currentDistance);
-//                        continue;
-//                    }
-//                    timestep++;
-//                    series1.append(currentDistance, Amplitude);
-//                }
-//                var validDistances = distance.filter(isFinite);
-//                if (validDistances.length > 0) {
-//                    axisX.min = Math.min.apply(null, validDistances);
-//                    axisX.max = Math.max.apply(null, validDistances);
-//                }
-
-//                var validPlotdata = plotdata.filter(isFinite);
-//                if (validPlotdata.length > 0) {
-//                    axisY.min = Math.min.apply(null, validPlotdata);
-//                    axisY.max = Math.max.apply(null, validPlotdata);
-//                }
-//            } else {
-//                coensole.log("Mismatch in data length or data is missing");
-//            }
-//        } catch (e) {
-//            console.log("Error:", e);
-//        }
-//    }
-    onPlotdataChanged: {
+    // สำหรับ RawDataA
+    onPlotdataAChanged: {
         try {
-            console.log("Extracted voltages:", plotdata);
-            console.log("Extracted distances:", distance);
-
-            if (plotdata && distance && plotdata.length === distance.length) {
-                for (var i = 0; i < plotdata.length; i++) {
-                    var Amplitude = plotdata[i];
-                    var currentDistance = distance[i];
-
-                    if (!isFinite(Amplitude) || !isFinite(currentDistance)) {
-                        console.log("Invalid data at index:", i, "Amplitude:", Amplitude, "Distance:", currentDistance);
-                        continue;
+            if (plotdataA && distanceA && plotdataA.length === distanceA.length) {
+                seriesRawA.clear();
+                for (var i = 0; i < plotdataA.length; i++) {
+                    if (isFinite(plotdataA[i]) && isFinite(distanceA[i])) {
+                        console.log("Appending:", distanceA[i], plotdataA[i]); // Debug log
+                        seriesRawA.append(distanceA[i], plotdataA[i]);
+                    } else {
+                        console.log("Invalid point:", distanceA[i], plotdataA[i]); // Debug invalid points
                     }
-
-                    timestep++;
-                    series1.append(currentDistance, Amplitude);
-
-                    var positionX = currentDistance;
-                    var positionY = Amplitude;
-
-                    getTaggingData(positionX, positionY, 11);
                 }
-
-                var validDistances = distance.filter(isFinite);
-                if (validDistances.length > 0) {
-                    axisX.min = Math.min.apply(null, validDistances);
-                    axisX.max = Math.max.apply(null, validDistances);
-                }
-
-                var validPlotdata = plotdata.filter(isFinite);
-                if (validPlotdata.length > 0) {
-                    axisY.min = Math.min.apply(null, validPlotdata);
-                    axisY.max = Math.max.apply(null, validPlotdata);
-                }
+                adjustAxes(distanceA, [plotdataA]); // Adjust the axes
             } else {
-                console.log("Mismatch in data length or data is missing");
+                console.log("Data mismatch for plotdataA. Lengths:", plotdataA.length, distanceA.length);
             }
         } catch (e) {
-            console.log("Error:", e);
+            console.log("Error in onPlotdataAChanged:", e);
+        }
+    }
+    // สำหรับ RawDataB
+    onPlotdataBChanged: {
+        try {
+            if (plotdataB && distanceB && plotdataB.length === distanceB.length) {
+                seriesRawB.clear();
+                for (var i = 0; i < plotdataB.length; i++) {
+                    if (isFinite(plotdataB[i]) && isFinite(distanceB[i])) {
+                        console.log("Appending to series2:", distanceB[i], plotdataB[i]); // Debug log
+                        seriesRawB.append(distanceB[i], plotdataB[i]);
+                    } else {
+                        console.log("Invalid point for series2:", distanceB[i], plotdataB[i]); // Debug invalid points
+                    }
+                }
+                adjustAxes(distanceB, [plotdataB]); // Adjust the axes for series2
+            } else {
+                console.log("Data mismatch for plotdataB. Lengths:", plotdataB.length, distanceB.length);
+            }
+        } catch (e) {
+            console.log("Error in onPlotdataBChanged:", e);
+        }
+    }
+    // สำหรับ RawDataC
+    onPlotdataCChanged: {
+        try {
+            if (plotdataC && distanceC && plotdataC.length === distanceC.length) {
+                seriesRawC.clear();
+                for (var i = 0; i < plotdataC.length; i++) {
+                    if (isFinite(plotdataC[i]) && isFinite(distanceC[i])) {
+                        console.log("Appending to series3:", distanceC[i], plotdataC[i]); // Debug log
+                        seriesRawC.append(distanceC[i], plotdataC[i]);
+                    } else {
+                        console.log("Invalid point for series3:", distanceC[i], plotdataC[i]); // Debug invalid points
+                    }
+                }
+                adjustAxes(distanceC, [plotdataC]); // Adjust the axes for series3
+            } else {
+                console.log("Data mismatch for plotdataC. Lengths:", plotdataC.length, distanceC.length);
+            }
+        } catch (e) {
+            console.log("Error in onPlotdataCChanged:", e);
+        }
+    }
+
+    // สำหรับ distancepatternA
+    onPlotdatapatternAChanged: {
+        try {
+            console.log("PlotdatapatternA changed, clearing graph");
+            if (plotdatapatternA && distancepatternA && plotdatapatternA.length === distancepatternA.length) {
+                series1.clear();
+                console.log("Graph cleared, repopulating...");
+
+                for (var i = 0; i < plotdatapatternA.length; i++) {
+                    if (isFinite(plotdatapatternA[i]) && isFinite(distancepatternA[i])) {
+                        series1.append(distancepatternA[i], plotdatapatternA[i]);
+                    }
+                }
+
+                adjustAxes(distancepatternA, [plotdatapatternA]);
+                console.log("Graph updated successfully.");
+            } else {
+                console.log("Data mismatch or empty for plotdatapatternA");
+            }
+        } catch (e) {
+            console.log("Error in onPlotdatapatternAChanged:", e);
+        }
+    }
+
+    // สำหรับ distancepatternB
+    onPlotdatapatternBChanged: {
+        try {
+            console.log("PlotdataPatternB changed");
+            if (plotdatapatternB && distancepatternB && plotdatapatternB.length === distancepatternB.length) {
+                console.log("Clearing Series2...");
+                series2.clear(); // Clear existing data for series2
+                for (var i = 0; i < plotdatapatternB.length; i++) {
+                    if (isFinite(plotdatapatternB[i]) && isFinite(distancepatternB[i])) {
+                        series2.append(distancepatternB[i], plotdatapatternB[i]);
+                    }
+                }
+                adjustAxes(distancepatternB, [plotdatapatternB]); // Adjust the axes
+                console.log("Series2 updated");
+            } else {
+                console.log("Data mismatch or empty for plotdatapatternB");
+            }
+        } catch (e) {
+            console.log("Error in onPlotdatapatternBChanged:", e);
+        }
+    }
+
+    // สำหรับ distancepatternC
+    onPlotdatapatternCChanged: {
+        try {
+            console.log("PlotdataPatternC changed");
+            if (plotdatapatternC && distancepatternC && plotdatapatternC.length === distancepatternC.length) {
+                console.log("Clearing Series3...");
+                series3.clear(); // Clear existing data for series3
+                for (var i = 0; i < plotdatapatternC.length; i++) {
+                    if (isFinite(plotdatapatternC[i]) && isFinite(distancepatternC[i])) {
+                        series3.append(distancepatternC[i], plotdatapatternC[i]);
+                    }
+                }
+                adjustAxes(distancepatternC, [plotdatapatternC]); // Adjust the axes
+                console.log("Series3 updated");
+            } else {
+                console.log("Data mismatch or empty for plotdatapatternC");
+            }
+        } catch (e) {
+            console.log("Error in onPlotdatapatternCChanged:", e);
         }
     }
 
 
+    // ฟังก์ชันสำหรับปรับแกน
+    function adjustAxes(distances, plotdataArrays) {
+        var validDistances = distances.filter(isFinite);
+        if (validDistances.length > 0) {
+            axisX.min = Math.min.apply(null, validDistances);
+            axisX.max = Math.max.apply(null, validDistances);
+        }
 
+        var validPlotdata = [];
+        plotdataArrays.forEach(array => {
+            validPlotdata = validPlotdata.concat(array.filter(isFinite));
+        });
+
+        if (validPlotdata.length > 0) {
+            axisY.min = Math.min.apply(null, validPlotdata);
+            axisY.max = Math.max.apply(null, validPlotdata);
+        }
+    }
+
+
+    // กราฟ
     ChartView {
         id: chartView
         anchors.fill: parent
-        anchors.leftMargin: 0
         anchors.topMargin: 44
         anchors.bottomMargin: 213
         backgroundColor: "#000000"
         legend.labelColor: "white"
+
         ValueAxis {
             id: axisX
             min: 0
             max: 100
             tickCount: 10
-            titleText: "<font color='#ffffff'>Distance (Km)<12>"
+            titleText: "<font color='#ffffff'>Distance (Km)</font>"
             titleFont.bold: true
             titleFont.pixelSize: 12
             labelsVisible: true
@@ -118,13 +200,13 @@ Item {
             color: "#ffffff"
             labelsColor: "#ffffff"
             labelsFont.pixelSize: 10
-
         }
+
         ValueAxis {
             id: axisY
             min: 0
             max: 3000
-            titleText: "<font color='#ffffff'>Voltage (mV)<12>"
+            titleText: "<font color='#ffffff'>Voltage (mV)</font>"
             titleFont.bold: true
             titleFont.pixelSize: 12
             labelsVisible: true
@@ -134,12 +216,60 @@ Item {
             labelsFont.pixelSize: 10
         }
 
+        // Phase A
         LineSeries {
             id: series1
             axisX: axisX
             axisY: axisY
             name: "Phase A"
-            color: "#ff0000"
+            color: "#f7cbac"
+            width: 3
+
+        }
+        LineSeries {
+            id: series2
+            axisX: axisX
+            axisY: axisY
+            name: "Phase B"
+            color: "#bc9121"
+            width: 3
+        }
+        // Phase C
+        LineSeries {
+            id: series3
+            axisX: axisX
+            axisY: axisY
+            name: "Phase C"
+            color: "#bed6ed"
+            width: 3
+        }
+
+        // Phase Data A
+        LineSeries {
+            id: seriesRawA
+            axisX: axisX
+            axisY: axisY
+            name: "Data A"
+            color: "#fd2d1d"
+            width: 3
+        }
+        // Phase Data B
+        LineSeries {
+            id: seriesRawB
+            axisX: axisX
+            axisY: axisY
+            name: "Data B"
+            color: "#fcff3b"
+            width: 3
+        }
+        // Phase Data C
+        LineSeries {
+            id: seriesRawC
+            axisX: axisX
+            axisY: axisY
+            name: "Data C"
+            color: "#244d77"
+            width: 3
         }
 
         Rectangle {
@@ -194,43 +324,7 @@ Item {
                 }
             }
         }
-
-
-        Repeater {
-            model: taggingA.listofTagging
-            delegate: Item {
-                x: model.globalPositionX
-                y: model.globalPositionY
-                ToolButton {
-                    id: taggingPointer
-                    anchors.centerIn: parent
-                    contentItem: Image {
-                        source: "images/pinPointerTagging.png"
-                        width: 30
-                        height: 30
-                        onStatusChanged: {
-                            if (status === Image.Ready) {
-                                console.log("Image loaded successfully!");
-                            } else if (status === Image.Error) {
-                                console.log("Image failed to load!");
-                            }
-                        }
-                    }
-                    background: Rectangle {
-                        color: "#00000000"
-                    }
-                }
-                Text {
-                    text: model.globalTempNumA
-                    anchors.horizontalCenter: taggingPointer.horizontalCenter
-                    anchors.top: taggingPointer.bottom
-                    color: "white"
-                    font.pixelSize: 12
-                }
-            }
-        }
-    }
-
+}
 
     Cursorcontrol {
         id: cursorcontrol
@@ -266,6 +360,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
         }
     }
+
     Rectangle {
         id: patternfilename
         color: "#bfbfbf"
@@ -286,5 +381,10 @@ Item {
             verticalAlignment: Text.AlignVCenter
         }
     }
-
 }
+
+/*##^##
+Designer {
+    D{i:0;formeditorZoom:0.75}
+}
+##^##*/
