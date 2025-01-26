@@ -28,6 +28,863 @@ Database::Database(QString dbName, QString user, QString password, QString host,
     qDebug() << "Database connected successfully!";
 }
 
+void Database::updataStatusTagging(int taggingPoint, bool status) {
+    qDebug() << "updataStatusTagging: taggingPoint =" << taggingPoint << ", status =" << status;
+
+    if (!db.isOpen()) {
+        qDebug() << "Database not open, attempting to open...";
+        if (!db.open()) {
+            qWarning() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+        qDebug() << "Database connection opened successfully.";
+    }
+
+    QSqlQuery query;
+    QString updateQueryStr = "UPDATE DataTagging SET status = :status WHERE No = :No";
+    query.prepare(updateQueryStr);
+    query.bindValue(":status", status ? 1 : 0); // Convert bool to int (true = 1, false = 0)
+    query.bindValue(":No", taggingPoint);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to update status:" << query.lastError().text();
+    } else {
+        qDebug() << "Successfully updated status for No =" << taggingPoint;
+    }
+}
+
+void Database::taggingpoint(QString msg) {
+    qDebug() << "taggingpoint:" << msg;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    int taggingPoint = QJsonValue(command["checklist"]).toInt();
+    bool statuslist = QJsonValue(command["statuslist"]).toBool();
+    qDebug() << "tagging data:" << taggingPoint << statuslist;
+
+    updataStatusTagging(taggingPoint, statuslist);
+
+    if (getCommand.contains("taggingdata")) {
+        qDebug() << "Processing taggingdata command with taggingpoint:" << taggingPoint;
+
+        if (!db.isOpen()) {
+            qDebug() << "Database not open, attempting to open...";
+            if (!db.open()) {
+                qWarning() << "Failed to open database:" << db.lastError().text();
+                return;
+            }
+            qDebug() << "Database connection opened successfully.";
+        }
+
+        // ดึงข้อมูลที่อัปเดตแล้ว
+        QString checkQueryStr = QString("SELECT * FROM DataTagging WHERE No = '%1'").arg(taggingPoint);
+        QSqlQuery query;
+
+        if (query.exec(checkQueryStr)) {
+            if (query.next()) {
+                QVariant statusVar = query.value("status");
+                QVariant numListVar = query.value("No");
+                QVariant tempNoVar = query.value("temp_no");
+                QVariant distanceVar = query.value("Distance(Km)");
+                QVariant detailVar = query.value("Detail");
+                QVariant phaseVar = query.value("Phase");
+
+                bool status = statusVar.toInt() != 0;
+                int num_list = numListVar.toInt();
+                int temp_no = tempNoVar.toInt();
+                double Distance = distanceVar.toDouble();
+                QString Detail = detailVar.toString();
+                QString Phase = phaseVar.toString();
+
+                QString message = QString("{\"objectName\"  :\"taggingdata\", "
+                                          "\"status\"       :%1, "
+                                          "\"num_list\"     :%2, "
+                                          "\"temp_no\"      :%3, "
+                                          "\"Distance\"     :\"%4\", "
+                                          "\"Detail\"       :\"%5\", "
+                                          "\"Phase\"        :\"%6\"}")
+                                      .arg(status ? "true" : "false")
+                                      .arg(num_list)
+                                      .arg(temp_no)
+                                      .arg(Distance, 0, 'f', 2) // format Distance to 2 decimal places
+                                      .arg(Detail)
+                                      .arg(Phase);
+                qDebug() << "Sent message get PhaseA:" << message;
+
+                emit showtaggingpoint(message);
+            } else {
+                qDebug() << "No record found with No =" << taggingPoint;
+            }
+        } else {
+            qWarning() << "Failed to execute query:" << query.lastError().text();
+        }
+    } else {
+        qDebug() << "Unknown command received.";
+    }
+
+    if (db.isOpen()) {
+        db.close();
+        qDebug() << "Database is open. Closing all connections...";
+    }
+}
+
+
+
+void Database::getChangeDistance(QString msg) {
+    qDebug() << "getChangeDistance:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    double rangeDistance = QJsonValue(command["rangedistance"]).toDouble();
+
+    if (getCommand.contains("rangedistance")) {
+        qDebug() << "Received rangedistance value:" << rangeDistance;
+
+        if (!db.isOpen()) {
+            qDebug() << "Database not open, attempting to open...";
+            if (!db.open()) {
+                qWarning() << "Failed to open database:" << db.lastError().text();
+                return;
+            }
+            qDebug() << "Database connection opened successfully.";
+        }
+
+        QSqlQuery checkQuery;
+        checkQuery.prepare("SELECT MAX(AutoNumber) FROM DistanceData");
+
+        if (!checkQuery.exec()) {
+            qWarning() << "Failed to execute checkQuery:" << checkQuery.lastError().text();
+            return;
+        }
+
+        if (checkQuery.next()) {
+            QVariant maxAutoNumber = checkQuery.value(0);
+
+            if (!maxAutoNumber.isNull()) {
+                int recordAutoNumber = maxAutoNumber.toInt();
+                qDebug() << "Existing record found with AutoNumber:" << recordAutoNumber;
+
+                QSqlQuery updateQuery;
+                updateQuery.prepare("UPDATE DistanceData "
+                                    "SET DistanceKm = :distance "
+                                    "WHERE AutoNumber = :autoNumber");
+                updateQuery.bindValue(":distance", rangeDistance);
+                updateQuery.bindValue(":autoNumber", recordAutoNumber);
+
+                if (updateQuery.exec()) {
+                    qDebug() << "Record with AutoNumber =" << recordAutoNumber
+                             << "updated successfully with new DistanceKm =" << rangeDistance;
+                } else {
+                    qWarning() << "Failed to update the record:" << updateQuery.lastError().text();
+                }
+            } else {
+                qDebug() << "No records found in DistanceData table.";
+            }
+        } else {
+            qWarning() << "Failed to retrieve records from DistanceData table.";
+        }
+    } else {
+        qDebug() << "Invalid command received in message.";
+    }
+    if (db.isOpen()) {
+        db.close();
+        qDebug() << "Database connection closed.";
+    }
+    updateDistance(rangeDistance);
+}
+
+void Database::updateDistance(double updatedistance) {
+    qDebug() << "Taking data from table..." << updatedistance;
+
+    QString newCursor = QString("{\"objectName\"          :\"updateCursor\","
+                                "\"distance\"        :\"%1\""
+                                "}").arg(updatedistance);
+    qDebug() << "updateDistance:" << newCursor;
+    updatanewdistance(newCursor);
+}
+
+
+
+void Database::controlCursor(QString msg) {
+    qDebug() << "controlCursor:" << msg;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    if(getCommand.contains("decreaseValue")){
+        double leftmove = QJsonValue(command["decreaseValue"]).toDouble();
+        qDebug() << "cursorPosition:" << leftmove;
+        QString cutsorleftMove = QString("{\"objectName\"          :\"decreaseValue\","
+                                            "\"decreaseValue\"        :%1"
+                                            "}").arg(leftmove);
+        qDebug() << "cutsorleftMove:" << cutsorleftMove;
+        positionCursorChange(cutsorleftMove);
+    }else if(getCommand.contains("increaseValue")){
+        double rigth = QJsonValue(command["increaseValue"]).toDouble();
+        qDebug() << "cursorPosition:" << rigth;
+        QString cutsorrightMove = QString("{\"objectName\"          :\"increaseValue\","
+                                            "\"increaseValue\"        :%1"
+                                            "}").arg(rigth);
+        qDebug() << "cutsorrigthMove:" << cutsorrightMove;
+        positionCursorChange(cutsorrightMove);
+    }
+}
+
+
+
+void Database::getPositionDistance(QString msg) {
+    qDebug() << "getPositionDistance:" << msg;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    if(getCommand.contains("distance")){
+        QString distance = QJsonValue(command["distance"]).toString();
+        QString cutsor = QString("{\"objectName\"          :\"positonCursor\","
+                                    "\"distance\"        :\"%1\""
+                                    "}").arg(distance);
+        qDebug() << "cursorPosition:" << cutsor;
+        cursorPosition(cutsor);
+    }
+}
+
+
+void Database::getRawData(QString msg) {
+    qDebug() << "getRawData:" << msg;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+//    if((msg=="testRawData") && getCommand.contains("patternPhaseA")) {
+
+    if(getCommand.contains("getpatternPhaseA")) {
+        qDebug() << "getpatternPhaseA:";
+        double totalTime = 0.3333e-3;
+        double totalDistance = 101.0;
+        double speed = totalDistance / totalTime;
+        int points = 202;
+        double timeStep = totalTime / points;
+
+        QVector<double> voltageDataA = {//1ตัวหาย
+//            0, 80, 150, 330, 400, 550, 660, 770, 990, 1150, 1350, 1550, 1600, 1550,
+//            1600, 1550, 1350, 1150, 990, 770, 660, 550, 400, 330, 150, 80, 90, 120,
+//            150, 150, 150, 150, 160, 170, 180, 190, 180, 170, 160, 150, 150, 150, 152,
+//            153, 155, 160, 200, 250, 280, 350, 400, 500, 400, 350, 250, 200, 190, 150,
+//            152, 153, 154, 155, 155, 154, 153, 152, 200, 250, 350, 400, 500, 600, 700,
+//            800, 900, 1150, 1280, 1390, 1280, 1150, 900, 800, 700, 600, 500, 400, 350, 400,
+//            250, 200, 150, 154, 153, 154, 152, 154, 150, 154, 151, 150, 150
+            0,150,330,450,565,600,660,720,810,990,1150,1220,1250,1280,1320,1470,1650,1750,1800,1750,
+            1650,1470,1320,1280,1250,1220,1150,990,810,720,660,600,565,450,330,150,150,150,150,150,
+            150,150,150,150,250,350,450,550,450,350,250,150,150,155,165,175,185,195,185,175,
+            165,155,150,150,150,150,150,150,150,150,150,150,150,150,155,160,165,170,175,180,
+            175,170,165,160,155,150,150,150,150,150,150,150,150,150,155,160,165,170,175,180,
+            185,190,195,200,210,220,230,240,250,260,270,280,290,300,320,340,360,380,430,460,
+            490,500,525,550,600,650,700,750,800,850,900,950,1000,1050,1100,1150,1200,1250,1300,1350,
+            1400,1450,1500,1450,1400,1350,1300,1250,1200,1150,1100,1050,1000,950,900,850,800,750,700,650,
+            600,550,500,450,400,350,300,250,200,150,150,150,150,150,150,150,150,150,150,150,
+            150,160,155,153,150,154,155,160,151,152,149,153,155,151,152,154,156,153,150,150,
+        };
+
+        if (voltageDataA.size() != points) {
+            qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+
+            QVector<double> interpolatedData;
+            int originalSize = voltageDataA.size();
+            QVector<int> originalIndices;
+            for (int i = 0; i < originalSize; ++i) {
+                originalIndices.append(i);
+            }
+
+            QVector<int> newIndices;
+            for (int i = 0; i < points; ++i) {
+                newIndices.append(i * (originalSize - 1) / (points - 1));
+            }
+
+            for (int i = 0; i < points; ++i) {
+                int index = newIndices[i];
+                interpolatedData.append(voltageDataA[index]);
+            }
+
+            voltageDataA = interpolatedData;
+        }
+
+        QString rawDataString = "[";
+
+        for (int i = 0; i < points; ++i) {
+            double time = i * timeStep;
+            double distance = time * speed;
+            double voltage = voltageDataA[i];
+
+            QString pointData = QString("{\"objectName\"          :\"patthernA\","
+                                        "\"distance\"       :%1," // Distance
+                                        "\"voltage\"        :%2"  // Voltage
+                                        "}")
+                                    .arg(distance, 0, 'f', 6)
+                                    .arg(voltage, 0, 'f', 6);
+
+            rawDataString += pointData;
+
+            if (i < points - 1) {
+                rawDataString += ",";
+            }
+        }
+
+        rawDataString += "]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"patthernA\","
+                                       "\"data\"         :%1}").arg(rawDataString);
+
+//        qDebug() << "Full Jetson Package:" << rawdataArray;
+        packageRawData(rawdataArray);
+    }else if(getCommand.contains("getpatternPhaseB")) {
+        qDebug() << "getpatternPhaseB:";
+        double totalTime = 0.3333e-3;
+        double totalDistance = 101.0;
+        double speed = totalDistance / totalTime;
+        int points = 101;
+        double timeStep = totalTime / points;
+
+        QVector<double> voltageDataB = {
+            0, 100, 150, 330, 465, 660, 765, 990, 1150, 1320, 1450, 1650, 1750, 1800,
+            1750, 1650, 1450, 1320, 1150, 990, 765, 660, 465, 330, 150, 165, 175, 160,
+            150, 150, 150, 150, 160, 170, 180, 190, 200, 250, 300, 400, 500, 600, 800,
+            990, 950, 930, 900, 800, 700, 600, 500, 400, 300, 250, 200, 190, 170, 160,
+            159, 158, 157, 156, 155, 154, 153, 152, 151, 150, 150, 151, 152, 180, 190,
+            200, 250, 300, 350, 400, 350, 300, 250, 200, 180, 160, 170, 180, 190, 250,
+            350, 480, 600, 700, 800, 700, 600, 500, 450, 350, 200, 150,
+        };
+
+        if (voltageDataB.size() != points) {
+            qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+
+            QVector<double> interpolatedData;
+            int originalSize = voltageDataB.size();
+            QVector<int> originalIndices;
+            for (int i = 0; i < originalSize; ++i) {
+                originalIndices.append(i);
+            }
+
+            QVector<int> newIndices;
+            for (int i = 0; i < points; ++i) {
+                newIndices.append(i * (originalSize - 1) / (points - 1));
+            }
+
+            for (int i = 0; i < points; ++i) {
+                int index = newIndices[i];
+                interpolatedData.append(voltageDataB[index]);
+            }
+
+            voltageDataB = interpolatedData;
+        }
+
+        QString rawDataString = "[";
+
+        for (int i = 0; i < points; ++i) {
+            double time = i * timeStep;
+            double distance = time * speed;
+            double voltage = voltageDataB[i];
+
+            QString pointData = QString("{\"objectName\"          :\"patthernB\","
+                                        "\"distance\"       :%1," // Distance
+                                        "\"voltage\"        :%2"  // Voltage
+                                        "}")
+                                    .arg(distance, 0, 'f', 6)
+                                    .arg(voltage, 0, 'f', 6);
+
+            rawDataString += pointData;
+
+            if (i < points - 1) {
+                rawDataString += ",";
+            }
+        }
+
+        rawDataString += "]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"patthernB\","
+                                       "\"data\"         :%1}").arg(rawDataString);
+
+//        qDebug() << "Full Jetson Package:" << rawdataArray;
+        packageRawData(rawdataArray);
+    }else if(getCommand.contains("getpatternPhaseC")) {
+        qDebug() << "getpatternPhaseC:";
+        double totalTime = 0.3333e-3;
+        double totalDistance = 101.0;
+        double speed = totalDistance / totalTime;
+        int points = 101;
+        double timeStep = totalTime / points;
+
+        QVector<double> voltageDataC = {
+            0, 200, 250, 350, 465, 660, 765, 990, 1250, 1420, 1550, 1650, 1750, 1800,
+            1950, 2200, 1950, 1800, 1750, 1650, 1550, 1420, 1250, 990, 765, 660, 465, 350,
+            200, 150, 150, 150, 160, 170, 180, 190, 200, 250, 300, 400, 500, 600, 800,
+            1150, 950, 930, 900, 800, 700, 600, 500, 400, 300, 250, 200, 190, 170, 160,
+            159, 158, 157, 156, 155, 154, 153, 152, 151, 150, 150, 151, 152, 180, 190,
+            200, 250, 300, 350, 400, 500, 600, 400, 350, 300, 250, 200, 190, 180, 250,
+            350, 480, 500, 550, 600, 550, 500, 400, 300, 200, 100, 150,
+        };
+
+        if (voltageDataC.size() != points) {
+            qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+
+            QVector<double> interpolatedData;
+            int originalSize = voltageDataC.size();
+            QVector<int> originalIndices;
+            for (int i = 0; i < originalSize; ++i) {
+                originalIndices.append(i);
+            }
+
+            QVector<int> newIndices;
+            for (int i = 0; i < points; ++i) {
+                newIndices.append(i * (originalSize - 1) / (points - 1));
+            }
+
+            for (int i = 0; i < points; ++i) {
+                int index = newIndices[i];
+                interpolatedData.append(voltageDataC[index]);
+            }
+
+            voltageDataC = interpolatedData;
+        }
+
+        QString rawDataString = "[";
+
+        for (int i = 0; i < points; ++i) {
+            double time = i * timeStep;
+            double distance = time * speed;
+            double voltage = voltageDataC[i];
+
+            QString pointData = QString("{\"objectName\"          :\"patthernC\","
+                                        "\"distance\"       :%1," // Distance
+                                        "\"voltage\"        :%2"  // Voltage
+                                        "}")
+                                    .arg(distance, 0, 'f', 6)
+                                    .arg(voltage, 0, 'f', 6);
+
+            rawDataString += pointData;
+
+            if (i < points - 1) {
+                rawDataString += ",";
+            }
+        }
+
+        rawDataString += "]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"patthernC\","
+                                       "\"data\"         :%1}").arg(rawDataString);
+
+//        qDebug() << "Full Jetson Package:" << rawdataArray;
+        packageRawData(rawdataArray);
+    }else if(getCommand.contains("getDatabuttonPhaseA")){
+        qDebug() << "getDatabuttonPhaseA:";
+        double totalTime = 0.3333e-3;
+        double totalDistance = 101.0;
+        double speed = totalDistance / totalTime;
+        int points = 101;
+        double timeStep = totalTime / points;
+
+        QVector<double> voltageDataRawA = {
+            0, 80, 150, 330, 400, 550, 660, 770, 990, 1150, 1350, 1550, 1600, 1550,
+            1600, 1550, 1350, 1150, 990, 770, 660, 550, 400, 330, 150, 80, 90, 120,
+            150, 150, 150, 150, 160, 170, 180, 190, 180, 170, 160, 150, 150, 150, 152,
+            153, 155, 160, 200, 250, 280, 350, 400, 500, 400, 350, 250, 200, 190, 150,
+            152, 153, 154, 155, 155, 154, 153, 152, 200, 250, 350, 400, 500, 600, 700,
+            800, 900, 1150, 1280, 1390, 1280, 1150, 900, 800, 700, 600, 500, 400, 350, 400,
+            250, 200, 150, 154, 153, 154, 152, 154, 150, 154, 151, 150, 150
+        };
+
+        if (voltageDataRawA.size() != points) {
+            qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+
+            QVector<double> interpolatedData;
+            int originalSize = voltageDataRawA.size();
+            QVector<int> originalIndices;
+            for (int i = 0; i < originalSize; ++i) {
+                originalIndices.append(i);
+            }
+
+            QVector<int> newIndices;
+            for (int i = 0; i < points; ++i) {
+                newIndices.append(i * (originalSize - 1) / (points - 1));
+            }
+
+            for (int i = 0; i < points; ++i) {
+                int index = newIndices[i];
+                interpolatedData.append(voltageDataRawA[index]);
+            }
+
+            voltageDataRawA = interpolatedData;
+        }
+
+        QString rawDataString = "[";
+
+        for (int i = 0; i < points; ++i) {
+            double time = i * timeStep;
+            double distance = time * speed;
+            double voltage = voltageDataRawA[i];
+
+            QString pointData = QString("{\"objectName\"          :\"RawdataA\","
+                                        "\"distance\"       :%1," // Distance
+                                        "\"voltage\"        :%2"  // Voltage
+                                        "}")
+                                    .arg(distance, 0, 'f', 6)
+                                    .arg(voltage, 0, 'f', 6);
+
+            rawDataString += pointData;
+
+            if (i < points - 1) {
+                rawDataString += ",";
+            }
+        }
+
+        rawDataString += "]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"RawdataA\","
+                                       "\"packageRawDataA\"         :%1}").arg(rawDataString);
+
+//        qDebug() << "Full Jetson Package:" << rawdataArray;
+        packageRawData(rawdataArray);
+    }else if(getCommand.contains("getDatabuttonPhaseB")){
+        qDebug() << "getDatabuttonPhaseB:";
+        double totalTime = 0.3333e-3;
+        double totalDistance = 101.0;
+        double speed = totalDistance / totalTime;
+        int points = 101;
+        double timeStep = totalTime / points;
+
+        QVector<double> voltageDataRawB = {
+            0, 80, 150, 330, 400, 550, 660, 770, 990, 1150, 1350, 1550, 1600, 1550,
+            1600, 1550, 1350, 1150, 990, 770, 660, 550, 400, 330, 150, 80, 90, 120,
+            150, 150, 150, 150, 160, 170, 180, 190, 180, 170, 160, 150, 150, 150, 152,
+            153, 155, 160, 200, 250, 280, 350, 400, 500, 400, 350, 250, 200, 190, 150,
+            152, 153, 154, 155, 155, 154, 153, 152, 200, 250, 350, 400, 500, 600, 700,
+            800, 900, 1150, 1280, 1390, 1280, 1150, 900, 800, 700, 600, 500, 400, 350, 400,
+            250, 200, 150, 154, 153, 154, 152, 154, 150, 154, 151, 150, 150
+        };
+
+        if (voltageDataRawB.size() != points) {
+            qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+
+            QVector<double> interpolatedData;
+            int originalSize = voltageDataRawB.size();
+            QVector<int> originalIndices;
+            for (int i = 0; i < originalSize; ++i) {
+                originalIndices.append(i);
+            }
+
+            QVector<int> newIndices;
+            for (int i = 0; i < points; ++i) {
+                newIndices.append(i * (originalSize - 1) / (points - 1));
+            }
+
+            for (int i = 0; i < points; ++i) {
+                int index = newIndices[i];
+                interpolatedData.append(voltageDataRawB[index]);
+            }
+
+            voltageDataRawB = interpolatedData;
+        }
+
+        QString rawDataString = "[";
+
+        for (int i = 0; i < points; ++i) {
+            double time = i * timeStep;
+            double distance = time * speed;
+            double voltage = voltageDataRawB[i];
+
+            QString pointData = QString("{\"objectName\"          :\"RawdataB\","
+                                        "\"distance\"       :%1," // Distance
+                                        "\"voltage\"        :%2"  // Voltage
+                                        "}")
+                                    .arg(distance, 0, 'f', 6)
+                                    .arg(voltage, 0, 'f', 6);
+
+            rawDataString += pointData;
+
+            if (i < points - 1) {
+                rawDataString += ",";
+            }
+        }
+
+        rawDataString += "]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"RawdataB\","
+                                       "\"packageRawDataB\"         :%1}").arg(rawDataString);
+
+//        qDebug() << "Full Jetson Package:" << rawdataArray;
+        packageRawData(rawdataArray);
+    }else if(getCommand.contains("getDatabuttonPhaseC")){
+        qDebug() << "getDatabuttonPhaseC:";
+        double totalTime = 0.3333e-3;
+        double totalDistance = 101.0;
+        double speed = totalDistance / totalTime;
+        int points = 101;
+        double timeStep = totalTime / points;
+
+        QVector<double> voltageDataRawC = {
+            0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750,
+            700, 650, 600, 550, 500, 450, 400, 350, 300, 250, 200, 150, 100, 50, 0, 50,
+            100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850,
+            800, 750, 700, 650, 600, 550, 500, 450, 400, 350, 300, 250, 200, 150, 100, 50,
+            0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750,
+            800, 850, 900, 950, 1000, 950, 900, 850, 800, 750, 700, 650, 600, 550, 500, 450,
+            400, 350, 300, 250, 200, 150, 100
+        };
+
+        if (voltageDataRawC.size() != points) {
+            qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+
+            QVector<double> interpolatedData;
+            int originalSize = voltageDataRawC.size();
+            QVector<int> originalIndices;
+            for (int i = 0; i < originalSize; ++i) {
+                originalIndices.append(i);
+            }
+
+            QVector<int> newIndices;
+            for (int i = 0; i < points; ++i) {
+                newIndices.append(i * (originalSize - 1) / (points - 1));
+            }
+
+            for (int i = 0; i < points; ++i) {
+                int index = newIndices[i];
+                interpolatedData.append(voltageDataRawC[index]);
+            }
+
+            voltageDataRawC = interpolatedData;
+        }
+
+        QString rawDataString = "[";
+
+        for (int i = 0; i < points; ++i) {
+            double time = i * timeStep;
+            double distance = time * speed;
+            double voltage = voltageDataRawC[i];
+
+            QString pointData = QString("{\"objectName\"          :\"RawdataC\","
+                                        "\"distance\"       :%1," // Distance
+                                        "\"voltage\"        :%2"  // Voltage
+                                        "}")
+                                    .arg(distance, 0, 'f', 6)
+                                    .arg(voltage, 0, 'f', 6);
+
+            rawDataString += pointData;
+
+            if (i < points - 1) {
+                rawDataString += ",";
+            }
+        }
+
+        rawDataString += "]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"RawdataC\","
+                                       "\"packageRawDataC\"         :%1}").arg(rawDataString);
+
+    //    qDebug() << "Full Jetson Package:" << rawdataArray;
+        packageRawData(rawdataArray);
+    }
+
+
+}
+
+void Database::cleanDataInGraph(QString msg) {
+    qDebug() << "cleanDataInGraph:" << msg;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+
+    if (getCommand.contains("clearpatternPhaseA")) {
+        qDebug() << "Clearing data for Phase A";
+        QVector<double> voltageDataA;
+        QString rawDataString = "[]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"clearpatternPhaseA\","
+                                       "\"dataA\"         :%1}").arg(rawDataString);
+
+        emit packageRawData(rawdataArray);
+    } else if (getCommand.contains("clearpatternPhaseB")) {
+        qDebug() << "Clearing data for Phase B";
+        QVector<double> voltageDataB;
+        QString rawDataString = "[]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"clearpatternPhaseB\","
+                                       "\"dataB\"         :%1}").arg(rawDataString);
+
+        emit packageRawData(rawdataArray);
+    } else if (getCommand.contains("clearpatternPhaseC")) {
+        qDebug() << "Clearing data for Phase C";
+        QVector<double> voltageDataC;
+        QString rawDataString = "[]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"clearpatternPhaseC\","
+                                       "\"dataC\"         :%1}").arg(rawDataString);
+
+        qDebug() << "Clearing Patthern for Phase C" << rawdataArray;
+        emit packageRawData(rawdataArray);
+    } else if(getCommand.contains("clearDatabuttonPhaseA")){
+        qDebug() << "Clearing data for Phase A";
+        QVector<double> voltageDataA;
+        QString rawDataString = "[]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"clearGraphDataPhaseA\","
+                                       "\"cleardataA\"         :%1}").arg(rawDataString);
+
+        qDebug() << "Clearing Pattern for Phase A" << rawdataArray;
+        emit packageRawData(rawdataArray);
+    }else if(getCommand.contains("clearDatabuttonPhaseB")){
+        qDebug() << "Clearing data for Phase B";
+        QVector<double> voltageDataB;
+        QString rawDataString = "[]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"clearGraphDataPhaseB\","
+                                       "\"cleardataB\"         :%1}").arg(rawDataString);
+
+        qDebug() << "Clearing Pattern for Phase B" << rawdataArray;
+        emit packageRawData(rawdataArray);
+    }else if(getCommand.contains("clearDatabuttonPhaseC")){
+        qDebug() << "Clearing data for Phase C";
+        QVector<double> voltageDataC;
+        QString rawDataString = "[]";
+
+        QString rawdataArray = QString("{\"objectName\"  :\"clearGraphDataPhaseC\","
+                                       "\"cleardataC\"         :%1}").arg(rawDataString);
+
+        qDebug() << "Clearing Pattern for Phase C" << rawdataArray;
+        emit packageRawData(rawdataArray);
+    }
+}
+
+
+//void Database::getRawData(QString msg) {
+//    qDebug() << "getRawData:" << msg;
+
+//    double totalTime = 0.3333e-3;
+//    double totalDistance = 100.0;
+//    double speed = totalDistance / totalTime;
+//    int points = 100;
+
+//    double timeStep = totalTime / points;
+
+//    QVector<double> voltageData = {
+//        0, 100, 150, 330, 465, 660, 765, 990, 1150, 1320, 1450, 1650, 1750, 1800,
+//        1750, 1650, 1450, 1320, 1150, 990, 765, 660, 465, 330, 150, 165, 175, 160,
+//        150, 150, 150, 150, 160, 170, 180, 190, 200, 250, 300, 400, 500, 600, 800,
+//        990, 950, 930, 900, 800, 700, 600, 500, 400, 300, 250, 200, 190, 170, 160,
+//        159, 158, 157, 156, 155, 154, 153, 152, 151, 150, 150, 151, 152, 180, 190,
+//        200, 250, 300, 350, 400, 350, 300, 250, 200, 180, 160, 170, 180, 190, 250,
+//        350, 480, 600, 700, 800, 700, 600, 500, 450, 350, 200, 150
+//    };
+
+//    if (voltageData.size() != points) {
+//        qWarning() << "Voltage data size does not match the number of points. Rescaling...";
+//        voltageData.resize(points);
+//    }
+
+//    QString rawDataString = "[";
+
+//    for (int i = 0; i < points; ++i) {
+//        double time = i * timeStep;
+//        double distance = time * speed;
+//        double voltage = voltageData[i];
+
+//        QString pointData = QString("{\"objectName\"          :\"RawData\","
+//                                    "\"distance\"       :%1," // Distance
+//                                    "\"voltage\"        :%2"  // Voltage
+//                                    "}")
+//                                .arg(distance, 0, 'f', 6)
+//                                .arg(voltage, 0, 'f', 6);
+
+//        rawDataString += pointData;
+
+//        if (i < points - 1) {
+//            rawDataString += ",";
+//        }
+//    }
+
+//    rawDataString += "]";
+
+//    QString rawdataArray = QString("{\"objectName\"  :\"RawData\","
+//                                   "\"data\"         :%1}").arg(rawDataString);
+
+//    qDebug() << "Full Jetson Package:" << rawdataArray;
+//    packageRawData(rawdataArray);
+//}
+
+
+void Database::userMode(QString msg) {
+    qDebug() << "userMode:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+
+    if (!command.contains("userType")) {
+        qDebug() << "Invalid message format: Missing 'userType'.";
+        return;
+    }
+
+    QString userType = command["userType"].toString();  // Extract Master/Slave
+    QString userStatusSlave = command["userStatusSlave"].toString(); // Extract status (if Slave)
+
+    if (userType != "Master" && userType != "Slave") {
+        qDebug() << "Invalid userType value:" << userType;
+        return;
+    }
+
+    int userStatus = userStatusSlave.toInt();
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery query(db);
+
+    query.prepare("UPDATE UserModeTable SET userMode = :userMode, userStatus = :userStatus WHERE Num = 1");
+    query.bindValue(":userMode", userType);
+    query.bindValue(":userStatus", userStatus);
+
+    if (!query.exec()) {
+        qDebug() << "Failed to update UserModeTable:" << query.lastError().text();
+    } else {
+        qDebug() << "UserModeTable updated successfully. userMode:" << userType << ", userStatus:" << userStatus;
+    }
+
+    closeMySQL();
+    getUpdateUserMode();
+}
+
+void Database::getUpdateUserMode() {
+    qDebug() << "Fetching current UserMode from UserModeTable...";
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery query(db);
+
+    query.prepare("SELECT Num, userMode, userStatus FROM UserModeTable WHERE Num = 1");
+
+    if (!query.exec()) {
+        qDebug() << "Failed to fetch data from UserModeTable:" << query.lastError().text();
+    } else if (query.next()) {
+        int num = query.value("Num").toInt();
+        QString userMode = query.value("userMode").toString();
+        bool userStatus = query.value("userStatus").toInt() != 0; // Convert int to bool
+
+        qDebug() << "Current UserModeTable Data:";
+        qDebug() << "Num:" << num << ", userMode:" << userMode << ", userStatus:" << userStatus;
+    } else {
+        qDebug() << "No data found in UserModeTable.";
+    }
+
+    closeMySQL();
+}
+
 void Database::getEventandAlarm(QString msg){
 //    qDebug() << "Database:" << msg;
 
@@ -76,7 +933,18 @@ void Database::getEventandAlarm(QString msg){
     }
 }
 
-void Database::getMySqlPhase(QString msg) {
+void Database::getMySqlPhaseA(QString msg) {
+    qDebug() << "getMySqlPhase:" << msg;
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        db.close();
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            db.close();
+            return;
+        }
+    }
 
     QSqlQuery query;
     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
@@ -93,8 +961,7 @@ void Database::getMySqlPhase(QString msg) {
                 QVariant detailVar = query.value("Detail");
                 QVariant phaseVar = query.value("Phase");
 
-                // แปลงตัวแปร
-                bool status = statusVar.toInt() != 0; // แปลง 0 เป็น false และอื่นๆ เป็น true
+                bool status = statusVar.toInt() != 0;
                 int num_list = numListVar.toInt();
                 int temp_no = tempNoVar.toInt();
                 double Distance = distanceVar.toDouble();
@@ -110,19 +977,18 @@ void Database::getMySqlPhase(QString msg) {
                 qDebug() << "Detail:" << Detail << "type:" << detailVar.typeName();
                 qDebug() << "Phase:" << Phase << "type:" << phaseVar.typeName();
 
-                // หากมีปัญหาให้ข้าม
                 if (Phase.isEmpty() || Detail.isEmpty()) {
                     qWarning() << "Warning: Empty Phase or Detail. Skipping this row.";
                     continue;
                 }
 
-                QString message = QString("{\"objectName\":\"getMySqlPhaseA\", "
-                                          "\"status\":%1, "
-                                          "\"num_list\":%2, "
-                                          "\"temp_no\":%3, "
-                                          "\"Distance\":\"%4\", "
-                                          "\"Detail\":\"%5\", "
-                                          "\"Phase\":\"%6\"}")
+                QString message = QString("{\"objectName\"  :\"getMySqlPhaseA\", "
+                                          "\"status\"       :%1, "
+                                          "\"num_list\"     :%2, "
+                                          "\"temp_no\"      :%3, "
+                                          "\"Distance\"     :\"%4\", "
+                                          "\"Detail\"       :\"%5\", "
+                                          "\"Phase\"        :\"%6\"}")
                                       .arg(status ? "true" : "false")
                                       .arg(num_list)
                                       .arg(temp_no)
@@ -136,68 +1002,132 @@ void Database::getMySqlPhase(QString msg) {
         } else {
             qDebug() << "Failed to execute query:" << query.lastError().text();
         }
-    }else if(getCommand.contains("TaggingPhaseB")) {
-        if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'B'")) {
-            while (query.next()) {
-                bool status = query.value("status").toBool();
-                int num_list = query.value("No").toInt(); // ดึงค่าของ No
-                int temp_no = query.value("temp_no").toInt();
-                double Distance = query.value("Distance(Km)").toDouble();
-                QString Detail = query.value("Detail").toString();
-                QString Phase = query.value("Phase").toString();
-
-                QString message = QString("{\"objectName\":\"getMySqlPhaseB\", "
-                                          "\"status\":%1, "
-                                          "\"num_list\":%2, "
-                                          "\"temp_no\":%3, "
-                                          "\"Distance\":\"%4\", "
-                                          "\"Detail\":\"%5\", "
-                                          "\"Phase\":\"%6\"}")
-                                      .arg(status ? "true" : "false")
-                                      .arg(num_list)       // ใส่ค่า num_list
-                                      .arg(temp_no)
-                                      .arg(Distance)
-                                      .arg(Detail)
-                                      .arg(Phase);
-
-                qDebug() << "Sent message get PhaseB:" << message;
-                emit cmdmsg(message);
-            }
-        } else {
-            qDebug() << "Failed to execute query:" << query.lastError().text();
-        }
-    }else if(getCommand.contains("TaggingPhaseC")){
-        if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'C'")) {
-            while (query.next()) {
-                bool status = query.value("status").toBool();
-                int num_list = query.value("No").toInt(); // ดึงค่าของ No
-                int temp_no = query.value("temp_no").toInt();
-                double Distance = query.value("Distance(Km)").toDouble();
-                QString Detail = query.value("Detail").toString();
-                QString Phase = query.value("Phase").toString();
-
-                QString message = QString("{\"objectName\":\"getMySqlPhaseC\", "
-                                          "\"status\":%1, "
-                                          "\"num_list\":%2, "
-                                          "\"temp_no\":%3, "
-                                          "\"Distance\":\"%4\", "
-                                          "\"Detail\":\"%5\", "
-                                          "\"Phase\":\"%6\"}")
-                                      .arg(status ? "true" : "false")
-                                      .arg(num_list)       // ใส่ค่า num_list
-                                      .arg(temp_no)
-                                      .arg(Distance)
-                                      .arg(Detail)
-                                      .arg(Phase);
-
-                qDebug() << "Sent message get PhaseB:" << message;
-                emit cmdmsg(message);
-            }
-        } else {
-            qDebug() << "Failed to execute query:" << query.lastError().text();
-        }
+        closeMySQL();
     }
 }
+
+
+void Database::getMySqlPhaseB(QString msg) {
+    qDebug() << "getMySqlPhaseB:" << msg;
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        db.close();
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            db.close();
+            return;
+        }
+    }
+
+    QSqlQuery query;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    if(getCommand.contains("TaggingPhaseB")) {
+           if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'B'")) {
+               while (query.next()) {
+                   QVariant statusVar = query.value("status");
+                   QVariant numListVar = query.value("No");
+                   QVariant tempNoVar = query.value("temp_no");
+                   QVariant distanceVar = query.value("Distance(Km)");
+                   QVariant detailVar = query.value("Detail");
+                   QVariant phaseVar = query.value("Phase");
+
+                   bool status = statusVar.toInt() != 0;
+                   int num_list = numListVar.toInt();
+                   int temp_no = tempNoVar.toInt();
+                   double Distance = distanceVar.toDouble();
+                   QString Detail = detailVar.toString();
+                   QString Phase = phaseVar.toString();
+
+                   // Debug ค่าของตัวแปร
+                   qDebug() << "Debug Variables and Types:";
+                   qDebug() << "status (as bool):" << (status ? "true" : "false") << "type: bool";
+                   qDebug() << "num_list:" << num_list << "type:" << numListVar.typeName();
+                   qDebug() << "temp_no:" << temp_no << "type:" << tempNoVar.typeName();
+                   qDebug() << "Distance:" << Distance << "type:" << distanceVar.typeName();
+                   qDebug() << "Detail:" << Detail << "type:" << detailVar.typeName();
+                   qDebug() << "Phase:" << Phase << "type:" << phaseVar.typeName();
+
+                   if (Phase.isEmpty() || Detail.isEmpty()) {
+                       qWarning() << "Warning: Empty Phase or Detail. Skipping this row.";
+                       continue;
+                   }
+
+                   QString message = QString("{\"objectName\"  :\"getMySqlPhaseB\", "
+                                             "\"status\"       :%1, "
+                                             "\"num_list\"     :%2, "
+                                             "\"temp_no\"      :%3, "
+                                             "\"Distance\"     :\"%4\", "
+                                             "\"Detail\"       :\"%5\", "
+                                             "\"Phase\"        :\"%6\"}")
+                                         .arg(status ? "true" : "false")
+                                         .arg(num_list)
+                                         .arg(temp_no)
+                                         .arg(Distance)
+                                         .arg(Detail)
+                                         .arg(Phase);
+                   qDebug() << "Sent message get PhaseB:" << message;
+                   emit cmdmsg(message);
+               }
+           } else {
+               qDebug() << "Failed to execute query:" << query.lastError().text();
+           }
+           closeMySQL();
+       }
+}
+
+void Database::getMySqlPhaseC(QString msg) {
+    qDebug() << "getMySqlPhaseC:" << msg;
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        db.close();
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            db.close();
+            return;
+        }
+    }
+    QSqlQuery query;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    if(getCommand.contains("TaggingPhaseC")){
+            if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'C'")) {
+                while (query.next()) {
+                    bool status = query.value("status").toBool();
+                    int num_list = query.value("No").toInt(); // ดึงค่าของ No
+                    int temp_no = query.value("temp_no").toInt();
+                    double Distance = query.value("Distance(Km)").toDouble();
+                    QString Detail = query.value("Detail").toString();
+                    QString Phase = query.value("Phase").toString();
+
+                    QString message = QString("{\"objectName\":\"getMySqlPhaseC\", "
+                                              "\"status\":%1, "
+                                              "\"num_list\":%2, "
+                                              "\"temp_no\":%3, "
+                                              "\"Distance\":\"%4\", "
+                                              "\"Detail\":\"%5\", "
+                                              "\"Phase\":\"%6\"}")
+                                          .arg(status ? "true" : "false")
+                                          .arg(num_list)       // ใส่ค่า num_list
+                                          .arg(temp_no)
+                                          .arg(Distance)
+                                          .arg(Detail)
+                                          .arg(Phase);
+
+                    qDebug() << "Sent message get PhaseB:" << message;
+                    emit cmdmsg(message);
+                }
+            } else {
+                qDebug() << "Failed to execute query:" << query.lastError().text();
+            }
+           closeMySQL();
+        }
+
+}
+
 
 
 void Database::updateDataBaseDisplay(QString msg) {
@@ -205,11 +1135,9 @@ void Database::updateDataBaseDisplay(QString msg) {
     QSqlQuery query;
 
     if (query.exec("SELECT * FROM DataTagging")) {
-        // ส่งคำสั่งให้ QML ล้างข้อมูลก่อน
         QString clearMessage = "{\"objectName\":\"updateDataDisplay\"}";
         updateTableDisplay(clearMessage);
 
-        // ส่งข้อมูลใหม่ไปยัง QML
         while (query.next()) {
             bool status = query.value("status").toBool();
             int num_list = query.value("No").toInt();
@@ -238,12 +1166,22 @@ void Database::updateDataBaseDisplay(QString msg) {
     } else {
         qDebug() << "Failed to execute query:" << query.lastError().text();
     }
+    db.close();
 }
 
 void Database::DistanceandDetailPhaseA(QString msg) {
     qDebug() << "DistanceandDetailPhaseA:" << msg;
 
-    // Convert JSON string to QJsonObject
+    // Ensure the database is open
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open.";
+        db.close();
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+    }
+
     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject command = d.object();
     QString getCommand = QJsonValue(command["objectName"]).toString();
@@ -262,7 +1200,7 @@ void Database::DistanceandDetailPhaseA(QString msg) {
 
         QSqlQuery query;
 
-        // Find the most recent temp_no for the specified Phase
+        // Fetch the maximum temp_no for the given phase
         query.prepare("SELECT MAX(temp_no) FROM DataTagging WHERE Phase = :phase");
         query.bindValue(":phase", phase);
 
@@ -282,11 +1220,11 @@ void Database::DistanceandDetailPhaseA(QString msg) {
             qDebug() << "No data found for phase:" << phase;
         }
 
-        // Insert the new data into the DataTagging table
+        // Insert the new data
         query.prepare("INSERT INTO DataTagging (status, `Distance(Km)`, Detail, Phase, temp_no) "
                       "VALUES (:status, :distance, :detail, :phase, :temp_no)");
 
-        query.bindValue(":status", 0); // Default status as 0 (false)
+        query.bindValue(":status", 0);
         query.bindValue(":distance", distancecmd);
         query.bindValue(":detail", detailcmd);
         query.bindValue(":phase", phase);
@@ -294,169 +1232,26 @@ void Database::DistanceandDetailPhaseA(QString msg) {
 
         if (!query.exec()) {
             qDebug() << "Failed to insert data:" << query.lastError().text();
+            db.close();  // Close the database to avoid leaving it in an undefined state
             return;
         }
 
         qDebug() << "Data inserted successfully with temp_no:" << newTempNo;
 
-        // Fetch the latest data by No in the specified phase
-        query.prepare("SELECT status, No, `Distance(Km)`, Detail, Phase, temp_no FROM DataTagging WHERE Phase = :phase ORDER BY No DESC LIMIT 1");
-        query.bindValue(":phase", phase);
+//        QThread::msleep(150);
+        QString tableTaggingPhaseA = QJsonValue(command["tableTaggingPhaseA"]).toString();
+        QString getTaggingPhaseA = QString("{"
+                                           "\"objectName\":\"TaggingPhaseA\","
+                                           "\"tableTaggingPhaseA\":\"%1\""
+                                           "}").arg(tableTaggingPhaseA);
 
-        if (!query.exec()) {
-            qDebug() << "Failed to fetch the latest data:" << query.lastError().text();
-            return;
-        }
-
-        while (query.next()) {
-            int statusInt = query.value("status").toInt(); // Get status as integer (0 or 1)
-            bool status = (statusInt == 1); // Convert 0 to false, 1 to true
-            int num_list = query.value("No").toInt();
-            int temp_no = query.value("temp_no").toInt();
-            double distance = query.value("Distance(Km)").toDouble();
-            QString detail = query.value("Detail").toString();
-            QString currentPhase = query.value("Phase").toString();
-
-            // Debugging: Output the fetched data
-            qDebug() << "Fetched Data:"
-                     << "Status:" << status
-                     << "Num_list:" << num_list
-                     << "Temp_no:" << temp_no
-                     << "Distance:" << distance
-                     << "Detail:" << detail
-                     << "Phase:" << currentPhase;
-
-            // Construct the message for sending back to QML
-            QString message = QString("{\"objectName\":\"getMySqlPhaseA\", "
-                                      "\"status\":%1, "
-                                      "\"num_list\":%2, "
-                                      "\"temp_no\":%3, "
-                                      "\"Distance\":\"%4\", "
-                                      "\"Detail\":\"%5\", "
-                                      "\"Phase\":\"%6\"}")
-                                  .arg(status ? "true" : "false")  // If status is true, use "true"
-                                  .arg(num_list)
-                                  .arg(temp_no)
-                                  .arg(distance)
-                                  .arg(detail)
-                                  .arg(currentPhase);
-
-            qDebug() << "Sent messageA:" << message;
-
-            // Emit the message to QML
-            emit cmdmsg(message);
-        }
+        qDebug() << "getTaggingPhaseA:" << getTaggingPhaseA;
+        getMySqlPhaseA(getTaggingPhaseA);
     }
+
+    // Ensure the database is closed if it is no longer needed
+    db.close();
 }
-
-// void Database::DistanceandDetailPhaseA(QString msg) {
-//     qDebug() << "DistanceandDetailPhaseA:" << msg;
-
-//     // Convert JSON string to QJsonObject
-//     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
-//     QJsonObject command = d.object();
-//     QString getCommand = QJsonValue(command["objectName"]).toString();
-
-//     if (getCommand.contains("getDistanceDetailA")) {
-//         QString phase = QJsonValue(command["PHASE"]).toString();
-//         double distancecmd = QJsonValue(command["Distance"]).toDouble();
-//         QString detailcmd = QJsonValue(command["Detail"]).toString();
-
-//         qDebug() << "getDistanceDetailA:" << distancecmd << detailcmd << "Phase:" << phase;
-
-//         if (phase.isEmpty() || detailcmd.isEmpty()) {
-//             qDebug() << "Invalid data: Phase or Detail is empty!";
-//             return;
-//         }
-
-//         QSqlQuery query;
-
-//         // Find the most recent temp_no for the specified Phase
-//         query.prepare("SELECT MAX(temp_no) FROM DataTagging WHERE Phase = :phase");
-//         query.bindValue(":phase", phase);
-
-//         int newTempNo = 1;
-//         if (!query.exec()) {
-//             qDebug() << "Failed to execute query:" << query.lastQuery();
-//             qDebug() << "Error:" << query.lastError().text();
-//             return;
-//         }
-
-//         if (query.next()) {
-//             QVariant maxTempNo = query.value(0);
-//             if (maxTempNo.isValid() && !maxTempNo.isNull()) {
-//                 newTempNo = maxTempNo.toInt() + 1;
-//             }
-//         } else {
-//             qDebug() << "No data found for phase:" << phase;
-//         }
-
-//         // Insert the new data into the DataTagging table
-//         query.prepare("INSERT INTO DataTagging (status, `Distance(Km)`, Detail, Phase, temp_no) "
-//                       "VALUES (:status, :distance, :detail, :phase, :temp_no)");
-
-//         query.bindValue(":status", 0); // Default status as 0 (false)
-//         query.bindValue(":distance", distancecmd);
-//         query.bindValue(":detail", detailcmd);
-//         query.bindValue(":phase", phase);
-//         query.bindValue(":temp_no", newTempNo);
-
-//         if (!query.exec()) {
-//             qDebug() << "Failed to insert data:" << query.lastError().text();
-//             return;
-//         }
-
-//         qDebug() << "Data inserted successfully with temp_no:" << newTempNo;
-
-//         // Fetch the latest data by No in the specified phase
-//         query.prepare("SELECT * FROM DataTagging WHERE Phase = :phase ORDER BY No DESC LIMIT 1");
-//         query.bindValue(":phase", phase);
-
-//         if (!query.exec()) {
-//             qDebug() << "Failed to fetch the latest data:" << query.lastError().text();
-//             return;
-//         }
-
-//         while (query.next()) {
-//             int statusInt = query.value("status").toInt(); // Get status as integer (0 or 1)
-//             bool status = (statusInt == 1); // Convert 0 to false, 1 to true
-//             int num_list = query.value("No").toInt();
-//             int temp_no = query.value("temp_no").toInt();
-//             double distance = query.value("Distance(Km)").toDouble();
-//             QString detail = query.value("Detail").toString();
-//             QString currentPhase = query.value("Phase").toString();
-
-//             // Debugging: Output the fetched data
-//             qDebug() << "Fetched Data:"
-//                      << "Status:" << status
-//                      << "Num_list:" << num_list
-//                      << "Temp_no:" << temp_no
-//                      << "Distance:" << distance
-//                      << "Detail:" << detail
-//                      << "Phase:" << currentPhase;
-
-//             // Construct the message for sending back to QML
-//             QString message = QString("{\"objectName\":\"getMySqlPhaseA\", "
-//                                       "\"status\":%1, "
-//                                       "\"num_list\":%2, "
-//                                       "\"temp_no\":%3, "
-//                                       "\"Distance\":\"%4\", "
-//                                       "\"Detail\":\"%5\", "
-//                                       "\"Phase\":\"%6\"}")
-//                                   .arg(status ? "true" : "false")  // If status is true, use "true"
-//                                   .arg(num_list)
-//                                   .arg(temp_no)
-//                                   .arg(distance)
-//                                   .arg(detail)
-//                                   .arg(currentPhase);
-
-//             qDebug() << "Sent messageA:" << message;
-
-//             // Emit the message to QML
-//             emit cmdmsg(message);
-//         }
-//     }
-// }
 
 
 
@@ -504,7 +1299,7 @@ void Database::DistanceandDetailPhaseB(QString msg){
             qDebug() << "Failed to insert data:" << query.lastError().text();
         }
     }
-
+    db.close();
 }
 void Database::DistanceandDetailPhaseC(QString msg){
     qDebug() << "DistanceandDetailPhaseC:" << msg;
@@ -549,30 +1344,52 @@ void Database::DistanceandDetailPhaseC(QString msg){
             qDebug() << "Failed to insert data:" << query.lastError().text();
         }
     }
+    db.close();
 
 }
 
 void Database::updateTablePhaseA(QString msg) {
     qDebug() << "updateTablePhaseA:" << msg;
 
+    if (!db.isOpen()) {
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+    }
+
     QSqlQuery query;
     if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'A'")) {
         while (query.next()) {
-            bool status = query.value("status").toBool();
-            int num_list = query.value("No").toInt();
-            int temp_no = query.value("temp_no").toInt();
-            double distance = query.value("Distance(Km)").toDouble();
-            QString detail = query.value("Detail").toString();
-            QString phase = query.value("Phase").toString();
+            QVariant statusVar = query.value("status");
+            QVariant numListVar = query.value("No");
+            QVariant tempNoVar = query.value("temp_no");
+            QVariant distanceVar = query.value("Distance(Km)");
+            QVariant detailVar = query.value("Detail");
+            QVariant phaseVar = query.value("Phase");
 
-            // สร้างข้อความใหม่ที่ต้องการส่ง
+            bool status = statusVar.toInt() != 0;
+            int num_list = numListVar.toInt();
+            int temp_no = tempNoVar.toInt();
+            double distance = distanceVar.toDouble();
+            QString detail = detailVar.toString();
+            QString phase = phaseVar.toString();
+
+            qDebug() << "Debug Variables and Types:";
+            qDebug() << "status (as bool):" << (status ? "true" : "false") << "type: bool";
+            qDebug() << "num_list:" << num_list << "type:" << numListVar.typeName();
+            qDebug() << "temp_no:" << temp_no << "type:" << tempNoVar.typeName();
+            qDebug() << "Distance:" << distance << "type:" << distanceVar.typeName();
+            qDebug() << "Detail:" << detail << "type:" << detailVar.typeName();
+            qDebug() << "Phase:" << phase << "type:" << phaseVar.typeName();
+
             QString newMessage = QString("{\"objectName\":\"updatedataTableA\", "
-                                         "\"statusA\":%1, "
-                                         "\"num_listA\":%2, "
-                                         "\"temp_noA\":%3, "
-                                         "\"DistanceA\":\"%4\", "
-                                         "\"DetailA\":\"%5\", "
-                                         "\"PhaseA\":\"%6\"}")
+                                         "\"status\":%1, "
+                                         "\"num_list\":%2, "
+                                         "\"temp_no\":%3, "
+                                         "\"Distance\":%4, "
+                                         "\"Detail\":\"%5\", "
+                                         "\"Phase\":\"%6\"}")
                                      .arg(status ? "true" : "false")
                                      .arg(num_list)
                                      .arg(temp_no)
@@ -580,8 +1397,9 @@ void Database::updateTablePhaseA(QString msg) {
                                      .arg(detail)
                                      .arg(phase);
 
-            // ส่งข้อมูลของแต่ละแถวออกไป
+            qDebug() << "newMessage:" << newMessage;
             emit updatedataTableA(newMessage);
+            db.close();
         }
     } else {
         qDebug() << "Failed to execute query for Phase A:" << query.lastError().text();
@@ -589,14 +1407,13 @@ void Database::updateTablePhaseA(QString msg) {
 }
 
 
+
 void Database::updateTablePhaseB(QString msg) {
     qDebug() << "updateTablePhaseB:" << msg;
 
-    // เก็บ num_list ที่ถูกส่งไปแล้วเพื่อใช้ในการตรวจสอบ
     static QSet<int> sentNumLists;
 
     QSqlQuery query;
-    // ดึงข้อมูลล่าสุดที่มี Phase = 'B'
     if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'B' ORDER BY temp_no DESC LIMIT 1")) {
         if (query.next()) {
             bool status = query.value("status").toBool();
@@ -606,7 +1423,6 @@ void Database::updateTablePhaseB(QString msg) {
             QString detail = query.value("Detail").toString();
             QString phase = query.value("Phase").toString();
 
-            // สร้างข้อความใหม่ที่ต้องการส่ง
             QString newMessage = QString("{\"objectName\":\"updatedataTableB\", "
                                          "\"statusB\":%1, "
                                          "\"num_listB\":%2, "
@@ -621,12 +1437,9 @@ void Database::updateTablePhaseB(QString msg) {
                                      .arg(detail)
                                      .arg(phase);
 
-            // เช็คว่า num_list นี้เคยส่งไปแล้วหรือยัง
             if (!sentNumLists.contains(num_list)) {
-                // ถ้า num_list ไม่เคยส่งไปแล้ว ให้ส่งข้อมูลใหม่
                 emit updatedataTableB(newMessage);
 
-                // เพิ่ม num_list ที่ส่งไปแล้วเข้าไปใน Set
                 sentNumLists.insert(num_list);
             }
         }
@@ -638,11 +1451,9 @@ void Database::updateTablePhaseB(QString msg) {
 void Database::updateTablePhaseC(QString msg) {
     qDebug() << "updateTablePhaseC:" << msg;
 
-    // เก็บ num_list ที่ถูกส่งไปแล้วเพื่อใช้ในการตรวจสอบ
     static QSet<int> sentNumLists;
 
     QSqlQuery query;
-    // ดึงข้อมูลล่าสุดที่มี Phase = 'C'
     if (query.exec("SELECT * FROM DataTagging WHERE Phase = 'C' ORDER BY temp_no DESC LIMIT 1")) {
         if (query.next()) {
             bool status = query.value("status").toBool();
@@ -652,7 +1463,6 @@ void Database::updateTablePhaseC(QString msg) {
             QString detail = query.value("Detail").toString();
             QString phase = query.value("Phase").toString();
 
-            // สร้างข้อความใหม่ที่ต้องการส่ง
             QString newMessage = QString("{\"objectName\":\"updatedataTableC\", "
                                          "\"statusC\":%1, "
                                          "\"num_listC\":%2, "
@@ -667,12 +1477,9 @@ void Database::updateTablePhaseC(QString msg) {
                                      .arg(detail)
                                      .arg(phase);
 
-            // เช็คว่า num_list นี้เคยส่งไปแล้วหรือยัง
             if (!sentNumLists.contains(num_list)) {
-                // ถ้า num_list ไม่เคยส่งไปแล้ว ให้ส่งข้อมูลใหม่
                 emit updatedataTableC(newMessage);
 
-                // เพิ่ม num_list ที่ส่งไปแล้วเข้าไปใน Set
                 sentNumLists.insert(num_list);
             }
         }
@@ -685,11 +1492,9 @@ void Database::updateTablePhaseC(QString msg) {
 void Database::deletedDataMySQLPhaseA(QString msg) {
     qDebug() << "deletedDataMySQLPhaseA:" << msg;
 
-    // แปลงข้อความ JSON เป็น QJsonObject
     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject command = d.object();
 
-    // ดึงค่าจาก JSON
     QString numListStr = command["num_listA"].toString();
     int list_deviceID = numListStr.toInt();
     bool checkedStates = (command["checkedStates"].toString() == "1" || command["checkedStates"].toBool());
@@ -703,7 +1508,6 @@ void Database::deletedDataMySQLPhaseA(QString msg) {
             return;
         }
 
-        // ตรวจสอบว่ามี Record ที่ตรงกับ No และ Phase หรือไม่
         QSqlQuery checkQuery;
         checkQuery.prepare("SELECT COUNT(*) FROM DataTagging WHERE No = :No AND Phase = 'A'");
         checkQuery.bindValue(":No", list_deviceID);
@@ -717,14 +1521,11 @@ void Database::deletedDataMySQLPhaseA(QString msg) {
             qDebug() << "checkQuery result: recordCount =" << recordCount;
 
             if (recordCount > 0) {
-                // ลบ Record
                 QSqlQuery deleteQuery;
                 deleteQuery.prepare("DELETE FROM DataTagging WHERE No = :No AND Phase = 'A'");
                 deleteQuery.bindValue(":No", list_deviceID);
-                    updateTablePhaseA("updatedataTableA");
                 if (deleteQuery.exec()) {
                     qDebug() << "Phase A: Record with No =" << list_deviceID << "deleted successfully.";
-                    updateTablePhaseA("updatedataTableA");
                 } else {
                     qWarning() << "Phase A: ERROR! Failed to delete the record:" << deleteQuery.lastError().text();
                     emit databaseError();
@@ -732,10 +1533,14 @@ void Database::deletedDataMySQLPhaseA(QString msg) {
             } else {
                 qDebug() << "Phase A: No record found with No =" << list_deviceID;
             }
+            db.close();
         }
     } else {
         qDebug() << "Phase A: checkedStates is false. No deletion performed.";
     }
+
+    updateTablePhaseA("updatedataTableA");
+
 }
 
 void Database::deletedDataMySQLPhaseB(QString msg) {
@@ -818,7 +1623,1157 @@ void Database::deletedDataMySQLPhaseC(QString msg) {
     }
 }
 
+void Database::edittingMysqlA(QString msg) {
+    qDebug() << "edittingMysqlA received message:" << msg;
 
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    if (getCommand.contains("editDataPhaseA")) {
+        int IndexNum = command["IndexNum"].toInt();
+        QString phase = QJsonValue(command["PHASE"]).toString().trimmed();
+
+        qDebug() << "edittingMysqlA:" << IndexNum << phase;
+
+        if (!db.isOpen() && !db.open()) {
+            qDebug() << "Database connection failed:" << db.lastError().text();
+            return;
+        }
+
+        QString select = "SELECT * FROM DataTagging WHERE No = :IndexNum AND Phase = :phase";
+        QSqlQuery query;
+        query.prepare(select);
+        query.bindValue(":IndexNum", IndexNum);
+        query.bindValue(":phase", phase);
+
+        if (!query.exec()) {
+            qDebug() << "Query execution failed:" << query.lastError().text();
+            db.close();
+            return;
+        }
+
+        while (query.next()) {
+            QVariant statusVar = query.value("status");
+            QVariant numListVar = query.value("No");
+            QVariant tempNoVar = query.value("temp_no");
+            QVariant distanceVar = query.value("Distance(Km)");
+            QVariant detailVar = query.value("Detail");
+            QVariant phaseVar = query.value("Phase");
+
+            bool status = statusVar.toInt() != 0;
+            int num_list = numListVar.toInt();
+            int temp_no = tempNoVar.toInt();
+            double distance = distanceVar.toDouble();
+            QString detail = detailVar.toString();
+            QString phase = phaseVar.toString();
+
+            qDebug() << "Debug Variables and Types:";
+            qDebug() << "status (as bool):" << (status ? "true" : "false") << "type: bool";
+            qDebug() << "num_list:" << num_list << "type:" << numListVar.typeName();
+            qDebug() << "temp_no:" << temp_no << "type:" << tempNoVar.typeName();
+            qDebug() << "Distance:" << distance << "type:" << distanceVar.typeName();
+            qDebug() << "Detail:" << detail << "type:" << detailVar.typeName();
+            qDebug() << "Phase:" << phase << "type:" << phaseVar.typeName();
+
+            QString newMessage = QString("{\"objectName\":\"updatedataTableA\", "
+                                         "\"status\":%1, "
+                                         "\"num_list\":%2, "
+                                         "\"temp_no\":%3, "
+                                         "\"Distance\":%4, "
+                                         "\"Detail\":\"%5\", "
+                                         "\"Phase\":\"%6\"}")
+                                     .arg(status ? "true" : "false")
+                                     .arg(num_list)
+                                     .arg(temp_no)
+                                     .arg(distance)
+                                     .arg(detail)
+                                     .arg(phase);
+
+            qDebug() << "newMessage:" << newMessage;
+        }
+        db.close();
+        qDebug() << "Database connection closed.";
+    }
+}
+
+
+void Database::closeMySQL() {
+    if (db.isOpen()) {
+        qDebug() << "Database is open. Closing all connections...";
+        db.close();
+        qDebug() << "All database connections are closed.";
+    } else {
+        qDebug() << "Database is already closed.";
+    }
+}
+
+void Database::configParemeterMarginA(QString msg) {
+    qDebug() << "configParemeterMarginA:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = command["objectName"].toString();
+    int numOfMarginA = command["marginA"].toInt();
+    QString phase = command["phase"].toString();
+
+    if (getCommand.contains("marginCountA")) {
+        qDebug() << "Number of margins to fetch:" << numOfMarginA;
+
+        if (!db.isOpen() && !db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+
+        QSqlQuery query(db);
+        query.prepare("SELECT * FROM MarginTable WHERE No <= :numOfMarginA ORDER BY No ASC");
+        query.bindValue(":numOfMarginA", numOfMarginA);
+
+        if (!query.exec()) {
+            qDebug() << "Query execution failed:" << query.lastError().text();
+            db.close();
+            return;
+        }
+
+        while (query.next()) {
+            int no = query.value("No").toInt();
+            QString marginNo = query.value("Margin(No.)").toString();
+            int valueOfMargin = query.value("value of margin").toInt();
+            QString unit = query.value("unit").toString();
+
+            QString singleMarginData = QString("{\"objectName\":\"marginCountA\", "
+                                               "\"no\":%1, "
+                                               "\"marginNo\":\"%2\", "
+                                               "\"valueOfMargin\":%3, "
+                                               "\"unit\":\"%4\"}")
+                                           .arg(no)
+                                           .arg(marginNo)
+                                           .arg(valueOfMargin)
+                                           .arg(unit);
+
+            qDebug() << "Sending single margin data:" << singleMarginData;
+            emit listOfMarginA(singleMarginData);
+        }
+
+        db.close();
+    }
+}
+
+
+
+void Database::configParemeterThreshold(QString msg) {
+    qDebug() << "configParameterThreshold:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString Phase = QJsonValue(command["Phase"]).toString();
+
+    if (!db.isOpen() && !db.open()) {
+        qDebug() << "Failed to open the database:" << db.lastError().text();
+        return;
+    }
+
+    QSqlQuery query;
+
+    QStringList phases = {"A", "B", "C"}; // List of all phases to process
+    for (const QString &phase : phases) {
+        QString thresholdKey = "thresholdInit" + phase; // e.g., "thresholdA", "thresholdB", etc.
+        if (!command.contains(thresholdKey)) {
+            qDebug() << "No threshold data for phase:" << phase << ", skipping...";
+            continue;
+        }
+
+        double paraOfThreshold = command[thresholdKey].toDouble();
+        qDebug() << "Processing phase:" << phase << "with threshold:" << paraOfThreshold;
+
+        query.prepare("SELECT COUNT(*) FROM ParamThreshold WHERE Phase = :Phase");
+        query.bindValue(":Phase", phase);
+
+        if (!query.exec()) {
+            qDebug() << "Failed to check existing data for phase" << phase << ":" << query.lastError().text();
+            continue;
+        }
+
+        query.next();
+        int count = query.value(0).toInt();
+
+        if (count > 0) {
+            query.prepare("UPDATE ParamThreshold SET ThresholdValue = :ThresholdValue WHERE Phase = :Phase");
+            query.bindValue(":ThresholdValue", paraOfThreshold);
+            query.bindValue(":Phase", phase);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update data for phase" << phase << ":" << query.lastError().text();
+            } else {
+                qDebug() << "Data updated successfully for phase:" << phase;
+            }
+        } else {
+            qDebug() << "No existing data for phase:" << phase << ". Update skipped.";
+        }
+    }
+
+    closeMySQL();
+    getThreshold();
+
+}
+
+void Database::getThreshold() {
+    qDebug() << "getThreshold!";
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open, opening now...";
+        if (!db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery checkTableQuery(db);
+    QString checkTableSQL = QString(
+        "SELECT COUNT(*) FROM information_schema.tables "
+        "WHERE table_schema = '%1' AND table_name = 'ParamThreshold'")
+        .arg(db.databaseName());
+
+    if (!checkTableQuery.exec(checkTableSQL)) {
+        qDebug() << "Failed to check if table exists:" << checkTableQuery.lastError().text();
+        return;
+    }
+
+    if (checkTableQuery.next() && checkTableQuery.value(0).toInt() > 0) {
+        qDebug() << "Table `ParamThreshold` exists. Fetching data...";
+
+        QSqlQuery query(db);
+        if (!query.exec("SELECT Phase, ThresholdValue FROM ParamThreshold WHERE Phase IN ('A', 'B', 'C')")) {
+            qDebug() << "Query execution failed:" << query.lastError().text();
+            return;
+        }
+
+        double thresholdA = 0.0, thresholdB = 0.0, thresholdC = 0.0;
+
+        while (query.next()) {
+            QString phase = query.value("Phase").toString();
+            double thresholdValue = query.value("ThresholdValue").toDouble();
+
+            if (phase == "A") {
+                thresholdA = thresholdValue;
+            } else if (phase == "B") {
+                thresholdB = thresholdValue;
+            } else if (phase == "C") {
+                thresholdC = thresholdValue;
+            }
+        }
+
+        QString getThresholds = QString(
+            "{\"objectName\":\"getThreshold\", "
+            "\"thresholdInitA\":%1, "
+            "\"thresholdInitB\":%2, "
+            "\"thresholdInitC\":%3}")
+            .arg(thresholdA)
+            .arg(thresholdB)
+            .arg(thresholdC);
+
+        qDebug() << "updateThreshold:" << getThresholds;
+        updateThresholdA(getThresholds);
+    } else {
+        qDebug() << "Table `ParamThreshold` does not exist.";
+    }
+
+    closeMySQL();
+}
+
+void Database::getSettingInfo() {
+    qDebug() << "getSettingInfo!";
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open, opening now...";
+        if (!db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery checkTableQuery(db);
+    QString checkTableSQL = QString(
+        "SELECT COUNT(*) FROM information_schema.tables "
+        "WHERE table_schema = '%1' AND table_name = 'SettingGaneral'")
+        .arg(db.databaseName());
+
+    if (!checkTableQuery.exec(checkTableSQL)) {
+        qDebug() << "Failed to check if table exists:" << checkTableQuery.lastError().text();
+        return;
+    }
+
+    if (checkTableQuery.next() && checkTableQuery.value(0).toInt() > 0) {
+        qDebug() << "Table `SettingGaneral` exists. Fetching data...";
+
+        QSqlQuery query(db);
+        if (!query.exec("SELECT voltage, substation, direction, line_no FROM SettingGaneral")) {
+            qDebug() << "Query execution failed:" << query.lastError().text();
+            return;
+        }
+
+        double voltage = 0.0;
+        QString substation;
+        QString direction;
+        int lineNo = 0;
+
+        while (query.next()) {
+            voltage = query.value("voltage").toDouble();
+            substation = query.value("substation").toString();
+            direction = query.value("direction").toString();
+            lineNo = query.value("line_no").toInt();
+        }
+
+        QString getSettingInfo = QString(
+            "{\"objectName\":\"getSettingInfo\", "
+            "\"voltage\":%1, "
+            "\"substation\":\"%2\", "
+            "\"direction\":\"%3\", "
+            "\"line_no\":%4}")
+            .arg(voltage)
+            .arg(substation)
+            .arg(direction)
+            .arg(lineNo);
+
+        qDebug() << "Setting Info:" << getSettingInfo;
+        UpdateSettingInfo(getSettingInfo);
+
+    } else {
+        qDebug() << "Table `SettingGaneral` does not exist.";
+    }
+
+    closeMySQL();
+}
+
+void Database::getpreiodicInfo() {
+    qDebug() << "getPeriodicInfo!";
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open, opening now...";
+        if (!db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery checkTableQuery(db);
+    QString checkTableSQL = QString(
+        "SELECT COUNT(*) FROM information_schema.tables "
+        "WHERE table_schema = '%1' AND table_name = 'PeriodicInfo'")
+        .arg(db.databaseName());
+
+    if (!checkTableQuery.exec(checkTableSQL)) {
+        qDebug() << "Failed to check if table exists:" << checkTableQuery.lastError().text();
+        return;
+    }
+
+    if (checkTableQuery.next() && checkTableQuery.value(0).toInt() > 0) {
+        qDebug() << "Table `PeriodicInfo` exists. Fetching data...";
+
+        QSqlQuery query(db);
+        if (!query.exec("SELECT Time, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday FROM PeriodicInfo")) {
+            qDebug() << "Query execution failed:" << query.lastError().text();
+            return;
+        }
+
+        double time = 0.0;
+        bool Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday;
+
+        while (query.next()) {
+            time = query.value("Time").toDouble();
+            Monday = query.value("Monday").toBool();
+            Tuesday = query.value("Tuesday").toBool();
+            Wednesday = query.value("Wednesday").toBool();
+            Thursday = query.value("Thursday").toBool();
+            Friday = query.value("Friday").toBool();
+            Saturday = query.value("Saturday").toBool();
+            Sunday = query.value("Sunday").toBool();
+
+            QString getPeriodicInfo = QString(
+                "{\"objectName\":\"getPeriodicInfo\", "
+                "\"Time\":%1, "
+                "\"Monday\":%2, "
+                "\"Tuesday\":%3, "
+                "\"Wednesday\":%4, "
+                "\"Thursday\":%5, "
+                "\"Friday\":%6, "
+                "\"Saturday\":%7, "
+                "\"Sunday\":%8}")
+                .arg(time)
+                .arg(Monday ? "true" : "false")
+                .arg(Tuesday ? "true" : "false")
+                .arg(Wednesday ? "true" : "false")
+                .arg(Thursday ? "true" : "false")
+                .arg(Friday ? "true" : "false")
+                .arg(Saturday ? "true" : "false")
+                .arg(Sunday ? "true" : "false");
+
+            qDebug() << "Periodic Info: " << getPeriodicInfo;
+
+             emit UpdatepreiodicInfo(getPeriodicInfo);
+        }
+    } else {
+        qDebug() << "Table `PeriodicInfo` does not exist.";
+    }
+
+     db.close();
+}
+
+
+
+
+void Database::getUpdatePeriodic(QString msg) {
+    qDebug() << "getUpdatePreiodic" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+
+    double timer = command["Time"].toDouble();
+    qDebug() << "getUpdatePreiodic - Extracted Time:" << timer;
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open, opening now...";
+        if (!db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery query(db);
+    query.prepare("UPDATE PeriodicInfo SET Time = :newTime");
+    query.bindValue(":newTime", timer);
+
+    if (!query.exec()) {
+        qDebug() << "Failed to update Time in PeriodicInfo table:" << query.lastError().text();
+    } else {
+        qDebug() << "Time updated successfully in PeriodicInfo table to" << timer;
+    }
+    closeMySQL();
+
+}
+
+
+void Database::getUpdateWeekly(QString msg) {
+    qDebug() << "getUpdateWeekly:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+
+    // Extracting the values as strings
+    QString mondayStr   = command["Monday"].toString();
+    QString tuesdayStr  = command["Tuesday"].toString();
+    QString wednesdayStr= command["Wednesday"].toString();
+    QString thursdayStr = command["Thursday"].toString();
+    QString fridayStr   = command["Friday"].toString();
+    QString saturdayStr = command["Saturday"].toString();
+    QString sundayStr   = command["Sunday"].toString();
+
+    // Converting strings to bool (1 -> true, else false)
+    bool monday     = (mondayStr == "1");
+    bool tuesday    = (tuesdayStr == "1");
+    bool wednesday  = (wednesdayStr == "1");
+    bool thursday   = (thursdayStr == "1");
+    bool friday     = (fridayStr == "1");
+    bool saturday   = (saturdayStr == "1");
+    bool sunday     = (sundayStr == "1");
+
+    // Open the database if it's not already open
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open, opening now...";
+        if (!db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    // Checking each day individually and updating only the days that changed
+    if (mondayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Monday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Monday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+        bool currentMonday = query.value("Monday").toBool();
+        qDebug() << "Current Monday value in database:" << currentMonday << monday;
+
+        if (currentMonday != monday) {
+            qDebug() << "Monday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Monday = :newMonday");
+            query.bindValue(":newMonday", monday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Monday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Monday updated successfully in PeriodicInfo table to" << monday;
+            }
+        }
+    }
+
+    if (tuesdayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Tuesday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Tuesday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+
+        bool currentTuesday = query.value("Tuesday").toBool();
+        qDebug() << "Current Tuesday value in database:" << currentTuesday << tuesday;
+
+        if (currentTuesday != tuesday) {
+            qDebug() << "Tuesday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Tuesday = :newTuesday");
+            query.bindValue(":newTuesday", tuesday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Tuesday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Tuesday updated successfully in PeriodicInfo table to" << tuesday;
+            }
+        }
+    }
+
+    if (wednesdayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Wednesday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Wednesday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+
+        bool currentWednesday = query.value("Wednesday").toBool();
+        qDebug() << "Current Wednesday value in database:" << currentWednesday << wednesday;
+
+        if (currentWednesday != wednesday) {
+            qDebug() << "Wednesday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Wednesday = :newWednesday");
+            query.bindValue(":newWednesday", wednesday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Wednesday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Wednesday updated successfully in PeriodicInfo table to" << wednesday;
+            }
+        }
+    }
+
+    if (thursdayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Thursday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Thursday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+
+        bool currentThursday = query.value("Thursday").toBool();
+        qDebug() << "Current Thursday value in database:" << currentThursday << thursday;
+
+        if (currentThursday != thursday) {
+            qDebug() << "Thursday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Thursday = :newThursday");
+            query.bindValue(":newThursday", thursday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Thursday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Thursday updated successfully in PeriodicInfo table to" << thursday;
+            }
+        }
+    }
+
+    if (fridayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Friday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Friday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+
+        bool currentFriday = query.value("Friday").toBool();
+        qDebug() << "Current Friday value in database:" << currentFriday << friday;
+
+        if (currentFriday != friday) {
+            qDebug() << "Friday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Friday = :newFriday");
+            query.bindValue(":newFriday", friday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Friday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Friday updated successfully in PeriodicInfo table to" << friday;
+            }
+        }
+    }
+
+    if (saturdayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Saturday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Saturday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+
+        bool currentSaturday = query.value("Saturday").toBool();
+        qDebug() << "Current Saturday value in database:" << currentSaturday << saturday;
+
+        if (currentSaturday != saturday) {
+            qDebug() << "Saturday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Saturday = :newSaturday");
+            query.bindValue(":newSaturday", saturday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Saturday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Saturday updated successfully in PeriodicInfo table to" << saturday;
+            }
+        }
+    }
+
+    if (sundayStr != "") {
+        QSqlQuery query(db);
+        query.prepare("SELECT Sunday FROM PeriodicInfo LIMIT 1");
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Failed to fetch current value for Sunday:" << query.lastError().text();
+            closeMySQL();
+            return;
+        }
+
+        bool currentSunday = query.value("Sunday").toBool();
+        qDebug() << "Current Sunday value in database:" << currentSunday << sunday;
+
+        if (currentSunday != sunday) {
+            qDebug() << "Sunday value changed. Updating database...";
+            query.prepare("UPDATE PeriodicInfo SET Sunday = :newSunday");
+            query.bindValue(":newSunday", sunday);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update Sunday in PeriodicInfo table:" << query.lastError().text();
+            } else {
+                qDebug() << "Sunday updated successfully in PeriodicInfo table to" << sunday;
+            }
+        }
+    }
+
+    closeMySQL();
+}
+
+
+void Database::storeStatusAux(QString msg) {
+    qDebug() << "storeStatusAux:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+
+    if (getCommand == "statusOperate") {
+        QString statusOperate = command["LFLOPERATE"].toString();
+        int LFLStatus = statusOperate.toInt(); // แปลงค่าจาก QString เป็น int
+        qDebug() << "statusOperate:" << statusOperate << ", LFLStatus:" << LFLStatus;
+
+        if (statusOperate == "1") {
+            if (!db.isOpen()) {
+                qDebug() << "Database is not open. Attempting to open...";
+                if (!db.open()) {
+                    qDebug() << "Failed to open database:" << db.lastError().text();
+                    return;
+                }
+            }
+
+            QSqlQuery query(db);
+            query.prepare("UPDATE OperateTable SET activated = :activated, status = :LFLStatus WHERE Num = 1");
+            query.bindValue(":activated", "LFLOPERATE"); // เปลี่ยน activated เป็น "LFLOPERATE"
+            query.bindValue(":LFLStatus", LFLStatus);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update OperateTable for statusOperate:" << query.lastError().text();
+            } else {
+                qDebug() << "OperateTable updated successfully. statusOperate:" << statusOperate;
+            }
+
+            closeMySQL();
+        }
+    } else if (getCommand == "statusFail") {
+        QString statusFail = command["LFLFAIL"].toString();
+        int failStatus = statusFail.toInt(); // แปลงค่าจาก QString เป็น int
+        qDebug() << "statusFail:" << statusFail << ", failStatus:" << failStatus;
+
+        if (statusFail == "1") {
+            if (!db.isOpen()) {
+                qDebug() << "Database is not open. Attempting to open...";
+                if (!db.open()) {
+                    qDebug() << "Failed to open database:" << db.lastError().text();
+                    return;
+                }
+            }
+
+            QSqlQuery query(db);
+            query.prepare("UPDATE OperateTable SET activated = :activated, status = :failStatus WHERE Num = 1");
+            query.bindValue(":activated", "LFLFAIL"); // เปลี่ยน activated เป็น "LFLFAIL"
+            query.bindValue(":failStatus", failStatus);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update OperateTable for statusFail:" << query.lastError().text();
+            } else {
+                qDebug() << "OperateTable updated successfully. statusFail:" << statusFail;
+            }
+
+            closeMySQL();
+        }
+    } else {
+        qDebug() << "Invalid message format: Unknown 'objectName'.";
+    }
+}
+
+void Database::SettingNetworkSNMP(QString msg) {
+     qDebug() << "SettingNetworkSNMP:" << msg;
+     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+     QJsonObject command = d.object();
+     QString getCommand = QJsonValue(command["objectName"]).toString();
+     QJsonDocument jsonDoc;
+     QJsonObject Param;
+     QString raw_data;
+     if(getCommand.contains("updateSettingNetwork")){
+
+        if(command.value("ipaddress").toString() != ""){
+            IPaddress      = command.value("ipaddress").toString();
+        }
+        if(command.value("gateway").toString() != ""){
+            GateWsys       = command.value("gateway").toString();
+        }
+        if(command.value("ip_snmp").toString() != ""){
+            snmpIP         = command.value("ip_snmp").toString();
+        }
+        if(command.value("ntpServer").toString() != ""){
+            timeServer     = command.value("ntpServer").toString();
+        }
+        if(command.value("PLC_DO_ERROR").toString() != ""){
+            plcDoError        = command.value("PLC_DO_ERROR").toString();
+        }
+        if(command.value("PLC_DI_ERROR").toString() != ""){
+            plcDiError        =  command.value("PLC_DI_ERROR").toString();
+        }
+        if(command.value("MODULE_HI_SPEED_PHASE_A_ERROR").toString() != ""){
+            hispeedPhaseA     = command.value("MODULE_HI_SPEED_PHASE_A_ERROR").toString();
+        }
+        if(command.value("MODULE_HI_SPEED_PHASE_B_ERROR").toString() != ""){
+            hispeedPhaseB     = command.value("MODULE_HI_SPEED_PHASE_B_ERROR").toString();
+            qDebug() << "hispeedPhaseB:" << hispeedPhaseB;
+        }
+        if(command.value("MODULE_HI_SPEED_PHASE_C_ERROR").toString() != ""){
+            hispeedPhaseC     = command.value("MODULE_HI_SPEED_PHASE_C_ERROR").toString();
+        }
+        if(command.value("INTERNAL_PHASE_A_ERROR").toString() != ""){
+            commuPhaseA       =   command.value("INTERNAL_PHASE_A_ERROR").toString();
+        }
+        if(command.value("INTERNAL_PHASE_B_ERROR").toString() != ""){
+            commuPhaseB       =  command.value("INTERNAL_PHASE_B_ERROR").toString();
+        }
+        if(command.value("INTERNAL_PHASE_C_ERROR").toString() != ""){
+            commuPhaseC       =  command.value("INTERNAL_PHASE_C_ERROR").toString();
+        }
+        if(command.value("GPS_MODULE_FAIL").toString() != ""){
+            gpsModule         =  command.value("GPS_MODULE_FAIL").toString();
+        }
+        if(command.value("SYSTEM_INITIAL").toString() != ""){
+            systemInti        =  command.value("SYSTEM_INITIAL").toString();
+        }
+        if(command.value("COMMUNICATION_ERROR").toString() != ""){
+            commuError        =  command.value("COMMUNICATION_ERROR").toString();
+        }
+        if(command.value("RELAY_START_EVENT").toString() != ""){
+            relayStart        = command.value("RELAY_START_EVENT").toString();
+        }
+        if(command.value("SURGE_START_EVENT").toString() != ""){
+            surageStart       = command.value("SURGE_START_EVENT").toString();
+        }
+        if(command.value("PERIODIC_TEST_EVENT").toString() != ""){
+            preiodicStart     = command.value("PERIODIC_TEST_EVENT").toString();
+        }
+        if(command.value("MANUAL_TEST_EVENT").toString() != ""){
+            manualTest        = command.value("MANUAL_TEST_EVENT").toString();
+        }
+        if(command.value("LFL_FAIL").toString() != ""){
+            lflfail           = command.value("LFL_FAIL").toString();
+        }
+        if(command.value("LEL_OPERATE").toString() != ""){
+            lfloperate        = command.value("LEL_OPERATE").toString();
+        }
+//         GateWsys       = command.value("gateway").toString();
+//         snmpIP         = command.value("ip_snmp").toString();
+//         timeServer     = command.value("ntpServer").toString();
+//         plcDoError        = command.value("PLC_DO_ERROR").toString();
+//         plcDiError        =  command.value("PLC_DI_ERROR").toString();
+//         hispeedPhaseA     = command.value("MODULE_HI_SPEED_PHASE_A_ERROR").toString();
+//         hispeedPhaseB     = command.value("MODULE_HI_SPEED_PHASE_B_ERROR").toString();
+//         hispeedPhaseC     = command.value("MODULE_HI_SPEED_PHASE_C_ERROR").toString();
+//         commuPhaseA       =   command.value("INTERNAL_PHASE_A_ERROR").toString();
+//         commuPhaseB       =  command.value("INTERNAL_PHASE_B_ERROR").toString();
+//         commuPhaseC       =  command.value("INTERNAL_PHASE_C_ERROR").toString();
+//         gpsModule         =  command.value("GPS_MODULE_FAIL").toString();
+//         systemInti        =  command.value("SYSTEM_INITIAL").toString();
+//         commuError        =  command.value("COMMUNICATION_ERROR").toString();
+//         relayStart        = command.value("RELAY_START_EVENT").toString();
+//         surageStart       = command.value("SURGE_START_EVENT").toString();
+//         preiodicStart     = command.value("PERIODIC_TEST_EVENT").toString();
+//         manualTest        = command.value("MANUAL_TEST_EVENT").toString();
+//         lflfail           = command.value("LFL_FAIL").toString();
+//         lfloperate        = command.value("LEL_OPERATE").toString();
+        Param.insert("objectName","updateSettingNetwork");	             //Name
+        Param.insert("ipaddress",IPaddress);
+        Param.insert("gateway",GateWsys);
+        Param.insert("ip_snmp",snmpIP);
+        Param.insert("ntpServer",timeServer);
+        Param.insert("PLC_DO_ERROR",plcDoError);
+        Param.insert("PLC_DI_ERROR",plcDiError);
+        Param.insert("MODULE_HI_SPEED_PHASE_A_ERROR",hispeedPhaseA);
+        Param.insert("MODULE_HI_SPEED_PHASE_B_ERROR",hispeedPhaseB);
+        Param.insert("MODULE_HI_SPEED_PHASE_C_ERROR",hispeedPhaseC);
+        Param.insert("INTERNAL_PHASE_A_ERROR",commuPhaseA);
+        Param.insert("INTERNAL_PHASE_B_ERROR",commuPhaseB);
+        Param.insert("INTERNAL_PHASE_C_ERROR",commuPhaseC);
+        Param.insert("GPS_MODULE_FAIL",gpsModule);
+        Param.insert("SYSTEM_INITIAL",systemInti);
+        Param.insert("COMMUNICATION_ERROR",commuError);
+        Param.insert("RELAY_START_EVENT",relayStart);
+        Param.insert("SURGE_START_EVENT",surageStart);
+        Param.insert("PERIODIC_TEST_EVENT",preiodicStart);
+        Param.insert("MANUAL_TEST_EVENT",manualTest);
+        Param.insert("LFL_FAIL",lflfail);
+        Param.insert("LEL_OPERATE",lfloperate);
+        jsonDoc.setObject(Param);
+        raw_data = QJsonDocument(Param).toJson(QJsonDocument::Compact).toStdString().c_str();
+        qDebug() << "NetWork and SNMP settin:" << raw_data;
+        emit SetNetworkSNMP(raw_data);
+     }
+}
+
+
+void Database::SettingDisplay(QString msg) {
+    qDebug() << "SettingDisplay:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+
+    if (getCommand != "displaySetting") {
+        qDebug() << "Invalid command. Expected 'displaySetting'.";
+        return;
+    }
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+    }
+    qDebug() << "Database connection successful";
+
+    QSqlQuery query(db);
+
+    if (command.contains("sagFactor")) {
+        QJsonValue sagValue = command["sagFactor"];
+
+        if (!sagValue.isNull() && !sagValue.isUndefined()) {
+            double sagFactor = sagValue.toDouble(); // แปลงเป็น double
+            qDebug() << "Received sagFactor:" << sagFactor;
+
+            if (sagFactor != 0) {
+                qDebug() << "Updating database with sagFactor:" << sagFactor;
+                query.prepare("UPDATE DisplaySetting SET SAG = :sagFactor WHERE number = 1");
+                query.bindValue(":sagFactor", sagFactor);
+                if (!query.exec()) {
+                    qDebug() << "Failed to update SAG in DisplaySetting table:" << query.lastError().text();
+                } else {
+                    qDebug() << "SAG updated successfully to" << sagFactor;
+                }
+            } else {
+                qDebug() << "Received sagFactor is 0. Updating database anyway.";
+                query.prepare("UPDATE DisplaySetting SET SAG = 0 WHERE number = 1");
+                if (!query.exec()) {
+                    qDebug() << "Failed to update SAG in DisplaySetting table:" << query.lastError().text();
+                } else {
+                    qDebug() << "SAG updated successfully to 0.";
+                }
+            }
+        } else {
+            qDebug() << "sagFactor is null or undefined. Skipping update.";
+        }
+    }
+
+    if (command.contains("samplingRate")) {
+        QJsonValue samplingRate = command["samplingRate"];
+
+        if (!samplingRate.isNull() && !samplingRate.isUndefined()) {
+            double sampling = samplingRate.toDouble(); // แปลงเป็น double
+            qDebug() << "Received samplingRate:" << sampling;
+
+            if (sampling != 0) {
+                qDebug() << "Updating database with sagFactor:" << sampling;
+                query.prepare("UPDATE DisplaySetting SET Sampling_rate = :samplingRate WHERE number = 1");
+                query.bindValue(":samplingRate", sampling);
+                if (!query.exec()) {
+                    qDebug() << "Failed to update samplingRate in DisplaySetting table:" << query.lastError().text();
+                } else {
+                    qDebug() << "samplingRate updated successfully to" << sampling;
+                }
+            } else {
+                qDebug() << "Received samplingRate is 0. Updating database anyway.";
+                query.prepare("UPDATE DisplaySetting SET Sampling_rate = 0 WHERE number = 1");
+                if (!query.exec()) {
+                    qDebug() << "Failed to update Sampling_rate in DisplaySetting table:" << query.lastError().text();
+                } else {
+                    qDebug() << "Sampling_rate updated successfully to 0.";
+                }
+            }
+        } else {
+            qDebug() << "sagFactor is null or undefined. Skipping update.";
+        }
+    }
+
+    if (command.contains("distancetostartText")) {
+        QJsonValue distanceStartValue = command["distancetostartText"];
+
+        if (!distanceStartValue.isNull() && !distanceStartValue.isUndefined()) {
+            int distanceStart = distanceStartValue.toInt();
+            qDebug() << "Updating DistanceStart to:" << distanceStart;
+
+            query.prepare("UPDATE DisplaySetting SET DistanceStart = :distanceStart WHERE number = 1");
+            query.bindValue(":distanceStart", distanceStart);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update DistanceStart in DisplaySetting table:" << query.lastError().text();
+            } else {
+                qDebug() << "DistanceStart updated successfully to" << distanceStart;
+            }
+        } else {
+            qDebug() << "distancetostartText is null or undefined. Skipping update.";
+        }
+    }
+
+    if (command.contains("distancetoshowText")) {
+        QJsonValue distanceStopValue = command["distancetoshowText"];
+
+        if (!distanceStopValue.isNull() && !distanceStopValue.isUndefined()) {
+            double distanceStop = distanceStopValue.toDouble();
+            qDebug() << "Updating DistanceStop to:" << distanceStop;
+
+            query.prepare("UPDATE DisplaySetting SET DistanceStop = :distanceStop WHERE number = 1");
+            query.bindValue(":distanceStop", distanceStop);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update DistanceStop in DisplaySetting table:" << query.lastError().text();
+            } else {
+                qDebug() << "DistanceStop updated successfully to" << distanceStop;
+            }
+        } else {
+            qDebug() << "distancetoshowText is null or undefined. Skipping update.";
+        }
+    }
+
+    if (command.contains("fulldistanceText")) {
+        QJsonValue fullDistanceValue = command["fulldistanceText"];
+
+        if (!fullDistanceValue.isNull() && !fullDistanceValue.isUndefined()) {
+            double fullDistance = fullDistanceValue.toDouble();
+            qDebug() << "Updating FullDistance to:" << fullDistance;
+
+            query.prepare("UPDATE DisplaySetting SET FullDistance = :fullDistance WHERE number = 1");
+            query.bindValue(":fullDistance", fullDistance);
+
+            if (!query.exec()) {
+                qDebug() << "Failed to update FullDistance in DisplaySetting table:" << query.lastError().text();
+            } else {
+                qDebug() << "FullDistance updated successfully to" << fullDistance;
+            }
+        } else {
+            qDebug() << "fulldistanceText is null or undefined. Skipping update.";
+        }
+    }
+
+
+    closeMySQL(); // Close the database connection if necessary
+    GetSettingDisplay();
+}
+
+void Database::GetSettingDisplay() {
+    qDebug() << "GetSettingDisplay:";
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        if (!db.open()) {
+            qDebug() << "Failed to open the database:" << db.lastError().text();
+            return;
+        }
+        qDebug() << "Database opened successfully.";
+    }
+
+    // เตรียมคำสั่ง SQL สำหรับดึงข้อมูล
+    QSqlQuery query;
+    QString sql = "SELECT SAG, Sampling_rate, DistanceStart, DistanceStop, FullDistance FROM DisplaySetting";
+
+    if (!query.exec(sql)) {
+        qDebug() << "Failed to execute query:" << query.lastError().text();
+        return;
+    }
+
+    while (query.next()) {
+        double SAG = query.value("SAG").toDouble();
+        double Sampling_rate = query.value("Sampling_rate").toDouble();
+        double DistanceStart = query.value("DistanceStart").toDouble();
+        double DistanceStop = query.value("DistanceStop").toDouble();
+        double FullDistance = query.value("FullDistance").toDouble();
+
+        qDebug() << "DEBUG GetSettingDisplay" << "SAG:" << SAG << "Sampling_rate:" << Sampling_rate << "DistanceStart:" << DistanceStart << "DistanceStop:" << DistanceStop << "FullDistance:" << FullDistance;
+
+        QString getPeriodicInfo = QString(
+            "{\"objectName\":\"GetSettingDisplay\", "
+            "\"sagFactorInit\":%1, "
+            "\"samplingRateInit\":%2, "
+            "\"distanceToStartInit\":%3, "
+            "\"distanceToShowInit\":%4, "
+            "\"fulldistancesInit\":%5}")
+            .arg(SAG)
+            .arg(Sampling_rate)
+            .arg(DistanceStart)
+            .arg(DistanceStop)
+            .arg(FullDistance);
+        emit settingDisplayInfo(getPeriodicInfo);
+    }
+    closeMySQL();
+}
+
+void Database::calculateDisplay(double msg) {
+    qDebug() << "CalculateGraph:" << msg;
+}
+
+
+//    if (getCommand == "displaySetting") {
+//        double sagFactor = command.value("sagFactor").toDouble();
+//        double samplingText = command.value("samplingText").toDouble();
+//        double distanceToStart = command.value("distancetostartText").toDouble();
+//        double distanceToShow = command.value("distancetoshowText").toDouble();
+//        double fullDistance = command.value("fulldistanceText").toDouble();
+
+//        Param.insert("objectName","displaySetting");	             //Name
+//        Param.insert("sagFactor",sagFactor);
+//        Param.insert("samplingText",samplingText);
+//        Param.insert("distancetostartText",distanceToStart);
+//        Param.insert("distancetoshowText",distanceToShow);
+//        Param.insert("fulldistanceText",fullDistance);
+
+//        jsonDoc.setObject(Param);
+//        raw_data = QJsonDocument(Param).toJson(QJsonDocument::Compact).toStdString().c_str();
+//        qDebug() << "Display Setting:" << raw_data << sagFactor << samplingText << distanceToStart << distanceToShow << fullDistance;
+//        emit updateDisplaySetting(raw_data);
+//    }
+
+
+//void Database::getUpdateWeekly(QString msg) {
+//    qDebug() << "getUpdateWeekly:" << msg;
+
+//    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+//    QJsonObject command = d.object();
+
+//    QString mondayStr   = command["Monday"].toString();
+//    QString tuesdayStr  = command["Tuesday"].toString();
+//    QString wednesdayStr= command["Wednesday"].toString();
+//    QString thursdayStr = command["Thursday"].toString();
+//    QString fridayStr   = command["Friday"].toString();
+//    QString saturdayStr = command["Saturday"].toString();
+//    QString sundayStr   = command["Sunday"].toString();
+
+//    bool monday     = (mondayStr == "1");
+//    bool tuesday    = (tuesdayStr == "1");
+//    bool wednesday  = (wednesdayStr == "1");
+//    bool thursday   = (thursdayStr == "1");
+//    bool friday     = (fridayStr == "1");
+//    bool saturday   = (saturdayStr == "1");
+//    bool sunday     = (sundayStr == "1");
+
+//    if (mondayStr != "") {
+//        qDebug() << "Processing Monday value..." << monday;
+
+//        if (!db.isOpen()) {
+//            qDebug() << "Database is not open, opening now...";
+//            if (!db.open()) {
+//                qDebug() << "Failed to open the database:" << db.lastError().text();
+//                return;
+//            }
+//        }
+
+//        QSqlQuery query(db);
+//        query.prepare("SELECT Monday FROM PeriodicInfo LIMIT 1");
+//        if (!query.exec() || !query.next()) {
+//            qDebug() << "Failed to fetch current value for Monday:" << query.lastError().text();
+//            closeMySQL();
+//            return;
+//        }
+
+//        bool currentMonday = query.value("Monday").toBool();
+//        qDebug() << "Current Monday value in database:" << currentMonday << monday;
+
+//        if (currentMonday != monday) {
+//            qDebug() << "Monday value changed. Updating database...";
+//            query.prepare("UPDATE PeriodicInfo SET Monday = :newMonday");
+//            query.bindValue(":newMonday", monday);
+
+//            if (!query.exec()) {
+//                qDebug() << "Failed to update Monday in PeriodicInfo table:" << query.lastError().text();
+//            } else {
+//                qDebug() << "Monday updated successfully in PeriodicInfo table to" << monday;
+//            }
+//        } else {
+//            qDebug() << "Monday value has not changed. No update needed.";
+//        }
+
+//        closeMySQL();
+//    }
+//}
+
+
+//void Database::getUpdateWeekly(QString msg) {
+//    qDebug() << "getUpdateWeekly:" << msg;
+
+//    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+//    QJsonObject command = d.object();
+//    bool monday = command["Monday"].toBool();
+//    bool tuesday = command["Tuesday"].toBool();
+//    bool wednesday = command["Wednesday"].toBool();
+//    bool thursday = command["Thursday"].toBool();
+//    bool friday = command["Friday"].toBool();
+//    bool saturday = command["Saturday"].toBool();
+//    bool sunday = command["Sunday"].toBool();
+
+//    if(command.contains("Monday")){
+//        qDebug() << "monday check:" << msg;
+//        if (!db.isOpen()) {
+//            qDebug() << "Database is not open, opening now...";
+//            if (!db.open()) {
+//                qDebug() << "Failed to open the database:" << db.lastError().text();
+//                return;
+//            }
+//        }
+//        QSqlQuery query(db);
+//        query.prepare("UPDATE PeriodicInfo SET Monday = :newMonday");
+//        query.bindValue(":newMonday", monday);
+
+//        if (!query.exec()) {
+//            qDebug() << "Failed to update Time in PeriodicInfo table:" << query.lastError().text();
+//        } else {
+//            qDebug() << "Time updated successfully in PeriodicInfo table to" << monday;
+//        }
+//    }
+//    closeMySQL();
+
+//}
 
 
 void Database::reloadDatabase()

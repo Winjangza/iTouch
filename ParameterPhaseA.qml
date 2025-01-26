@@ -8,7 +8,20 @@ Item {
     height: 380
 
     property int marginCountA: 0
+    property bool focustextInformation: inputPanel.visible
+    property string textforinformation:  textInformation.text
 
+    onFocustextInformationChanged: {
+        if(focustextInformation == false){
+            textFieldMarginNumber.color = "#000000"
+        }
+    }
+    onTextforinformationChanged: {
+        if(textFieldMarginNumber.color == "#ff0000"){
+            textFieldMarginNumber.text = textforinformation
+        }
+        console.log("onTextforinformationChanged",textforinformation)
+    }
     Rectangle {
         id: rectangle
         color: "#f2f2f2"
@@ -56,12 +69,21 @@ Item {
                     let value = parseInt(text);
                     if (!isNaN(value) && value >= 0) {
                         marginCountA = value;
+
                     }
                 }
 
                 onFocusChanged: {
                     if (focus) {
                         Qt.inputMethod.show();
+                        textFieldMarginNumber.focus = false;
+                        currentField = "marginNumber";
+                        inputPanel.visible = true;
+                        textInformation.visible = true;
+                        textInformation.text = "";
+                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                        textInformation.focus = true;
+                        textFieldMarginNumber.color = "#ff0000";
                     }
                 }
 
@@ -77,6 +99,7 @@ Item {
             anchors.right: parent.right
             anchors.margins: 10
             clip: true
+
             contentHeight: columnContainer.height
 
             Column {
@@ -85,40 +108,46 @@ Item {
                 width: scrollView.width
 
                 Repeater {
-                    model: marginCountA
+                    model: newlistMarginA
+
                     delegate: RowLayout {
                         width: parent.width
                         spacing: 10
 
                         Text {
                             id: textMargin
-                            text: "Margin " + (index + 1)
-                            font.pixelSize: 12
+                            text: "Margin " + model.list_marginA
+                            font.pixelSize: 18
                         }
 
                         TextField {
                             id: textFieldMargin
                             Layout.preferredHeight: 33
                             Layout.preferredWidth: 101
-                            placeholderText: qsTr("Value")
-                            inputMethodHints: Qt.ImhDigitsOnly
+                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            placeholderText: qsTr("Value") ? model.valueMarginA : qsTr("Value")
+                            text: model.valueMarginA
 
-                            onFocusChanged: {
-                                if (focus) Qt.inputMethod.show();
+                            onTextChanged: {
+                                newlistMarginA.set(index, {
+                                    "list_marginA": model.list_marginA,
+                                    "valueMarginA": text,
+                                    "unitMaginA": model.unitMaginA,
+                                    "statusMaginA": model.statusMaginA
+                                });
                             }
-
-                            Keys.onReturnPressed: Qt.inputMethod.hide();
                         }
 
                         Text {
                             id: voltageUnit
-                            text: qsTr("mV")
-                            font.pixelSize: 12
+                            text: "mV"/*model.unitMaginA*/
+                            font.pixelSize: 18
                         }
                     }
                 }
             }
         }
+
     }
 
 }

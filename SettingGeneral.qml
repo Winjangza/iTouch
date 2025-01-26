@@ -10,7 +10,7 @@ import QtQuick.VirtualKeyboard.Settings 2.15
 import QtQuick3D 1.15
 Item {
     id: settingGeneralRoot
-    width: 920
+    width: 1000
     height: 475
     property string generalMasterSelect: userTypeMaster
     property string generalSlaveSelect: userTypeSlave
@@ -21,15 +21,16 @@ Item {
     property string directionValue: ""
     property string periodicValue: ""
     property string lineNoValue: ""
-    property bool selectMonday
-    property bool selectTuesday
-    property bool selectWednesday
-    property bool selectThursday
-    property bool selectFriday
-    property bool selectSaturday
-    property bool selectSunday
+    property bool selectMonday : updateMonday
+    property bool selectTuesday : updateTuesday
+    property bool selectWednesday : updateWednesday
+    property bool selectThursday : updateThursday
+    property bool selectFriday : updateFriday
+    property bool selectSaturday : updateSaturday
+    property bool selectSunday : updateSunday
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
+    property bool handwritingInputPanelActive: false
 
     onFocustextInformationChanged: {
         if(focustextInformation == false){
@@ -63,26 +64,19 @@ Item {
         id: rectangle
         color: "#f2f2f2"
         anchors.fill: parent
+        anchors.rightMargin: 0
+        anchors.bottomMargin: 0
+        anchors.leftMargin: 0
+        anchors.topMargin: 0
     }
 
     Rectangle {
         id: modesetting
-        color: "#f2f2f2"
-        border.color: "#ffffff"
+        color: "#00f2f2f2"
+        border.color: "#00ffffff"
         border.width: 1
         anchors.fill: parent
-        anchors.rightMargin: 0
-
-        Text {
-            id: text1
-            text: qsTr("MODE SETTING")
-            anchors.fill: parent
-            font.pixelSize: 14
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            anchors.leftMargin: 8
-            anchors.bottomMargin: 434
-        }
+        anchors.rightMargin: 731
 
         ColumnLayout {
             x: 14
@@ -160,139 +154,150 @@ Item {
         color: "#00f2f2f2"
         border.width: 0
         anchors.fill: parent
-        anchors.bottomMargin: 0
-        anchors.leftMargin: 213
-        anchors.topMargin: 0
+        anchors.bottomMargin: 8
+        anchors.leftMargin: 181
+        anchors.topMargin: -8
+
+        TextField {
+            id: valueVoltage
+            x: 8
+            y: 76
+            horizontalAlignment: Text.AlignHCenter
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+            font.pointSize: 11
+            placeholderText: qsTr("Enter Voltage") ? voltageInfo : qsTr("Enter Voltage")
+            inputMethodHints: Qt.ImhFormattedNumbersOnly
+            focus: false
+            //                text: valueVoltage.color == "#ff0000" ?  textforinformation : text
+            onFocusChanged: {
+                if (focus) {
+                    valueVoltage.focus = false
+                    currentField = "valueVoltage";
+                    inputPanel.visible = true;
+                    textInformation.visible = true;
+                    textInformation.placeholderText = qsTr("Enter Voltage");
+                    textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                    textInformation.text = "";
+                    textInformation.focus = true;
+                    valueVoltage.color = "#ff0000"
+                }
+            }
+
+        }
+
         Text {
-            id: textInfoSetting
-            text: qsTr("INFO SETTING")
-            anchors.fill: parent
-            font.pixelSize: 14
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            anchors.bottomMargin: 434
-            anchors.leftMargin: 0
+            id: substation
+            x: 8
+            y: 130
+            text: qsTr("SUBSTATION")
+            font.pixelSize: 13
+        }
+
+        TextField {
+            id: valueSubstation
+            x: 8
+            y: 159
+            horizontalAlignment: Text.AlignHCenter
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            font.pointSize: 11
+            placeholderText: qsTr("Enter Substation") ? substationInfo : qsTr("Enter Substation")
+            focus: false
+            onFocusChanged: {
+                if (focus) {
+                    valueSubstation.focus = false
+                    currentField = "valueSubstation";
+                    inputPanel.visible = true;
+                    textInformation.visible = true;
+                    textInformation.placeholderText = qsTr("Enter Substation");
+                    textInformation.inputMethodHints = Qt.ImhPreferUppercase;
+                    textInformation.text = "";
+                    textInformation.focus = true;
+                    color = "#ff0000"
+
+                }
+            }
+        }
+
+        Text {
+            id: direction
+            x: 8
+            y: 213
+            text: qsTr("DIRECTION")
+            font.pixelSize: 13
+        }
+
+        TextField {
+            id: valueDirection
+            x: 8
+            y: 243
+            horizontalAlignment: Text.AlignHCenter
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            font.pointSize: 11
+            placeholderText: qsTr("Enter DIRECTION") ? directionInfo :  qsTr("Enter DIRECTION")
+            focus: false
+            onFocusChanged: {
+                if (focus) {
+                    valueDirection.focus = false
+                    currentField = "valueDirection";
+                    inputPanel.visible = true;
+                    textInformation.visible = true;
+                    textInformation.placeholderText = qsTr("Enter Direction");
+                    textInformation.inputMethodHints = Qt.ImhPreferUppercase;
+                    textInformation.text = "";
+                    textInformation.focus = true;
+                    color = "#ff0000"
+                }
+            }
+        }
+
+        Text {
+            id: lineno
+            x: 8
+            y: 297
+            text: qsTr("LINE NO.")
+            font.pixelSize: 13
+        }
+
+        TextField {
+            id: valueLineNo
+            x: 8
+            y: 327
+            horizontalAlignment: Text.AlignHCenter
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            font.pointSize: 11
+            placeholderText: qsTr("Enter Number") ? linenoInfo : qsTr("Enter Number")
+            focus: false
+            onFocusChanged: {
+                if (focus) {
+                    valueLineNo.focus = false
+                    currentField = "valueLineNo";
+                    inputPanel.visible = true;
+                    textInformation.visible = true;
+                    textInformation.placeholderText = qsTr("Enter Number");
+                    textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                    textInformation.text = "";
+                    textInformation.focus = true;
+                    color = "#ff0000"
+
+                }
+            }
+        }
+
+        Text {
+            id: substation1
+            x: 8
+            y: 54
+            text: qsTr("VOLTAGE")
+            font.pixelSize: 13
         }
 
         ColumnLayout {
-            x: 8
-            y: 48
-            width: 123
-            height: 325
-
-            TextField {
-                id: valueVoltage
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillHeight: false
-                Layout.fillWidth: true
-                font.pointSize: 11
-                placeholderText: qsTr("Enter Voltage")
-                inputMethodHints: Qt.ImhFormattedNumbersOnly
-                focus: false
-//                text: valueVoltage.color == "#ff0000" ?  textforinformation : text
-                onFocusChanged: {
-                    if (focus) {
-                        valueVoltage.focus = false
-                        currentField = "valueVoltage";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter Voltage");
-                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        valueVoltage.color = "#ff0000"
-                    }
-                }
-            }
-            Text {
-                id: substation
-                text: qsTr("SUBSTATION")
-                font.pixelSize: 13
-            }
-            TextField {
-                id: valueSubstation
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                font.pointSize: 11
-                placeholderText: qsTr("Enter Substation")
-                focus: false
-                onFocusChanged: {
-                    if (focus) {
-                        valueSubstation.focus = false
-                        currentField = "valueSubstation";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter Substation");
-                        textInformation.inputMethodHints = Qt.ImhPreferUppercase;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        color = "#ff0000"
-
-                    }
-                }
-            }
-
-            Text {
-                id: direction
-                text: qsTr("DIRECTION")
-                font.pixelSize: 13
-            }
-
-            TextField {
-                id: valueDirection
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                font.pointSize: 11
-                placeholderText: qsTr("Enter DIRECTION")
-                focus: false
-                onFocusChanged: {
-                    if (focus) {
-                        valueDirection.focus = false
-                        currentField = "valueDirection";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter Direction");
-                        textInformation.inputMethodHints = Qt.ImhPreferUppercase;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        color = "#ff0000"
-                    }
-                }
-            }
-
-            Text {
-                id: lineno
-                text: qsTr("LINE NO.")
-                font.pixelSize: 13
-            }
-
-            TextField {
-                id: valueLineNo
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                font.pointSize: 11
-                placeholderText: qsTr("Enter Number")
-                focus: false
-                onFocusChanged: {
-                    if (focus) {
-                        valueLineNo.focus = false
-                        currentField = "valueLineNo";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter Number");
-                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        color = "#ff0000"
-
-                    }
-                }
-            }
         }
-        anchors.rightMargin: 468
+        anchors.rightMargin: 500
     }
 
     Rectangle {
@@ -300,19 +305,9 @@ Item {
         color: "#00f2f2f2"
         border.width: 0
         anchors.fill: parent
-        anchors.bottomMargin: 0
-        anchors.leftMargin: 458
-        anchors.topMargin: 0
-        Text {
-            id: periodicsettingtext
-            text: qsTr("PERIODIC SETTING")
-            anchors.fill: parent
-            font.pixelSize: 14
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            anchors.bottomMargin: 434
-            anchors.leftMargin: 0
-        }
+        anchors.bottomMargin: -8
+        anchors.leftMargin: 442
+        anchors.topMargin: 8
 
         ColumnLayout {
             x: 8
@@ -326,17 +321,25 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+
+                property bool isActive: selectMonday
+
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkMonday.isActive = !checkMonday.isActive;
                         var SelectDate = '{"objectName":"date", "Monday": ' + checkMonday.isActive + '}';
-                        qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        qmlCommand(SelectDate); // Send the updated state
+                        console.log("Current UserType: " + SelectDate, selectMonday);
                     }
                 }
+
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectMonday =", selectMonday);
+                }
             }
+
+
 
             Rectangle {
                 id: checkTuesday
@@ -346,15 +349,18 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: selectTuesday
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkTuesday.isActive = !checkTuesday.isActive;
                         var SelectDate = '{"objectName":"date", "Tuesday": ' + checkTuesday.isActive + '}';
                         qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        console.log("Current UserType: " + SelectDate, selectTuesday);
                     }
+                }
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectTuesday =", selectTuesday);
                 }
             }
 
@@ -366,15 +372,18 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: selectWednesday
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkWednesday.isActive = !checkWednesday.isActive;
                         var SelectDate = '{"objectName":"date", "Wednesday": ' + checkWednesday.isActive + '}';
                         qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        console.log("Current UserType: " + SelectDate, selectWednesday);
                     }
+                }
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectWednesday =", selectWednesday);
                 }
             }
 
@@ -386,15 +395,18 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: selectThursday
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkThursday.isActive = !checkThursday.isActive;
                         var SelectDate = '{"objectName":"date", "Thursday": ' + checkThursday.isActive + '}';
                         qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        console.log("Current UserType: " + SelectDate, selectThursday);
                     }
+                }
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectThursday =", selectThursday);
                 }
             }
 
@@ -406,15 +418,18 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: selectFriday
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkFriday.isActive = !checkFriday.isActive;
                         var SelectDate = '{"objectName":"date", "Friday": ' + checkFriday.isActive + '}';
                         qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        console.log("Current UserType: " + SelectDate, selectFriday);
                     }
+                }
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectFriday =", selectFriday);
                 }
             }
 
@@ -426,15 +441,18 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: selectSaturday
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkSaturday.isActive = !checkSaturday.isActive;
                         var SelectDate = '{"objectName":"date", "Saturday": ' + checkSaturday.isActive + '}';
                         qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        console.log("Current UserType: " + SelectDate, selectSaturday);
                     }
+                }
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectSaturday =", selectSaturday);
                 }
             }
 
@@ -446,15 +464,18 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: selectSunday
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         checkSunday.isActive = !checkSunday.isActive;
                         var SelectDate = '{"objectName":"date", "Sunday": ' + checkSunday.isActive + '}';
                         qmlCommand(SelectDate);
-                        console.log("Current UserType: " + SelectDate);
+                        console.log("Current UserType: " + SelectDate,selectSunday);
                     }
+                }
+                Component.onCompleted: {
+                    console.log("Initial state: isActive =", isActive, ", selectSunday =", selectSunday);
                 }
             }
         }
@@ -523,9 +544,9 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 Layout.preferredHeight: 35
                 Layout.preferredWidth: 97
-                placeholderText: qsTr("Text Time")
+                placeholderText: qsTr("Text Time")? time :  qsTr("Text Time")
                 focus: false
-//                text:textforinformation
+                //                text:textforinformation
                 onFocusChanged: {
                     if (focus) {
                         textTime.focus = false
@@ -542,7 +563,7 @@ Item {
                 }
             }
         }
-        anchors.rightMargin: 232
+        anchors.rightMargin: 248
     }
 
     Rectangle {
@@ -553,18 +574,6 @@ Item {
         anchors.bottomMargin: 0
         anchors.leftMargin: 690
         anchors.topMargin: 0
-        Text {
-            id: relayactivated
-            text: qsTr("AUXILIARY RELAY \n ACTIVATED")
-            anchors.fill: parent
-            font.pixelSize: 14
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            anchors.rightMargin: 0
-            anchors.topMargin: 8
-            anchors.bottomMargin: 425
-            anchors.leftMargin: 0
-        }
 
         ColumnLayout {
             x: 8
@@ -640,80 +649,115 @@ Item {
         anchors.rightMargin: 0
     }
 
+    RowLayout {
+        x: 8
+        y: 0
+        width: 992
+        height: 46
+
+        Text {
+            id: text1
+            text: qsTr("MODE SETTING")
+            font.pixelSize: 16
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        Text {
+            id: textInfoSetting
+            text: qsTr("INFO SETTING")
+            font.pixelSize: 16
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        Text {
+            id: periodicsettingtext
+            text: qsTr("PERIODIC SETTING")
+            font.pixelSize: 16
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        Text {
+            id: relayactivated
+            text: qsTr("AUXILIARY RELAY \n ACTIVATED")
+            font.pixelSize: 16
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
 
 
 
-//    InputPanel {
-//        id: inputPanel
-//        y: 244
-//        height: 231
-//        visible: false
-//        anchors.left: parent.left
-//        anchors.right: parent.right
-//        anchors.rightMargin: 0
-//        anchors.leftMargin: 0
 
-//        Component.onCompleted: {
-//            visible = false;
-//            textInformation.visible = false;
-//        }
+    //    InputPanel {
+    //        id: inputPanel
+    //        y: 244
+    //        height: 231
+    //        visible: false
+    //        anchors.left: parent.left
+    //        anchors.right: parent.right
+    //        anchors.rightMargin: 0
+    //        anchors.leftMargin: 0
 
-//        TextField {
-//            id: textInformation
-//            anchors.fill: parent
-//            anchors.rightMargin: 0
-//            anchors.bottomMargin: 293
-//            anchors.leftMargin: 0
-//            anchors.topMargin: -104
-//            placeholderText: qsTr("Text Field")
-//            visible: false
-//            inputMethodHints: Qt.ImhFormattedNumbersOnly
-//            font.pointSize: 12
+    //        Component.onCompleted: {
+    //            visible = false;
+    //            textInformation.visible = false;
+    //        }
 
-//            Component.onCompleted: {
-//                focus = false;
-//            }
+    //        TextField {
+    //            id: textInformation
+    //            anchors.fill: parent
+    //            anchors.rightMargin: 0
+    //            anchors.bottomMargin: 293
+    //            anchors.leftMargin: 0
+    //            anchors.topMargin: -104
+    //            placeholderText: qsTr("Text Field")
+    //            visible: false
+    //            inputMethodHints: Qt.ImhFormattedNumbersOnly
+    //            font.pointSize: 12
+
+    //            Component.onCompleted: {
+    //                focus = false;
+    //            }
 
 
-//            Keys.onReturnPressed: {
-//                if (text.trim() !== "") {
-//                    if (currentField === "valueVoltage") {
-//                        valueVoltage.text = text;
-//                        var Voltage = '{"objectName":"valueVoltage","Voltage": '+valueVoltage.text+'}'
-//                        qmlCommand(Voltage);
-//                        console.log("Voltage Entered:", text, Voltage);
-//                    } else if (currentField === "valueSubstation") {
-//                        valueSubstation.text = text;
-//                        var Substation = '{"objectName":"valueSubstation","Substation": '+valueSubstation.text+'}'
-//                        qmlCommand(Substation);
-//                        console.log("Substation Entered:", text,Substation);
-//                    } else if (currentField === "valueDirection") {
-//                        valueDirection.text = text;
-//                        var Direction = '{"objectName":"valueDirection","Direction": '+valueDirection.text+'}'
-//                        qmlCommand(Direction);
-//                        console.log("Direction Entered:", text,Direction);
-//                    } else if (currentField === "valueLineNo") {
-//                        valueLineNo.text = text;
-//                        var LineNo = '{"objectName":"valueLineNo","LineNo": '+valueLineNo.text+'}'
-//                        qmlCommand(LineNo);
-//                        console.log("Line No Entered:", text,LineNo);
-//                    }else if (currentField === "textTime") {
-//                        textTime.text = text;
-//                        var Time = '{"objectName":"textTime","Time": '+textTime.text+'}'
-//                        qmlCommand(Time);
-//                        console.log("Time Entered:", text,Time);
-//                    }
-//                }
-//                inputPanel.visible = false;
-//                visible = false;
-//            }
-//        }
-//    }
+    //            Keys.onReturnPressed: {
+    //                if (text.trim() !== "") {
+    //                    if (currentField === "valueVoltage") {
+    //                        valueVoltage.text = text;
+    //                        var Voltage = '{"objectName":"valueVoltage","Voltage": '+valueVoltage.text+'}'
+    //                        qmlCommand(Voltage);
+    //                        console.log("Voltage Entered:", text, Voltage);
+    //                    } else if (currentField === "valueSubstation") {
+    //                        valueSubstation.text = text;
+    //                        var Substation = '{"objectName":"valueSubstation","Substation": '+valueSubstation.text+'}'
+    //                        qmlCommand(Substation);
+    //                        console.log("Substation Entered:", text,Substation);
+    //                    } else if (currentField === "valueDirection") {
+    //                        valueDirection.text = text;
+    //                        var Direction = '{"objectName":"valueDirection","Direction": '+valueDirection.text+'}'
+    //                        qmlCommand(Direction);
+    //                        console.log("Direction Entered:", text,Direction);
+    //                    } else if (currentField === "valueLineNo") {
+    //                        valueLineNo.text = text;
+    //                        var LineNo = '{"objectName":"valueLineNo","LineNo": '+valueLineNo.text+'}'
+    //                        qmlCommand(LineNo);
+    //                        console.log("Line No Entered:", text,LineNo);
+    //                    }else if (currentField === "textTime") {
+    //                        textTime.text = text;
+    //                        var Time = '{"objectName":"textTime","Time": '+textTime.text+'}'
+    //                        qmlCommand(Time);
+    //                        console.log("Time Entered:", text,Time);
+    //                    }
+    //                }
+    //                inputPanel.visible = false;
+    //                visible = false;
+    //            }
+    //        }
+    //    }
 
 }
 
-/*##^##
-Designer {
-    D{i:0;autoSize:true;formeditorZoom:1.1;height:480;width:640}
-}
-##^##*/
+

@@ -11,9 +11,9 @@ Item {
     height: 600
     TabView {
         anchors.fill: parent
-        anchors.bottomMargin: 22
-        anchors.rightMargin: 46
-        anchors.leftMargin: 40
+        anchors.bottomMargin: 0
+        anchors.rightMargin: 8
+        anchors.leftMargin: 8
         anchors.topMargin: 60
         Tab {
             title: "GENERAL"
@@ -125,8 +125,4 @@ Item {
 
 //}
 
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:0.75}
-}
-##^##*/
+

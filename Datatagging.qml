@@ -22,7 +22,7 @@ height: 475
                 Rectangle { color: "#e7e6e6" }
 
                 DataTaggingPhaseA {
-                    id: dataTaggingPhaseA1
+                    id: dataTaggingPhaseA
                     anchors.fill: parent
                 }
 

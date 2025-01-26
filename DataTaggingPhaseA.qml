@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-//import QtWebSockets 1.0
+import QtWebSockets 1.0
 import QtQuick.Extras 1.4
 import QtQuick.Controls 1.4
 import QtQuick.VirtualKeyboard 2.15
@@ -26,6 +26,8 @@ Item {
     property string tabledetail: detailA
     property string tablephase: phaseA
     property int tablenumlist: num_listA
+    property int selectedRowIndex: -1
+//    property var checkedStates: false
 
     onFocustextInformationChanged: {
         if(focustextInformation == false){
@@ -61,7 +63,6 @@ Item {
         anchors.bottomMargin: 0
         anchors.leftMargin: 0
         anchors.topMargin: 0
-
         TableView {
             id: recordDatabase
             anchors.fill: parent
@@ -82,6 +83,7 @@ Item {
                         width: 35
                         height: width
                         border.width: 3
+                        radius: 3
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.horizontalCenter: parent.horizontalCenter
                         color: checkBoxDelegate.isChecked ? "#90cf59":"#ffffff"
@@ -89,8 +91,9 @@ Item {
                             anchors.fill: parent
                             onClicked: {
                                 checkBoxDelegate.isChecked = !checkBoxDelegate.isChecked
-                                console.log("checkBox ",checkBoxDelegate.isChecked ,newlistdatatebleA.num_listA, newlistdatatebleA.numberA )
-                                setpropertyCheck(checkBoxDelegate.isChecked)
+                                console.log("checkBox ",checkBoxDelegate.isChecked , newlistdatatebleA.num_listA, newlistdatatebleA.numberA,numberA, tablenumber )
+                                setpropertyCheckA(checkBoxDelegate.isChecked)
+                                taggingpoint(newlistdatatebleA.num_listA, checkBoxDelegate.isChecked)
                             }
                         }
                     }
@@ -102,11 +105,78 @@ Item {
             // TableViewColumn { role: "num_list"; title: "Number"; width: 150}
 
             onClicked: {
-                console.log("TableView",newlistdatatebleA.get(row).num_list)
-                setpropertyIDTable(newlistdatatebleA.get(row).num_list)
+                console.log("TableView",newlistdatatebleA.get(row).num_listA)
+                setpropertyIDTableA(newlistdatatebleA.get(row).num_listA)
             }
         }
     }
+
+    Row {
+        x: 8
+        y: 299
+
+        Column {
+
+            Text { id: distanceText ; text: "DISTANCE(KM)" }
+
+            TextField {
+                id: distanceField
+                property color color: "#ffffff"
+                horizontalAlignment: Text.AlignHCenter
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                font.pointSize: 11
+                placeholderText: qsTr("Enter DISTANCE")
+                width: 150
+                height: 35
+                focus: false
+                onFocusChanged: {
+                    if (focus) {
+                        distanceField.focus = true;
+                        currentField = "distanceField";
+                        inputPanel.visible = true;
+                        textInformation.visible = true;
+                        textInformation.text = qsTr("Enter DISTANCE") ? editDistanceA : qsTr("Enter DISTANCE");
+                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                        textInformation.focus = true;
+                        distanceField.color = "#ff0000";
+                    }
+                }
+            }
+        }
+
+        Column {
+
+            Text { id: detailText; text: "DETAIL" }
+
+            TextField {
+                id: detailField
+                property color color: "#ffffff"
+                horizontalAlignment: Text.AlignHCenter
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                font.pointSize: 11
+                placeholderText: qsTr("Enter DETAIL")
+                width: 300
+                height: 35
+                focus: false
+                onFocusChanged: {
+                    if (focus) {
+                        detailField.focus = true;
+                        currentField = "detailField";
+                        inputPanel.visible = true;
+                        textInformation.visible = true;
+                        textInformation.text = qsTr("Enter DETAIL") ? editDetailA : qsTr("Enter DETAIL");
+                        textInformation.inputMethodHints = Qt.ImhPreferUppercase;
+                        textInformation.text = "";
+                        textInformation.focus = true;
+                        detailField.color = "#ff0000";
+                    }
+                }
+            }
+        }
+    }
+
     RowLayout {
         x: 8
         y: 367
@@ -133,10 +203,17 @@ Item {
             }
         }
 
-
         Button {
             text: "EDIT"
-            onClicked: console.log("Edit button clicked.")
+            onClicked: {
+                console.log("edit:", checkedStates, newlistdatatebleA.num_listA,num_listA,numberA);
+                if (checkedStates === true) {
+                    var numListA = num_listA;
+                    var editPhaseA = '{"objectName":"editDataPhaseA","checkedStates":'+checkedStates +', "num_listA":'+newlistdatatebleA.num_listA +', "PHASE": "A"}';
+                    console.log("editDataPhaseA", editPhaseA, num_listA);
+                    qmlCommand(editPhaseA);
+                }
+            }
         }
 
         Button {
@@ -147,345 +224,21 @@ Item {
         Button {
             text: "DELETE"
             onClicked: {
-                console.log("Deleted:", checkedStates, newlistdatatebleA.num_listA,num_listA,numberA);
+                console.log("Deleted:", checkedStates, newlistdatatebleA.num_listA, num_listA, numberA);
                 if (checkedStates === true) {
                     // var numList = parseInt(newlistdatateble.num_list);
                     var numListA = num_listA;
-                    var delectmySQL = '{"objectName":"delectmysqlA","checkedStates":'+checkedStates +',"num_listA":'+num_listA +'}';
+                    var delectmySQL = '{"objectName":"delectmysqlA","checkedStates":'+checkedStates +',"num_listA":'+newlistdatatebleA.num_listA +'}';
                     console.log("delectmySQLA", delectmySQL, numListA);
-                    qmlCommand(delectmySQL);
-                    // var updatetablePhaseA = '{"objectName":"UpdatePhaseA", "updatetablePhaseA": "dataPhaseA"}'
-                    // qmlCommand(updatetablePhaseA);
-                }
-            }
-        }
-
-    }
-
-    Row {
-        x: 8
-        y: 299
-
-        Column {
-
-            Text { id: distanceText ; text: "DISTANCE(KM)" }
-
-            TextField {
-                id: distanceField
-                property color color: "#ffffff"
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                font.pointSize: 11
-                placeholderText: qsTr("Enter DISTANCE")
-                width: 150
-                height: 35
-                focus: false
-                onFocusChanged: {
-                    if (focus) {
-                        distanceField.focus = false;
-                        currentField = "distanceField";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter DISTANCE");
-                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        distanceField.color = "#ff0000";
-                    }
-                }
-            }
-        }
-
-        Column {
-
-            Text { id: detailText; text: "DETAIL" }
-
-            TextField {
-                id: detailField
-                property color color: "#ffffff"
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                font.pointSize: 11
-                placeholderText: "Enter DETAIL"
-                width: 300
-                height: 35
-                focus: false
-                onFocusChanged: {
-                    if (focus) {
-                        currentField = "detailField";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter DETAIL");
-                        textInformation.inputMethodHints = Qt.ImhPreferUppercase;
-                        textInformation.text = "";
-                        textInformation.focus = true; // Allow this to take focus
-                        detailField.color = "#ff0000";
-                    }
+                    //                    qmlCommand(delectmySQL);
                 }
             }
         }
     }
-    //    Rectangle {
-    //        id: rectangle
-    //        color: "#e7e6e6"
-    //        anchors.fill: parent
-    //        anchors.rightMargin: 0
-    //        anchors.leftMargin: 0
-    //        anchors.topMargin: 0
-    //        anchors.bottomMargin: 0
-
-    //        Rectangle {
-    //            id: rectangle1
-    //            color: "#f2f2f2"
-    //            border.color: "#ffffff"
-    //            border.width: 1
-    //            anchors.fill: parent
-    //            anchors.rightMargin: 56
-    //            anchors.leftMargin: 21
-    //            anchors.topMargin: 8
-    //            anchors.bottomMargin: 347
-
-    //            Text {
-    //                id: notext
-    //                text: qsTr("NO.")
-    //                anchors.fill: parent
-    //                font.pixelSize: 12
-    //                horizontalAlignment: Text.AlignHCenter
-    //                verticalAlignment: Text.AlignVCenter
-    //                anchors.rightMargin: 511
-    //            }
-    //            Text {
-    //                id: distanceText
-    //                text: qsTr("DISTANCE(KM)")
-    //                anchors.fill: parent
-    //                font.pixelSize: 12
-    //                horizontalAlignment: Text.AlignHCenter
-    //                verticalAlignment: Text.AlignVCenter
-    //                anchors.bottomMargin: 0
-    //                anchors.leftMargin: 111
-    //                anchors.topMargin: 0
-    //                anchors.rightMargin: 352
-    //            }
-    //            Text {
-    //                id: detailText
-    //                text: qsTr("DETAIL")
-    //                anchors.fill: parent
-    //                font.pixelSize: 12
-    //                horizontalAlignment: Text.AlignHCenter
-    //                verticalAlignment: Text.AlignVCenter
-    //                anchors.bottomMargin: 0
-    //                anchors.leftMargin: 351
-    //                anchors.topMargin: 0
-    //                anchors.rightMargin: 112
-    //            }
-    //        }
-    //        Rectangle {
-    //            id: rectangledetailDistance
-    //            anchors.fill: parent
-    //            anchors.rightMargin: 20
-    //            anchors.bottomMargin: 120
-    //            anchors.leftMargin: 20
-    //            anchors.topMargin: 60
-    //            color: "#e7e6e6"
-    //            border.width: 2
-
-    //            Flickable {
-    //                id: scrollArea
-    //                anchors.fill: parent
-    //                contentWidth: parent.width
-    //                contentHeight: columnContent.implicitHeight
-    //                clip: true
-
-    //                Column {
-    //                    id: columnContent
-    //                    spacing: 5
-    //                    width: scrollArea.width
-
-    //                    Repeater {
-    //                        model: rowsData
-    //                        RowLayout {
-    //                            spacing: 10
-
-    //                            Rectangle {
-    //                                id: checklistbox
-    //                                color: modelData.selected ? "green" : "#ffffff"
-    //                                radius: 5
-    //                                border.color: "#a6a6a6"
-    //                                Layout.preferredHeight: 40
-    //                                Layout.preferredWidth: 40
-    //                                MouseArea {
-    //                                    anchors.fill: parent
-    //                                    onClicked: {
-    //                                        rowsData[index].selected = !rowsData[index].selected
-    //                                        selectedRow = rowsData[index].selected ? index : -1
-    //                                    }
-    //                                }
-    //                            }
-
-    //                            Text {
-    //                                text: index + 1
-    //                                font.pixelSize: 18
-    //                                Layout.preferredHeight: 40
-    //                                Layout.preferredWidth: 30
-    //                                horizontalAlignment: Text.AlignHCenter
-    //                                verticalAlignment: Text.AlignVCenter
-    //                            }
-
-    //                            TextField {
-    //                                text: modelData.distance
-    //                                Layout.preferredHeight: 40
-    //                                Layout.preferredWidth: 150
-    //                                enabled: modelData.selected
-    //                            }
-
-    //                            TextField {
-    //                                text: modelData.detail
-    //                                Layout.preferredHeight: 40
-    //                                Layout.preferredWidth: 300
-    //                                enabled: modelData.selected
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-
-    //        RowLayout {
-    //            x: 20
-    //            y: 368
-
-    //            ToolButton {
-    //                text: qsTr("NEW")
-    //                onClicked: {
-    //                    rowsData.push({ selected: false, distance: "New Distance", detail: "New Detail" });
-    //                }
-    //            }
-
-    //            ToolButton {
-    //                text: qsTr("EDIT")
-    //                onClicked: {
-    //                    if (selectedRow !== -1) {
-    //                        rowsData[selectedRow].selected = true;
-    //                    }
-    //                }
-    //            }
-
-    //            ToolButton {
-    //                text: qsTr("SAVE")
-    //                onClicked: {
-    //                    if (selectedRow !== -1) {
-    //                        console.log("Row " + (selectedRow + 1) + " saved with data:",
-    //                                    rowsData[selectedRow].distance, rowsData[selectedRow].detail);
-    //                    }
-    //                }
-    //            }
-
-    //            ToolButton {
-    //                text: qsTr("DELETE")
-    //                onClicked: {
-    //                    if (selectedRow !== -1) {
-    //                        rowsData.splice(selectedRow, 1);
-    //                        selectedRow = -1;
-    //                    }
-    //                }
-    //            }
-    //        }
-
-
-    //        RowLayout {
-    //            x: 20
-    //            y: 306
-    //            width: 227
-    //            height: 19
-
-    //            Text {
-    //                id: text5
-    //                text: qsTr("DISTANCE(KM)")
-    //                font.pixelSize: 16
-    //            }
-
-    //            Text {
-    //                id: text6
-    //                text: qsTr("DETAIL")
-    //                font.pixelSize: 16
-    //            }
-    //        }
-
-    //        RowLayout {
-    //            x: 20
-    //            y: 331
-
-    //            TextField {
-    //                id: distance
-    //                Layout.preferredHeight: 40
-    //                Layout.preferredWidth: 110
-    //                placeholderText: qsTr("Distance")
-    //            }
-
-    //            TextField {
-    //                id: detail
-    //                Layout.preferredHeight: 40
-    //                Layout.preferredWidth: 200
-    //                placeholderText: qsTr("Detail")
-    //            }
-    //        }
-    //    }
-    //    InputPanel {
-    //        id: inputPanel
-    //        y: 168
-    //        height: 232
-    //        visible: false
-    //        anchors.left: parent.left
-    //        anchors.right: parent.right
-    //        anchors.rightMargin: 0
-    //        anchors.leftMargin: 0
-
-    //        Component.onCompleted: {
-    //            visible = false;
-    //            textInformation.visible = false;
-    //        }
-
-    //        TextField {
-    //            id: textInformation
-    //            anchors.fill: parent
-    //            anchors.rightMargin: 0
-    //            anchors.bottomMargin: 234
-    //            anchors.leftMargin: 0
-    //            anchors.topMargin: -45
-    //            placeholderText: qsTr("Text Field")
-    //            visible: false
-    //            inputMethodHints: Qt.ImhFormattedNumbersOnly
-    //            font.pointSize: 12
-
-    //            Component.onCompleted: {
-    //                focus = false;
-    //            }
-
-    //            Keys.onReturnPressed: {
-    //                if (text.trim() !== "") {
-    //                    if (currentField === "distanceField") {
-    //                        distanceField.text = text;
-    //                        var Distance = '{"objectName":"distanceField","distanceField": '+distanceField.text+'}'
-    //                        qmlCommand(Distance);
-    //                        console.log("Sag Entered:", text, Distance);
-    //                    } else if (currentField === "detailField") {
-    //                        detailField.text = text;
-    //                        var Detail = '{"objectName":"detailField","detailField": '+detailField.text+'}'
-    //                        qmlCommand(Detail);
-    //                        console.log("Sampling Entered:", text,Detail);
-    //                    }
-    //                }
-    //                inputPanel.visible = false;
-    //                visible = false;
-    //            }
-    //        }
-    //    }
-}
+  }
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.1}
+    D{i:0;formeditorZoom:1.33}
 }
 ##^##*/

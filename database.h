@@ -27,12 +27,11 @@ public:
     QString filelog;
     QString logdata;
     int Serial_ID;
-
+    bool isCheck = false;
 
 signals:
     void audioFault(bool fault);
     void setupinitialize(QString);
-
     void databaseError();
     void eventmsg(QString);
     void cmdmsg(QString);
@@ -41,14 +40,29 @@ signals:
     void updatedataTableA(QString message);
     void updatedataTableB(QString message);
     void updatedataTableC(QString message);
-
-
+    void updataEditDataA(QString);
+    void listOfMarginA(QString);
+    void updateThresholdA(QString);
+    void updateThresholdB(QString);
+    void updateThresholdC(QString);
+    void UpdateSettingInfo(QString);
+    void UpdatepreiodicInfo(QString);
+    void packageRawData(QString);
+    void cursorPosition(QString);
+    void positionCursorChange(QString);
+    void updatanewdistance(QString);
+    void showtaggingpoint(QString);
+    void SetNetworkSNMP(QString);
+    void updateDisplaySetting(QString);
+    void settingDisplayInfo(QString);
 public slots:
     void getEventandAlarm(QString msg);
     void DistanceandDetailPhaseA(QString msg);
     void DistanceandDetailPhaseB(QString msg);
     void DistanceandDetailPhaseC(QString msg);
-    void getMySqlPhase(QString msg);
+    void getMySqlPhaseA(QString msg);
+    void getMySqlPhaseB(QString msg);
+    void getMySqlPhaseC(QString msg);
     void deletedDataMySQLPhaseA(QString msg);
     void deletedDataMySQLPhaseB(QString msg);
     void deletedDataMySQLPhaseC(QString msg);
@@ -56,6 +70,42 @@ public slots:
     void updateTablePhaseA(QString);
     void updateTablePhaseB(QString);
     void updateTablePhaseC(QString);
+
+    void edittingMysqlA(QString);
+    void closeMySQL();
+
+    void configParemeterMarginA(QString);
+
+    void configParemeterThreshold(QString);
+
+    void getThreshold();
+
+    void getSettingInfo();
+
+    void getpreiodicInfo();
+
+    void getUpdatePeriodic(QString);
+
+    void getUpdateWeekly(QString);
+
+    void userMode(QString);
+    void getUpdateUserMode();
+
+    void storeStatusAux(QString);
+    void getRawData(QString);
+    void getPositionDistance(QString);
+
+    void controlCursor(QString);
+    void getChangeDistance(QString);
+    void updateDistance(double);
+    void taggingpoint(QString);
+    void updataStatusTagging(int,bool);
+    void cleanDataInGraph(QString);
+    void SettingNetworkSNMP(QString);
+    void SettingDisplay(QString);
+    void GetSettingDisplay();
+    void calculateDisplay(double);
+
 //    void emitEvent();
 
 private:
@@ -70,7 +120,27 @@ private:
     QStringList getMac();
     void updateHashTable(QString mac, QString challenge ,QString meta, QString serial, QString password);
     QString mySQL;
-
+    QString IPaddress;
+    QString GateWsys;
+    QString snmpIP;
+    QString timeServer;
+    QString plcDoError;
+    QString plcDiError;
+    QString hispeedPhaseA;
+    QString hispeedPhaseB;
+    QString hispeedPhaseC;
+    QString commuPhaseA;
+    QString commuPhaseB;
+    QString commuPhaseC;
+    QString gpsModule;
+    QString systemInti;
+    QString commuError;
+    QString relayStart;
+    QString surageStart;
+    QString preiodicStart;
+    QString manualTest;
+    QString lflfail;
+    QString lfloperate;
 private slots:
     void reloadDatabase();
 //    void getEventandAlarm(QString msg);

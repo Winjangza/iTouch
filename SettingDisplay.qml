@@ -8,7 +8,7 @@ import QtQuick.VirtualKeyboard.Styles 2.15
 import QtQuick.VirtualKeyboard.Settings 2.15
 import QtQuick3D 1.15
 Item {
-    width: 920
+    width: 1000
     height: 475
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
@@ -50,7 +50,7 @@ Item {
         Datatagging {
             id: datatagging
             anchors.fill: parent
-            anchors.topMargin: 24
+            anchors.topMargin: 47
             anchors.leftMargin: 302
         }
     }
@@ -62,22 +62,11 @@ Item {
         anchors.fill: parent
         anchors.rightMargin: 715
 
-        Text {
-            id: displaysetting
-            text: qsTr("DISPLAY SETTING")
-            anchors.fill: parent
-            font.pixelSize: 18
-            horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
-            anchors.leftMargin: 0
-            anchors.bottomMargin: 434
-        }
-
         ColumnLayout {
-            x: 0
-            y: 47
+            x: 8
+            y: 49
             width: 175
-            height: 336
+            height: 360
 
             Text {
                 id: sag
@@ -111,15 +100,15 @@ Item {
         }
 
         ColumnLayout {
-            x: 0
-            y: 76
+            x: 8
+            y: 77
             width: 197
-            height: 350
+            height: 365
 
             TextField {
                 id: sagText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Sag")
+                placeholderText: qsTr("Enter Sag") ? sagfactor : qsTr("Enter Sag")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -139,7 +128,7 @@ Item {
             TextField {
                 id: samplingText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Sampling")
+                placeholderText: qsTr("Enter Sampling") ? sampling : qsTr("Enter Sampling")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -160,7 +149,7 @@ Item {
             TextField {
                 id: distancetostartText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Dist. Start")
+                placeholderText: qsTr("Enter Dist. Start")? displayStart : qsTr("Enter Dist. Start")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -180,7 +169,7 @@ Item {
             TextField {
                 id: distancetoshowText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Dist. Show")
+                placeholderText: qsTr("Enter Dist. Show")? displayShow : qsTr("Enter Dist. Show")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -201,7 +190,7 @@ Item {
             TextField {
                 id: fulldistanceText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Full Dist.")
+                placeholderText: qsTr("Enter Full Dist.")? fulldistances : qsTr("Enter Full Dist")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -214,83 +203,106 @@ Item {
                         textInformation.text = "";
                         textInformation.focus = true;
                         fulldistanceText.color = "#ff0000"
-
                     }
                 }
             }
+
         }
     }
-//    InputPanel {
-//        id: inputPanel
-//        y: 244
-//        height: 231
-//        visible: false
-//        anchors.left: parent.left
-//        anchors.right: parent.right
-//        anchors.rightMargin: 0
-//        anchors.leftMargin: 0
 
-//        Component.onCompleted: {
-//            visible = false;
-//            textInformation.visible = false;
-//        }
+    RowLayout {
+        x: 8
+        y: 0
+        width: 575
+        height: 46
 
-//        TextField {
-//            id: textInformation
-//            anchors.fill: parent
-//            anchors.rightMargin: 0
-//            anchors.bottomMargin: 293
-//            anchors.leftMargin: 0
-//            anchors.topMargin: -104
-//            placeholderText: qsTr("Text Field")
-//            visible: false
-//            inputMethodHints: Qt.ImhFormattedNumbersOnly
-//            font.pointSize: 12
+        Text {
+            id: displaysetting1
+            text: qsTr("DISPLAY SETTING")
+            font.pixelSize: 18
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+        }
 
-//            Component.onCompleted: {
-//                focus = false;
-//            }
+        Text {
+            id: text2
+            text: qsTr("DATA TAGGING")
+            font.pixelSize: 18
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
+    //    InputPanel {
+    //        id: inputPanel
+    //        y: 244
+    //        height: 231
+    //        visible: false
+    //        anchors.left: parent.left
+    //        anchors.right: parent.right
+    //        anchors.rightMargin: 0
+    //        anchors.leftMargin: 0
 
-//            Keys.onReturnPressed: {
-//                if (text.trim() !== "") {
-//                    if (currentField === "sagText") {
-//                        sagText.text = text;
-//                        var Sag = '{"objectName":"sagText","sagText": '+sagText.text+'}'
-//                        qmlCommand(Sag);
-//                        console.log("Sag Entered:", text, Sag);
-//                    } else if (currentField === "samplingText") {
-//                        samplingText.text = text;
-//                        var Sampling = '{"objectName":"samplingText","samplingText": '+samplingText.text+'}'
-//                        qmlCommand(Sampling);
-//                        console.log("Sampling Entered:", text,Sampling);
-//                    } else if (currentField === "distancetostartText") {
-//                        distancetostartText.text = text;
-//                        var distancetostart = '{"objectName":"distancetostartText","distancetostartText": '+distancetostartText.text+'}'
-//                        qmlCommand(distancetostart);
-//                        console.log("Dist. Start Entered:", text,distancetostart);
-//                    } else if (currentField === "distancetoshowText") {
-//                        distancetoshowText.text = text;
-//                        var distancetoshow = '{"objectName":"distancetoshowText","distancetoshowText": '+distancetoshowText.text+'}'
-//                        qmlCommand(distancetoshow);
-//                        console.log("Dist. Show Entered:", text,distancetoshow);
-//                    }else if (currentField === "fulldistanceText") {
-//                        fulldistanceText.text = text;
-//                        var fulldistance = '{"objectName":"fulldistanceText","fulldistanceText": '+fulldistanceText.text+'}'
-//                        qmlCommand(fulldistance);
-//                        console.log("Full Dist. Entered:", text,fulldistance);
-//                    }
-//                }
-//                inputPanel.visible = false;
-//                visible = false;
-//            }
-//        }
-//    }
+    //        Component.onCompleted: {
+    //            visible = false;
+    //            textInformation.visible = false;
+    //        }
+
+    //        TextField {
+    //            id: textInformation
+    //            anchors.fill: parent
+    //            anchors.rightMargin: 0
+    //            anchors.bottomMargin: 293
+    //            anchors.leftMargin: 0
+    //            anchors.topMargin: -104
+    //            placeholderText: qsTr("Text Field")
+    //            visible: false
+    //            inputMethodHints: Qt.ImhFormattedNumbersOnly
+    //            font.pointSize: 12
+
+    //            Component.onCompleted: {
+    //                focus = false;
+    //            }
+
+    //            Keys.onReturnPressed: {
+    //                if (text.trim() !== "") {
+    //                    if (currentField === "sagText") {
+    //                        sagText.text = text;
+    //                        var Sag = '{"objectName":"sagText","sagText": '+sagText.text+'}'
+    //                        qmlCommand(Sag);
+    //                        console.log("Sag Entered:", text, Sag);
+    //                    } else if (currentField === "samplingText") {
+    //                        samplingText.text = text;
+    //                        var Sampling = '{"objectName":"samplingText","samplingText": '+samplingText.text+'}'
+    //                        qmlCommand(Sampling);
+    //                        console.log("Sampling Entered:", text,Sampling);
+    //                    } else if (currentField === "distancetostartText") {
+    //                        distancetostartText.text = text;
+    //                        var distancetostart = '{"objectName":"distancetostartText","distancetostartText": '+distancetostartText.text+'}'
+    //                        qmlCommand(distancetostart);
+    //                        console.log("Dist. Start Entered:", text,distancetostart);
+    //                    } else if (currentField === "distancetoshowText") {
+    //                        distancetoshowText.text = text;
+    //                        var distancetoshow = '{"objectName":"distancetoshowText","distancetoshowText": '+distancetoshowText.text+'}'
+    //                        qmlCommand(distancetoshow);
+    //                        console.log("Dist. Show Entered:", text,distancetoshow);
+    //                    }else if (currentField === "fulldistanceText") {
+    //                        fulldistanceText.text = text;
+    //                        var fulldistance = '{"objectName":"fulldistanceText","fulldistanceText": '+fulldistanceText.text+'}'
+    //                        qmlCommand(fulldistance);
+    //                        console.log("Full Dist. Entered:", text,fulldistance);
+    //                    }
+    //                }
+    //                inputPanel.visible = false;
+    //                visible = false;
+    //            }
+    //        }
+    //    }
 }
 
 
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:0.9}D{i:2}
+    D{i:0;formeditorZoom:0.9}
 }
 ##^##*/

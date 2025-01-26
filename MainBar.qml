@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtCharts 2.0
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.0
 import QtQml 2.2
@@ -47,7 +48,7 @@ Item {
         x: 0
         y: 0
         width: 1024
-        height: 58
+        height: 62
         color: "#f2f2f2"
         border.color: "#2eaaaaaa"
         border.width: 2
@@ -56,6 +57,7 @@ Item {
             id: ledStatus
             x: 8
             y: 11
+
         }
         Rectangle {
             id: dataandtime
@@ -161,7 +163,7 @@ Item {
             x: 430
             y: 0
             width: 401
-            height: 58
+            height: 52
             ToolButton {
                 id: backtoMainpage
                 Layout.fillHeight: true
@@ -183,6 +185,7 @@ Item {
                     eventsalarms.visible = true
                     dataStorage.visible = true
                     imageSetting.visible = true
+                    imageUnlock.visible = true
                     console.log("Returned to MainPage from " + currentPage)
                 }
             }
@@ -206,6 +209,7 @@ Item {
                     backtoMainpage.visible = true
                     dataStorage.visible = true
                     imageSetting.visible = true
+                    imageUnlock.visible = true
                     console.log("Navigated to Eventspage")
                 }
             }
@@ -229,6 +233,7 @@ Item {
                     backtoMainpage.visible = true
                     eventsalarms.visible = true
                     imageSetting.visible = true
+                    imageUnlock.visible = true
                     console.log("Navigated to DataStoragePage")
                 }
             }
@@ -252,6 +257,7 @@ Item {
                         backtoMainpage.visible = true
                         eventsalarms.visible = true
                         dataStorage.visible = true
+                        imageUnlock.visible = true
                         console.log("Navigated to DataStoragePage")
                     }
                 }
@@ -274,12 +280,22 @@ Item {
                         stackView.push("qrc:/LoginPage.qml")
                         imageUnlock.visible = false
                         backtoMainpage.visible = true
+                        eventsalarms.visible = true
+                        dataStorage.visible = true
+                        imageSetting.visible = true
                     }
                 }
             }
 
         }
     }
+
 }
 
 
+
+/*##^##
+Designer {
+    D{i:0;formeditorZoom:4}
+}
+##^##*/

@@ -6,6 +6,8 @@ CONFIG += c++11
 CONFIG += link_pkgconfig
 QT += serialbus
 QT += virtualkeyboard
+QT += charts qml quick
+
 static {
     QT += svg
     QTPLUGIN += qtvirtualkeyboardplugin
@@ -16,6 +18,7 @@ static {
 
 SOURCES += \
         ChatServer.cpp \
+        SocketClient.cpp \
         database.cpp \
         main.cpp \
         mainwindows.cpp
@@ -38,9 +41,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 LIBS += -DPJ_AUTOCONF=1 -O2 -DPJ_IS_BIG_ENDIAN=0 -DPJ_IS_LITTLE_ENDIAN=1
 LIBS += -lboost_system -lboost_chrono -lboost_thread -ludev
 LIBS += -lnetsnmp -lasound
-DISTFILES +=
+DISTFILES += \
+    adc_ch1_voltage.dat
 
 HEADERS += \
     ChatServer.h \
+    SocketClient.h \
     database.h \
     mainwindows.h

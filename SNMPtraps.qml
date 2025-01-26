@@ -3,9 +3,25 @@ import QtQuick.Layouts 1.0
 import QtQuick.Controls 2.15
 
 Item {
-    width: 380
+    width: 400
     height: 460
-
+    property bool selectPLCDoError      :false
+    property bool selectPLCDiError      :false
+    property bool selectPhaseAError     :false
+    property bool selectPhaseBError     :false
+    property bool selectPhaseCError     :false
+    property bool selectModbusErrorA    :false
+    property bool selectModbusErrorB    :false
+    property bool selectModbusErrorC    :false
+    property bool selectGPSModule       :false
+    property bool selectSystemInit      :false
+    property bool selectCommuError      :false
+    property bool selectRelayStart      :false
+    property bool selectSurageStart     :false
+    property bool selectPeriodicStart   :false
+    property bool selectManualTest      :false
+    property bool selectLFLfail         :false
+    property bool selectLFLOperate      :false
     Rectangle {
         id: rectangle
         color: "#e7e6e6"
@@ -17,230 +33,523 @@ Item {
         anchors.rightMargin: 0
         anchors.bottomMargin: 0
 
-      Rectangle {
+        Rectangle {
             id: rectangle1
-            x: 0
-            y: 45
-            width: 380
-            height: 415
             color: "#00ffffff"
             border.color: "#000000"
-
+            anchors.fill: parent
+            anchors.bottomMargin: 0
+            anchors.rightMargin: 0
+            anchors.topMargin: 40
+            ScrollView {
+                id: scrollView
+                width: 400
+                height: 452
+                clip: true
+                anchors.fill: parent
+                anchors.rightMargin: 8
+                anchors.topMargin: 8
+                anchors.leftMargin: 8
+                anchors.bottomMargin: 8
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
                 ColumnLayout {
-                    x: 7
-                    y: 0
-                    width: 25
-                    height: 408
+                    anchors.fill: parent
+                    anchors.bottomMargin: 263
+                    anchors.rightMargin: -92
+                    id: contentContainer
 
-                    Rectangle {
-                        id: rectangle2
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                if (filterCheck.isActive) {
-                                    flitermanual.isActive = !flitermanual.isActive
-                                    flitermanual.color = flitermanual.isActive ? "#00FF00" : "#f2f2f2"
-                                } else {
-                                    console.log("Please enable Filter Check first!")
+
+                    RowLayout {
+
+                        Rectangle {
+                            id: plcDoError
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectPLCDoError
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    plcDoError.isActive = !plcDoError.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "plcDoError": ' + plcDoError.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPLCDoError);
                                 }
                             }
                         }
+
+                        Text {
+                            id: plcDo
+                            text: qsTr("PLC DO ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle3
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: plcDiError
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectPhaseAError  // ใช้ selectPhaseAError ให้เป็นค่าของ isActive
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    plcDiError.isActive = !plcDiError.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "plcDiError": ' + plcDiError.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseAError);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: plcDi
+                            text: qsTr("PLC DI ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle4
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: hispeedPhaseA
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectPhaseAError
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    hispeedPhaseA.isActive = !hispeedPhaseA.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "hispeedPhaseA": ' + hispeedPhaseA.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseAError);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text3
+                            text: qsTr("MODULE HI-SPEED PHASE A ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle5
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: hispeedPhaseB
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectPhaseBError
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    hispeedPhaseB.isActive = !hispeedPhaseB.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "hispeedPhaseB": ' + hispeedPhaseB.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseBError);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text4
+                            text: qsTr("MODULE HI-SPEED PHASE B ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle6
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: hispeedPhaseC
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectPhaseCError
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    hispeedPhaseC.isActive = !hispeedPhaseC.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "hispeedPhaseC": ' + hispeedPhaseC.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseCError);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text5
+                            text: qsTr("MODULE HI-SPEED PHASE C ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle7
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: commuPhaseA
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectModbusErrorA
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    commuPhaseA.isActive = !commuPhaseA.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "commuPhaseA": ' + commuPhaseA.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorA);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text15
+                            text: qsTr("INTERNAL COMMUNICATION PHASE A ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle8
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: commuPhaseB
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectModbusErrorB
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    commuPhaseB.isActive = !commuPhaseB.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "commuPhaseB": ' + commuPhaseB.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorB);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text16
+                            text: qsTr("INTERNAL COMMUNICATION PHASE B ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle9
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: commuPhaseC
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectModbusErrorC
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    commuPhaseC.isActive = !commuPhaseC.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "commuPhaseC": ' + commuPhaseC.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorC);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text17
+                            text: qsTr("INTERNAL COMMUNICATION PHASE C ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle10
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: gpsModule
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectGPSModule
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    gpsModule.isActive = !gpsModule.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "gpsModule": ' + gpsModule.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectGPSModule);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text6
+                            text: qsTr("GPS MODULE FAIL")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle11
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: systemInti
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectGPSModule
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    systemInti.isActive = !systemInti.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "systemInti": ' + systemInti.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectGPSModule);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text7
+                            text: qsTr("SYSTEM INITIAL")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle12
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: commuError
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectCommuError
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    commuError.isActive = !commuError.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "commuError": ' + commuError.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, commuError);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text8
+                            text: qsTr("COMMUNICATION ERROR")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle13
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: relayStart
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectRelayStart
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    relayStart.isActive = !relayStart.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "relayStart": ' + relayStart.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, relayStart);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text10
+                            text: qsTr("RELAY START EVENT")
+                            font.pixelSize: 14
+                        }
                     }
 
-                    Rectangle {
-                        id: rectangle14
-                        color: "#ffffff"
-                        Layout.preferredHeight: 25
-                        Layout.preferredWidth: 25
+                    RowLayout {
+
+                        Rectangle {
+                            id: surageStart
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectSurageStart
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    surageStart.isActive = !surageStart.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "surageStart": ' + surageStart.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectSurageStart);
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: text11
+                            text: qsTr("SURGE START EVENT")
+                            font.pixelSize: 14
+                        }
                     }
-                }
 
-            ColumnLayout {
-                x: 45
-                y: 0
-                width: 196
-                height: 407
+                    RowLayout {
 
-                Text {
-                    id: text2
-                    text: qsTr("PLC DI ERROR")
-                    font.pixelSize: 12
-                }
+                        Rectangle {
+                            id: preiodicStart
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectPeriodicStart
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    preiodicStart.isActive = !preiodicStart.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "preiodicStart": ' + preiodicStart.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPeriodicStart);
+                                }
+                            }
+                        }
 
-                Text {
-                    id: text3
-                    text: qsTr("MODULE HI-SPEED PHASE A ERROR")
-                    font.pixelSize: 12
-                }
+                        Text {
+                            id: text9
+                            text: qsTr("PERIODIC TEST EVENT")
+                            font.pixelSize: 14
+                        }
+                    }
 
-                Text {
-                    id: text4
-                    text: qsTr("MODULE HI-SPEED PHASE B ERROR")
-                    font.pixelSize: 12
-                }
+                    RowLayout {
 
-                Text {
-                    id: text5
-                    text: qsTr("MODULE HI-SPEED PHASE C ERROR")
-                    font.pixelSize: 12
-                }
+                        Rectangle {
+                            id: manualTest
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectManualTest
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    manualTest.isActive = !manualTest.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "manualTest": ' + manualTest.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectManualTest);
+                                }
+                            }
+                        }
 
-                Text {
-                    id: text6
-                    text: qsTr("GPS MODULE FAIL")
-                    font.pixelSize: 12
-                }
+                        Text {
+                            id: text13
+                            text: qsTr("MANUAL TEST EVENT")
+                            font.pixelSize: 14
+                        }
+                    }
 
-                Text {
-                    id: text7
-                    text: qsTr("SYSTEM INITIAL")
-                    font.pixelSize: 12
-                }
+                    RowLayout {
 
-                Text {
-                    id: text8
-                    text: qsTr("COMMUNICATION ERROR")
-                    font.pixelSize: 12
-                }
+                        Rectangle {
+                            id: lflfail
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectLFLfail
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    lflfail.isActive = !lflfail.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "lflfail": ' + lflfail.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectLFLfail);
+                                }
+                            }
+                        }
 
-                Text {
-                    id: text10
-                    text: qsTr("RELAY START EVENT")
-                    font.pixelSize: 12
-                }
+                        Text {
+                            id: text14
+                            text: qsTr("LFL FAIL")
+                            font.pixelSize: 14
+                        }
+                    }
 
-                Text {
-                    id: text11
-                    text: qsTr("SURGE START EVENT")
-                    font.pixelSize: 12
-                }
+                    RowLayout {
 
-                Text {
-                    id: text9
-                    text: qsTr("PERIODIC TEST EVENT")
-                    font.pixelSize: 12
-                }
+                        Rectangle {
+                            id: lfloperate
+                            color: isActive ? "#00FF00" : "#ffffff"
+                            radius: 3
+                            border.width: 1
+                            Layout.preferredHeight: 35
+                            Layout.preferredWidth: 35
+                            property bool isActive: selectLFLOperate
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    lfloperate.isActive = !lfloperate.isActive;
+                                    var SelectSNMP = '{"objectName":"SNMPenable", "lfloperate": ' + lfloperate.isActive + '}';
+                                    qmlCommand(SelectSNMP);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectLFLOperate);
+                                }
+                            }
+                        }
 
-                Text {
-                    id: text13
-                    text: qsTr("MANUAL TEST EVENT")
-                    font.pixelSize: 12
-                }
-
-                Text {
-                    id: text14
-                    text: qsTr("LFL FAIL")
-                    font.pixelSize: 12
-                }
-
-                Text {
-                    id: text12
-                    text: qsTr("LFL OPERATE")
-                    font.pixelSize: 12
+                        Text {
+                            id: text12
+                            text: qsTr("LFL OPERATE")
+                            font.pixelSize: 14
+                        }
+                    }
                 }
             }
+
         }
-
-
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AlwaysOn
-            }
-
 
         Text {
             id: text1
             x: 8
-            y: 13
+            y: 8
             text: qsTr("SNMP TRAPS ENABLING")
             font.pixelSize: 18
         }
-
     }
+
 }
 
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:1.1}
-}
-##^##*/
+

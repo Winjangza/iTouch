@@ -38,5 +38,20 @@
         <file>DataStoragePageSurge.qml</file>
         <file>DataStoragePageSuageSearch.qml</file>
         <file>LoginPage.qml</file>
+        <file>images/grayButton.png</file>
+        <file>images/GreenButton2.png</file>
+        <file>images/greenbuttonOn.png</file>
+        <file>images/left-grey.png</file>
+        <file>images/right-grey.png</file>
+        <file>images/leftArrow.png</file>
+        <file>images/rightArrow.png</file>
+        <file>images/geen.png</file>
+        <file>PointerTagging.qml</file>
+        <file>images/pointer.jpg</file>
+        <file>images/pointerTagging.png</file>
+        <file>images/pinPointer.png</file>
+        <file>images/pinPointerTagging.png</file>
+        <file>TaggingPointer.qml</file>
+        <file>images/remoteButton.png</file>
     </qresource>
 </RCC>

@@ -32,18 +32,18 @@ Item {
                 seriesRawA.clear();
                 for (var i = 0; i < plotdataA.length; i++) {
                     if (isFinite(plotdataA[i]) && isFinite(distanceA[i])) {
-                        console.log("Appending:", distanceA[i], plotdataA[i]); // Debug log
+//                        console.log("Appending:", distanceA[i], plotdataA[i]); // Debug log
                         seriesRawA.append(distanceA[i], plotdataA[i]);
                     } else {
-                        console.log("Invalid point:", distanceA[i], plotdataA[i]); // Debug invalid points
+//                        console.log("Invalid point:", distanceA[i], plotdataA[i]); // Debug invalid points
                     }
                 }
                 adjustAxes(distanceA, [plotdataA]); // Adjust the axes
             } else {
-                console.log("Data mismatch for plotdataA. Lengths:", plotdataA.length, distanceA.length);
+//                console.log("Data mismatch for plotdataA. Lengths:", plotdataA.length, distanceA.length);
             }
         } catch (e) {
-            console.log("Error in onPlotdataAChanged:", e);
+//            console.log("Error in onPlotdataAChanged:", e);
         }
     }
     // สำหรับ RawDataB
@@ -275,16 +275,19 @@ Item {
         Rectangle {
             id: cursor
             width: 1
-            height: 20 //chartView.height
+            height: 20 // chartView.height
             color: "#ffffff"
             anchors.top: chartView.top
             anchors.bottom: chartView.bottom
             anchors.bottomMargin: 72
             x: chartView.width / 2
+            y: chartView.height
             property double distance: 0.0
+            property double voltage: 0.0 // แก้ไขการรับรู้ของค่า voltage
 
             Component.onCompleted: {
                 cursor.distance = axisX.min + (cursor.x / chartView.width) * (axisX.max - axisX.min );
+                cursor.voltage = axisY.min + (cursor.y / chartView.height) * (axisY.max - axisY.min ); // คำนวณค่า voltage
             }
 
             Timer {
@@ -299,6 +302,7 @@ Item {
                     qmlCommand(initialPosition);
                 }
             }
+
             MouseArea {
                 id: dragArea
                 anchors.fill: parent
@@ -309,18 +313,29 @@ Item {
                 property double safeMargin: 0.0
                 property double graphStartOffset: 0.0
                 property double graphEndX: 0.0
+                property double graphEndY: 0.0
+
 
                 onPositionChanged: {
-                    safeMargin = 41.53; //ถ้ามากขึ้นcusorมันจะขยับเข้ามาทางซ้าย
-                    graphStartOffset = 95.25;//ถ้ามากขึ้นมันจะขยับเข้าใกล้0
+                    safeMargin = 41.53; // ถ้ามากขึ้น cursor จะขยับเข้ามาทางซ้าย
+                    graphStartOffset = 95.25; // ถ้ามากขึ้นจะขยับเข้าใกล้ 0
                     graphEndX = chartView.width - safeMargin;
                     cursor.x = Math.max(graphStartOffset, Math.min(cursor.x, graphEndX - cursor.width));
-                    cursor.distance = (axisX.min + ((cursor.x - graphStartOffset) / (graphEndX - graphStartOffset)) * (axisX.max - axisX.min));
+
+                    // คำนวณค่า distance และ voltage จากแกน X และ Y
+                    cursor.distance = axisX.min + ((cursor.x - graphStartOffset) / (graphEndX - graphStartOffset)) * (axisX.max - axisX.min);
+                    cursor.voltage = axisY.min + ((cursor.y - chartView.top) / chartView.height) * (axisY.max - axisY.min); // คำนวณค่า voltage จากตำแหน่ง Y
+
+                    // แสดงค่าใน console
+                    console.log("Cursor position X:", cursor.x, " Distance (Km):", cursor.distance.toFixed(2),
+                                " Y:", cursor.y, " Voltage (mV):", cursor.voltage.toFixed(2));
+
                     var positionDistance = '{"objectName":"distance", "distance": ' + cursor.distance.toFixed(2) +'}';
                     qmlCommand(positionDistance);
                 }
+
                 onReleased: {
-                    console.log("Cursor moved to Distance (Km):", cursor.distance.toFixed(2),movetoleft,cursorleft );
+                    console.log("Cursor moved to Distance (Km):", cursor.distance.toFixed(2), " Voltage (mV):", cursor.voltage.toFixed(2));
                 }
             }
         }
@@ -338,6 +353,8 @@ Item {
         id: dataStatusInfo
         x: 0
         y: 380
+        width: 650
+        height: 220
     }
 
     Rectangle {

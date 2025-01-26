@@ -6,6 +6,7 @@
 #include <QtCore/QDir>
 #include <QtQml/QQmlEngine>
 #include <QQuickWindow>
+#include <QApplication>
 
 //sudo mysql -u root -pOTL324$
 int main(int argc, char *argv[])
@@ -20,7 +21,7 @@ int main(int argc, char *argv[])
 #endif
     }
 
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
