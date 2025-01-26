@@ -109,6 +109,8 @@ Window {
     property var dataPoinDatatA: []
     property var dataPointA: []  //var arrRawA
     property var arrRawA: []
+    property var arrRawB: []
+    property var arrRawC: []
     property var sagfactor
     property var sampling
     property var displayStart
@@ -355,47 +357,54 @@ Window {
 //            } else {
 //                console.log("RawData array is empty or invalid");
 //            }
-        }else if (objectName === 'RawdataB') {
+        }else if (objectName === 'dataPlotingB') {
+            arrRawB = JsonObject.dataPlotingB || [];
+            distanceRawB = JsonObject.distance;
+            voltageRawB = JsonObject.voltage;
+            console.log("Debug_RawdataA:", message , arrRawB, distanceRawB, voltageRawB);
+//            console.log("RawdataB:", message);
+//            var arrRawB = JsonObject.packageRawDataB || [];
+//            if (arrRawB.length > 0) {
+//                var distancesDataB = [];
+//                var voltagesDataB = [];
 
-            console.log("RawdataB:", message);
-            var arrRawB = JsonObject.packageRawDataB || [];
-            if (arrRawB.length > 0) {
-                var distancesDataB = [];
-                var voltagesDataB = [];
+//                for (var b = 0; b < arrRawB.length; b++) {
+//                    var dataPoinDatatB = arrRawB[b];
 
-                for (var b = 0; b < arrRawB.length; b++) {
-                    var dataPoinDatatB = arrRawB[b];
-
-                    if (dataPoinDatatB.distance !== undefined && dataPoinDatatB.voltage !== undefined) {
-                        distancesDataB.push(dataPoinDatatB.distance);
-                        voltagesDataB.push(dataPoinDatatB.voltage);
-                    }
-                }
-                distanceRawB = distancesDataB;
-                voltageRawB = voltagesDataB; // เปลี่ยนจาก distancesDataB เป็น voltagesDataB
-            } else {
-                console.log("RawData array is empty or invalid");
-            }
-        } else if (objectName === 'RawdataC') {
+//                    if (dataPoinDatatB.distance !== undefined && dataPoinDatatB.voltage !== undefined) {
+//                        distancesDataB.push(dataPoinDatatB.distance);
+//                        voltagesDataB.push(dataPoinDatatB.voltage);
+//                    }
+//                }
+//                distanceRawB = distancesDataB;
+//                voltageRawB = voltagesDataB; // เปลี่ยนจาก distancesDataB เป็น voltagesDataB
+//            } else {
+//                console.log("RawData array is empty or invalid");
+//            }
+        } else if (objectName === 'dataPlotingC') {
             console.log("RawdataC:", message);
-            var arrRawC = JsonObject.packageRawDataC || [];
-            if (arrRawC.length > 0) {
-                var distancesDataC = [];
-                var voltagesDataC = [];
+            arrRawC = JsonObject.dataPlotingC || [];
+            distanceRawC = JsonObject.distance;
+            voltageRawC = JsonObject.voltage;
+            console.log("Debug_RawdataA:", message , arrRawC, distanceRawC, voltageRawC);
+//            var arrRawC = JsonObject.packageRawDataC || [];
+//            if (arrRawC.length > 0) {
+//                var distancesDataC = [];
+//                var voltagesDataC = [];
 
-                for (var c = 0; c < arrRawC.length; c++) {
-                    var dataPoinDatatC = arrRawC[c]; // เปลี่ยนจาก arrRawB[c] เป็น arrRawC[c]
+//                for (var c = 0; c < arrRawC.length; c++) {
+//                    var dataPoinDatatC = arrRawC[c]; // เปลี่ยนจาก arrRawB[c] เป็น arrRawC[c]
 
-                    if (dataPoinDatatC.distance !== undefined && dataPoinDatatC.voltage !== undefined) {
-                        distancesDataC.push(dataPoinDatatC.distance);
-                        voltagesDataC.push(dataPoinDatatC.voltage);
-                    }
-                }
-                distanceRawC = distancesDataC;
-                voltageRawC = voltagesDataC; // เปลี่ยนจาก distancesDataC เป็น voltagesDataC
-            } else {
-                console.log("RawData array is empty or invalid");
-            }
+//                    if (dataPoinDatatC.distance !== undefined && dataPoinDatatC.voltage !== undefined) {
+//                        distancesDataC.push(dataPoinDatatC.distance);
+//                        voltagesDataC.push(dataPoinDatatC.voltage);
+//                    }
+//                }
+//                distanceRawC = distancesDataC;
+//                voltageRawC = voltagesDataC; // เปลี่ยนจาก distancesDataC เป็น voltagesDataC
+//            } else {
+//                console.log("RawData array is empty or invalid");
+//            }
 
         }else if (objectName === 'patthernA') {
             console.log("patthernA_check_debug:", message);

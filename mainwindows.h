@@ -77,6 +77,9 @@ signals:
      void settingdisplay(QString);
      void getsettingdisplay();
      void plotingDataPhaseA(QString);
+     void plotingDataPhaseB(QString);
+     void plotingDataPhaseC(QString);
+
 
 public:
     explicit mainwindows(QObject *parent = nullptr);
@@ -124,9 +127,17 @@ private:
     int totalpoint = destination - initiation;     //1จุดห่างกัน60เมตร
     int sagfactor;
     int resamplingpoint; //= samplingrate % sagfactor
-    QString rawdataArray;
+    QString rawdataArrayA;
+    QString rawdataArrayB;
+    QString rawdataArrayC;
     QString temp;
+    QString temp2;
+    QString temp3;
+
     int count=0;
+    int count2=0;
+    int count3=0;
+
 //ทั้งหมดมี8500เมตรต้องplot ทั้งหมดกี่ครั้งถึงจะครบ8500ม โดยเอา8500หารด้วยresamplingpoint ซึ่งก็คือจำนวนจุดที่ต้องplot ต่อ60ม
 //ตังอย่าง 8500/87=97.7 =98ครั้งจนครบ 8500ม แล้วทีนี้มันเริ่มจาก 0.0015mV ต้องบวกเพิ่มขึ้นทีละเท่าไหรจนมันไปถึง8500 โดย87จุดและแต่ละจุดมีระยะห่าง60ม
 //จำนวน98ครั้งจนไปถึง8500ม

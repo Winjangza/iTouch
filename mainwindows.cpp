@@ -67,6 +67,9 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
 //    connect(this,SIGNAL(settingdisplay(QString)),mysql,SLOT(SettingDisplay(QString)));
     connect(mysql,SIGNAL(updateDisplaySetting(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(plotingDataPhaseA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(this,SIGNAL(plotingDataPhaseB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(this,SIGNAL(plotingDataPhaseC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+
 //    connect(this,SIGNAL(getsettingdisplay()),mysql,SLOT(GetSettingDisplay()));
 //    connect(mysql,SIGNAL(settingDisplayInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 //    connect(mysql,SIGNAL(settingDisplayInfo(QString)),this,SLOT(calculate(QString)));
@@ -913,7 +916,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         qDebug() << "displaySetting:" << displaySetting << fulldistance;
         settingdisplay(displaySetting);
     }else if (getCommand == "startPlotingDataPhaseA") {
-        emit plotingDataPhaseA(rawdataArray);
+        emit plotingDataPhaseA(rawdataArrayA);
 
 //        double thresholdInit = command["threshold"].toDouble();
 //        double sagFactorInit = command["sagFactor"].toDouble();
@@ -931,21 +934,39 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 //        qDebug() << "parameterDisplay:" << thresholdInit << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit;
 //        calculate(parameterDisplay);
     }else if (getCommand == "startPlotingDataPhaseB") {
-        double thresholdInit = command["threshold"].toDouble();
-        double sagFactorInit = command["sagFactor"].toDouble();
-        double samplingRateInit = command["samplingRate"].toDouble();
-        double distanceToStartInit = command["distanceToStart"].toDouble();
-        double distanceToShowInit = command["distanceToShow"].toDouble();
-        QString parameterDisplay = QString("{"
-                                           "\"objectName\":\"parameterDisplay\","
-                                           "\"thresholdInitA\":%1,"
-                                           "\"sagFactorInit\":%2,"
-                                           "\"samplingRateInit\":%3,"
-                                           "\"distanceToStartInit\":%4,"
-                                           "\"distanceToShowInit\":%5"
-                                           "}").arg(thresholdInit).arg(sagFactorInit).arg(samplingRateInit).arg(distanceToStartInit).arg(distanceToShowInit);
-        qDebug() << "parameterDisplay:" << thresholdInit << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit;
-        calculateDataPhaseB(parameterDisplay);
+        emit plotingDataPhaseB(rawdataArrayB);
+//        double thresholdInit = command["threshold"].toDouble();
+//        double sagFactorInit = command["sagFactor"].toDouble();
+//        double samplingRateInit = command["samplingRate"].toDouble();
+//        double distanceToStartInit = command["distanceToStart"].toDouble();
+//        double distanceToShowInit = command["distanceToShow"].toDouble();
+//        QString parameterDisplay = QString("{"
+//                                           "\"objectName\":\"parameterDisplay\","
+//                                           "\"thresholdInitA\":%1,"
+//                                           "\"sagFactorInit\":%2,"
+//                                           "\"samplingRateInit\":%3,"
+//                                           "\"distanceToStartInit\":%4,"
+//                                           "\"distanceToShowInit\":%5"
+//                                           "}").arg(thresholdInit).arg(sagFactorInit).arg(samplingRateInit).arg(distanceToStartInit).arg(distanceToShowInit);
+//        qDebug() << "parameterDisplay:" << thresholdInit << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit;
+//        calculateDataPhaseB(parameterDisplay);
+    }else if (getCommand == "startPlotingDataPhaseC") {
+        emit plotingDataPhaseC(rawdataArrayC);
+//        double thresholdInit = command["threshold"].toDouble();
+//        double sagFactorInit = command["sagFactor"].toDouble();
+//        double samplingRateInit = command["samplingRate"].toDouble();
+//        double distanceToStartInit = command["distanceToStart"].toDouble();
+//        double distanceToShowInit = command["distanceToShow"].toDouble();
+//        QString parameterDisplay = QString("{"
+//                                           "\"objectName\":\"parameterDisplay\","
+//                                           "\"thresholdInitA\":%1,"
+//                                           "\"sagFactorInit\":%2,"
+//                                           "\"samplingRateInit\":%3,"
+//                                           "\"distanceToStartInit\":%4,"
+//                                           "\"distanceToShowInit\":%5"
+//                                           "}").arg(thresholdInit).arg(sagFactorInit).arg(samplingRateInit).arg(distanceToStartInit).arg(distanceToShowInit);
+//        qDebug() << "parameterDisplay:" << thresholdInit << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit;
+//        calculateDataPhaseB(parameterDisplay);
     }else if (getCommand == "GetSettingDisplay") {
         double sagFactorInit = command["sagFactorInit"].toDouble();
         double samplingRateInit = command["samplingRateInit"].toDouble();
@@ -963,6 +984,8 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                            "}").arg(sagFactorInit).arg(samplingRateInit).arg(distanceToStartInit).arg(distanceToShowInit).arg(fulldistancesInit);
         qDebug() << "updataParameterDisplay:" << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit << fulldistancesInit;
         calculate(parameterDisplay);
+        calculateDataPhaseB(parameterDisplay);
+        calculateDataPhaseC(parameterDisplay);
     }else if (qmlJson == "getDisplay") {
         emit getsettingdisplay();
     }else if (getCommand == "getThreshold") {
@@ -978,6 +1001,8 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                            "}").arg(thresholdInitA).arg(thresholdInitB).arg(thresholdInitC);
         qDebug() << "updatethresholdParam:" << updatethresholdParam ;
         calculate(updatethresholdParam);
+        calculateDataPhaseB(updatethresholdParam);
+        calculateDataPhaseC(updatethresholdParam);
     }
 }
 
@@ -1153,7 +1178,7 @@ void mainwindows::calculate(QString msg) {
         qDebug() << "Distance to Show:" << distanceToShow;
         qDebug() << "Total Distance after SAG Adjustment:" << totalDistance;
         qDebug() << "Total Points to Plot:" << totalPoints;
-        rawdataArray = "";
+        rawdataArrayA = "";
         // Pack the distance and voltage data into a JSON format
         QString rawDataString = "[";
 
@@ -1193,13 +1218,13 @@ void mainwindows::calculate(QString msg) {
         // Create the final JSON array
 //        rawdataArray = QString("{\"objectName\":\"dataPlotingA\","
 //                                       "\"packageRawDataA\":%1}").arg(raw_data);
-        rawdataArray = raw_data;
+        rawdataArrayA = raw_data;
         qDebug() << "rawdataArray" <<raw_data ;
         if(temp == ""){
-            temp = rawdataArray;
+            temp = rawdataArrayA;
         }
-        else if(rawdataArray != temp && count > 2){
-            temp = rawdataArray;
+        else if(rawdataArrayA != temp && count > 2){
+            temp = rawdataArrayA;
             emit cppCommand(temp);
         }
 
@@ -1211,7 +1236,7 @@ void mainwindows::calculate(QString msg) {
 //    emit plotingDataPhaseA(rawdataArray);
 }
 void mainwindows::calculateDataPhaseB(QString msg) {
-    qDebug() << "calculate:" << msg;
+    qDebug() << "calculateDataPhaseB:" << msg;
     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject command = d.object();
     QString getCommand = QJsonValue(command["objectName"]).toString();
@@ -1356,7 +1381,7 @@ void mainwindows::calculateDataPhaseB(QString msg) {
         qDebug() << "Distance to Show:" << distanceToShow;
         qDebug() << "Total Distance after SAG Adjustment:" << totalDistance;
         qDebug() << "Total Points to Plot:" << totalPoints;
-        rawdataArray = "";
+        rawdataArrayB = "";
         // Pack the distance and voltage data into a JSON format
 
         QJsonObject mainObject;
@@ -1368,7 +1393,7 @@ void mainwindows::calculateDataPhaseB(QString msg) {
             dist.push_back(distance);
             volt.push_back(voltage);
         }
-        mainObject.insert("objectName", "dataPlotingA");
+        mainObject.insert("objectName", "dataPlotingB");
         mainObject.insert("distance", dist);
         mainObject.insert("voltage", volt);
         jsonDoc.setObject(mainObject);
@@ -1395,25 +1420,223 @@ void mainwindows::calculateDataPhaseB(QString msg) {
         // Create the final JSON array
 //        rawdataArray = QString("{\"objectName\":\"dataPlotingA\","
 //                                       "\"packageRawDataA\":%1}").arg(raw_data);
-        rawdataArray = raw_data;
+        rawdataArrayB = raw_data;
         qDebug() << "rawdataArray" <<raw_data ;
-        if(temp == ""){
-            temp = rawdataArray;
+        if(temp2 == ""){
+            temp2 = rawdataArrayB;
         }
-        else if(rawdataArray != temp && count > 2){
-            temp = rawdataArray;
-            emit cppCommand(temp);
+        else if(rawdataArrayB != temp2 && count2 > 2){
+            temp2 = rawdataArrayB;
+            emit cppCommand(temp2);
         }
 
-    if(count > 2){
+    if(count2 > 2){
 
     }else{
-        count++;
+        count2++;
     }
 }
 
 void mainwindows::calculateDataPhaseC(QString msg) {
+    qDebug() << "calculateDataPhaseC:" << msg;
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = QJsonValue(command["objectName"]).toString();
+    // Default values
+    static double thresholdInit = 0;
+    static double sagFactorInit = 0;
+    static double samplingRateInit = 0;
+    static double distanceToStartInit = 0;
+    static double distanceToShowInit = 0;
+    static double fulldistanceInit = 0;
+    // Update parameters only if the relevant object is found
+    if (getCommand == "updataParameterDisplay") {
+        if (QString::number(command.value("sagFactorInit").toInt())!= ""){
+            sagFactorInit = command.value("sagFactorInit").toDouble();
+        }
+        if (QString::number(command.value("samplingRateInit").toInt())!= ""){
+            samplingRateInit = command.value("samplingRateInit").toDouble();
+        }
+        if (QString::number(command.value("distanceToStartInit").toInt())!= ""){
+            distanceToStartInit = command.value("distanceToStartInit").toDouble();
+        }
+        if (QString::number(command.value("distanceToShowInit").toInt())!= ""){
+            distanceToShowInit = command.value("distanceToShowInit").toDouble();
+        }
+        if (QString::number(command.value("fulldistancesInit").toInt())!= ""){
+            fulldistanceInit = command.value("fulldistancesInit").toDouble();
+        }    if (QString::number(command.value("thresholdInitA").toInt())!= ""){
+            thresholdInit = command.value("thresholdInitA").toDouble();
+        }
 
+        qDebug() << "GetSettingDisplay received:";
+        qDebug() << "sagFactorInit:" << sagFactorInit;
+        qDebug() << "samplingRateInit:" << samplingRateInit;
+        qDebug() << "distanceToStartInit:" << distanceToStartInit;
+        qDebug() << "distanceToShowInit:" << distanceToShowInit;
+        qDebug() << "fulldistanceInit:" << fulldistanceInit;
+    }
+
+    if (getCommand == "updatethresholdParam") {
+    if (QString::number(command.value("thresholdInitC").toInt())!= ""){
+        thresholdInit = command.value("thresholdInitC").toDouble();
+    }
+        qDebug() << "getThreshold received:";
+        qDebug() << "thresholdInit:" << thresholdInit;
+    }
+
+    // After processing the messages, use the updated values in calculations
+    qDebug() << "Debug display parameter:" << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit << thresholdInit;
+    // Setting parameters
+    sagFactor = sagFactorInit;       // SAG factor
+    samplingRate = samplingRateInit; // Sampling rate (meters per sample)
+    distanceToStart = distanceToStartInit * 1000; // Starting distance (km)
+    distanceToShow = distanceToShowInit * 1000;   // Ending distance (km)
+    valuetheshold = thresholdInit; // Threshold value
+    const float threshold = valuetheshold / 32768.0f;
+
+
+        // Path of the file
+        QString filePath = "/home/pi/data3.raw"; //adc_ch1_voltage.dat
+        QFile file(filePath);
+
+        // Check if the file can be opened
+        if (!file.open(QIODevice::ReadOnly)) {
+            qDebug() << "Unable to open file:" << filePath;
+            return;
+        }
+
+        // Read data from the file
+        QByteArray data = file.readAll();
+        file.close();
+
+        qDebug() << "Debug display parameter:" << sagFactor << samplingRate << distanceToStart << distanceToShow << valuetheshold << threshold;
+
+        // Calculate total distance adjusted by SAG factor
+        float totalDistance = (distanceToShow - distanceToStart) * sagFactor;
+
+        // Calculate total number of points (distance / point distance) adjusted by sampling rate
+
+        const float pointDistance =  samplingRate / distancePointBetweenPoint; // Adjust point distance using sampling rate ยิ่งsampling rate มากใันก็จะยิ่งหยาบมากขึ้น
+        int totalPoints = static_cast<int>(std::ceil(totalDistance / pointDistance));
+
+        // Read data from file and normalize values
+        std::vector<float> normalizedValues;
+        const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
+        const uint8_t* endPtr = ptr + data.size();
+
+
+        while (ptr + 2 <= endPtr) {
+            // Read the raw 2 bytes as a signed 16-bit integer
+            int16_t signedValue = static_cast<int16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
+
+            // Normalize the value (handling both negative and positive values)
+            float normalizedValue = static_cast<float>(signedValue) / 32768.0f;
+
+            // Store the normalized value in the vector
+            normalizedValues.push_back(normalizedValue);
+
+            // Move the pointer forward by 2 bytes
+            ptr += 2;
+        }
+
+
+        // Find the value that matches the threshold
+        auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
+            return val >= threshold; // Find the value greater than or equal to threshold
+        });
+
+        if (startIt == normalizedValues.end()) {
+            qDebug() << "Threshold value not found in data";
+            return;
+        }
+
+        // Get the starting index of the found threshold
+        int startIndex = std::distance(normalizedValues.begin(), startIt);
+
+        // Create result (X: distance, Y: normalized voltage)
+        std::vector<std::pair<float, float>> result; // (X: distance, Y: normalized voltage)
+        float currentDistance = distanceToStart;
+
+        // Get the values starting from the threshold found
+        for (int i = startIndex; i < startIndex + totalPoints && i < normalizedValues.size(); ++i) {
+            // Set Y value (normalized voltage)
+            float currentValue = normalizedValues[i];
+
+            // Add the point to the result
+            result.emplace_back(currentDistance, currentValue);
+
+            // Increment the distance by the point distance adjusted by sampling rate
+            currentDistance += pointDistance;
+        }
+
+        // Display the result
+        qDebug() << "Result (Distance, Normalized Voltage):";
+        for (const auto& [distance, voltage] : result) {
+            qDebug() << "X:" << distance << "m, Y:" << voltage << "mV";
+        }
+
+        // Summary
+        qDebug() << "SAG Factor:" << sagFactor;
+        qDebug() << "Sampling Rate (m/samples):" << samplingRate;
+        qDebug() << "Distance to Start:" << distanceToStart;
+        qDebug() << "Distance to Show:" << distanceToShow;
+        qDebug() << "Total Distance after SAG Adjustment:" << totalDistance;
+        qDebug() << "Total Points to Plot:" << totalPoints;
+        rawdataArrayC = "";
+        // Pack the distance and voltage data into a JSON format
+
+        QJsonObject mainObject;
+        QJsonArray dist,volt;
+        QJsonDocument jsonDoc,loraDoc;
+        QJsonObject lora_sent;
+        for (size_t i = 0; i < result.size(); ++i) {
+            const auto& [distance, voltage] = result[i];
+            dist.push_back(distance);
+            volt.push_back(voltage);
+        }
+        mainObject.insert("objectName", "dataPlotingC");
+        mainObject.insert("distance", dist);
+        mainObject.insert("voltage", volt);
+        jsonDoc.setObject(mainObject);
+        QString raw_data = QJsonDocument(mainObject).toJson(QJsonDocument::Compact).toStdString().c_str();
+        qDebug() << "mainObject:" << raw_data;
+
+//        QString rawDataString = "[";
+//        for (size_t i = 0; i < result.size(); ++i) {
+//            const auto& [distance, voltage] = result[i];
+//            // Format each data point
+//            QString pointData = QString(
+//                                        "\"distance\":%1,"
+//                                        "\"voltage \":%2}")
+//                                    .arg(distance, 0, 'f', 6) // 6 decimal places
+//                                    .arg(voltage, 0, 'f', 6); // 6 decimal places
+//            rawDataString += pointData;
+//            // Add a comma between data points
+//            if (i < result.size() - 1) {
+//                rawDataString += ",";
+//            }
+//        }
+//        rawDataString += "]";
+
+        // Create the final JSON array
+//        rawdataArray = QString("{\"objectName\":\"dataPlotingA\","
+//                                       "\"packageRawDataA\":%1}").arg(raw_data);
+        rawdataArrayC = raw_data;
+        qDebug() << "rawdataArray" <<raw_data ;
+        if(temp3 == ""){
+            temp3 = rawdataArrayC;
+        }
+        else if(rawdataArrayB != temp3 && count3 > 2){
+            temp3 = rawdataArrayC;
+            emit cppCommand(temp3);
+        }
+
+    if(count3 > 2){
+
+    }else{
+        count3++;
+    }
 }
 
 //void mainwindows::calculate(QString msg) {

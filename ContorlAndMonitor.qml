@@ -53,18 +53,18 @@ Item {
                 seriesRawB.clear();
                 for (var i = 0; i < plotdataB.length; i++) {
                     if (isFinite(plotdataB[i]) && isFinite(distanceB[i])) {
-                        console.log("Appending to series2:", distanceB[i], plotdataB[i]); // Debug log
+//                        console.log("Appending to series2:", distanceB[i], plotdataB[i]); // Debug log
                         seriesRawB.append(distanceB[i], plotdataB[i]);
                     } else {
-                        console.log("Invalid point for series2:", distanceB[i], plotdataB[i]); // Debug invalid points
+//                        console.log("Invalid point for series2:", distanceB[i], plotdataB[i]); // Debug invalid points
                     }
                 }
                 adjustAxes(distanceB, [plotdataB]); // Adjust the axes for series2
             } else {
-                console.log("Data mismatch for plotdataB. Lengths:", plotdataB.length, distanceB.length);
+//                console.log("Data mismatch for plotdataB. Lengths:", plotdataB.length, distanceB.length);
             }
         } catch (e) {
-            console.log("Error in onPlotdataBChanged:", e);
+//            console.log("Error in onPlotdataBChanged:", e);
         }
     }
     // สำหรับ RawDataC
@@ -74,18 +74,18 @@ Item {
                 seriesRawC.clear();
                 for (var i = 0; i < plotdataC.length; i++) {
                     if (isFinite(plotdataC[i]) && isFinite(distanceC[i])) {
-                        console.log("Appending to series3:", distanceC[i], plotdataC[i]); // Debug log
+//                        console.log("Appending to series3:", distanceC[i], plotdataC[i]); // Debug log
                         seriesRawC.append(distanceC[i], plotdataC[i]);
                     } else {
-                        console.log("Invalid point for series3:", distanceC[i], plotdataC[i]); // Debug invalid points
+//                        console.log("Invalid point for series3:", distanceC[i], plotdataC[i]); // Debug invalid points
                     }
                 }
                 adjustAxes(distanceC, [plotdataC]); // Adjust the axes for series3
             } else {
-                console.log("Data mismatch for plotdataC. Lengths:", plotdataC.length, distanceC.length);
+//                console.log("Data mismatch for plotdataC. Lengths:", plotdataC.length, distanceC.length);
             }
         } catch (e) {
-            console.log("Error in onPlotdataCChanged:", e);
+//            console.log("Error in onPlotdataCChanged:", e);
         }
     }
 
