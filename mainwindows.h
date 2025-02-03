@@ -24,6 +24,8 @@
 #include <algorithm>
 #include <QFile>
 #include <QTextStream>
+#include <QPointer>
+#include <QtMath>
 #define SwVersion "V0.2 26122024"
 #define HwVersion "Raspberry Pi"
 #define HwName "Monitor"
@@ -79,8 +81,7 @@ signals:
      void plotingDataPhaseA(QString);
      void plotingDataPhaseB(QString);
      void plotingDataPhaseC(QString);
-
-
+     void sendMessage(QString);
 public:
     explicit mainwindows(QObject *parent = nullptr);
     static mainwindows *instance();
@@ -99,7 +100,13 @@ public slots:
     void calculate(QString);
     void calculateDataPhaseB(QString);
     void calculateDataPhaseC(QString);
-//= 200*10e-9
+    void manualtest(QString);
+    void patterntest(QString);
+    void plotGraphA(double,double,double,double,double,double);
+    void plotGraphB(double,double,double,double,double,double);
+    void plotGraphC(double,double,double,double,double,double);
+    void reSamplingNormalization(const std::vector<std::pair<float, float>>& result);
+
 private:
     ChatServer *SocketServer;
     Database *mysql;
@@ -108,10 +115,14 @@ private:
     int serverPort;
     QTimer *reconnectTimer;
     QTimer *Timer;
-    double sagFactor;       // SAG factor
-    double samplingRate; // Sampling rate (meters per sample)
-    double distanceToStart; // ระยะตั้งต้น (เมตร)
-    double distanceToShow;   // ระยะปลายทาง (เมตร)
+    double sagFactor = 0.0;       // SAG factor
+    double samplingRate = 0.0; // Sampling rate (meters per sample)
+    double distanceToStart = 0.0; // ระยะตั้งต้น (เมตร)
+    double distanceToShow = 0.0;   // ระยะปลายทาง (เมตร)
+    double fulldistance = 0.0;
+    double thresholdA = 0.0;
+    double thresholdB = 0.0;
+    double thresholdC = 0.0;
     double distancePointBetweenPoint = 60.0f;
     bool isVersion = false;
     double offset;
@@ -119,28 +130,32 @@ private:
     double valuetheshold; //เป็นตัวแปรที่เปลี่ยนแปลงได้
     int samplingrate; //เป็นตัวแปรที่เปลี่ยนแปลงได้ 225
     double SAG; //0.983
-    double speedOfligth = 3*10e8; //m/s
-    double timepoint = 200*10e-9; //s
-    double distance = (speedOfligth * timepoint)/100;
+    double speedOfligth = 3e8; //m/s
+    double timeWholepoint = 200e-9; //s
+    double distance = (speedOfligth * timeWholepoint)/100;
     int initiation;//km เป็นตัวแปรที่เปลี่ยนแปลงได้
     double destination;//=8500/distance;//km เป็นตัวแปรที่เปลี่ยนแปลงได้
     int totalpoint = destination - initiation;     //1จุดห่างกัน60เมตร
     int sagfactor;
     int resamplingpoint; //= samplingrate % sagfactor
+    double totalDurationOfData = 2e-3;
+    double durationofTime;
     QString rawdataArrayA;
     QString rawdataArrayB;
     QString rawdataArrayC;
     QString temp;
     QString temp2;
     QString temp3;
-
     int count=0;
     int count2=0;
     int count3=0;
+    bool enablePhaseA=false;
+    bool enablePhaseB=false;
+    bool enablePhaseC=false;
+    QString cppManual;
+    QString cppPattern;
+    double pointsPerWave;
 
-//ทั้งหมดมี8500เมตรต้องplot ทั้งหมดกี่ครั้งถึงจะครบ8500ม โดยเอา8500หารด้วยresamplingpoint ซึ่งก็คือจำนวนจุดที่ต้องplot ต่อ60ม
-//ตังอย่าง 8500/87=97.7 =98ครั้งจนครบ 8500ม แล้วทีนี้มันเริ่มจาก 0.0015mV ต้องบวกเพิ่มขึ้นทีละเท่าไหรจนมันไปถึง8500 โดย87จุดและแต่ละจุดมีระยะห่าง60ม
-//จำนวน98ครั้งจนไปถึง8500ม
 };
 
 #endif // MAINWINDOWS_H
