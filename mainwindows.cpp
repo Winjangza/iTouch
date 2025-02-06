@@ -40,9 +40,9 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this,SIGNAL(parameterMarginA(QString)),mysql,SLOT(configParemeterMarginA(QString)));
     connect(mysql,SIGNAL(listOfMarginA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 //    connect(this,SIGNAL(parameterThreshold(QString)),mysql,SLOT(configParemeterThreshold(QString)));
-    connect(mysql,SIGNAL(updateThresholdA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(mysql,SIGNAL(updateThresholdB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(mysql,SIGNAL(updateThresholdC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(updateThresholdA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(updateThresholdB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(updateThresholdC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(getDataThreshold()),mysql,SLOT(getThreshold()));
     connect(this,SIGNAL(settingGeneral()),mysql,SLOT(getSettingInfo()));
     connect(mysql,SIGNAL(UpdateSettingInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
@@ -561,13 +561,14 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         qDebug() << "movetoleft:" << movetoright << increaseValue;
         emit moveCursor(movetoright);
     }else if (getCommand.contains("getDatabuttonPhaseA")) {
-        QString rawdataA = QJsonValue(command["rawdataA"]).toString();
+//        QString rawdataA = QJsonValue(command["rawdataA"]).toString();
         QString getRawDataPhaseA = QString("{"
-                                        "\"objectName\"     :\"getDatabuttonPhaseA\","
-                                        "\"rawdataA\"         :\"%1\""
-                                        "}").arg(rawdataA);
-        qDebug() << "getRawDataPhaseA:" << getRawDataPhaseA << rawdataA;
-        emit rawdataPlot(getRawDataPhaseA);
+                                        "\"objectName\"     :\"dataPlotingA\""
+                                        "}");
+        qDebug() << "getRawDataPhaseA:" << getRawDataPhaseA;
+        emit plotingDataPhaseA(getRawDataPhaseA);
+//        storeageDataPhaseA(getRawDataPhaseA);
+//        emit rawdataPlot(getRawDataPhaseA);
     } else if (getCommand.contains("getDatabuttonPhaseB")) {
         QString rawdataB = QJsonValue(command["rawdataB"]).toString();
         QString getRawDataPhaseB = QString("{"
@@ -575,7 +576,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                         "\"rawdataB\"         :\"%1\""
                                         "}").arg(rawdataB);
         qDebug() << "getpatternPhaseB:" << getRawDataPhaseB << rawdataB;
-        emit rawdataPlot(getRawDataPhaseB);
+//        emit rawdataPlot(getRawDataPhaseB);
     } else if (getCommand.contains("getDatabuttonPhaseC")) {
         QString rawdataC = QJsonValue(command["rawdataC"]).toString();
         QString getRawDataPhaseC = QString("{"
@@ -583,7 +584,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                         "\"rawdataC\"         :\"%1\""
                                         "}").arg(rawdataC);
         qDebug() << "getpatternPhaseC:" << getRawDataPhaseC << rawdataC;
-        emit rawdataPlot(getRawDataPhaseC);
+//        emit rawdataPlot(getRawDataPhaseC);
     }else if (getCommand.contains("getpatternPhaseA")) {
         QString patternA = QJsonValue(command["patternA"]).toString();
         QString getpatternPhaseA = QString("{"
@@ -1012,13 +1013,13 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     } else if (getCommand == "getThreshold") {
         double thresholdInitA = command["thresholdInitA"].toDouble();
         double thresholdInitB = command["thresholdInitB"].toDouble();
-        double thresholdInitC = command["thresholdInitA"].toDouble();
+        double thresholdInitC = command["thresholdInitC"].toDouble();
 
         QString updatethresholdParam = QString("{"
                                            "\"objectName\":\"updatethresholdParam\","
                                            "\"thresholdInitA\":%1,"
                                            "\"thresholdInitB\":%2,"
-                                           "\"thresholdInitA\":%5"
+                                           "\"thresholdInitC\":%3"
                                            "}").arg(thresholdInitA).arg(thresholdInitB).arg(thresholdInitC);
         qDebug() << "updatethresholdParam:" << thresholdInitA << thresholdInitB << thresholdInitC;
         cppCommand(updatethresholdParam);
@@ -1027,8 +1028,45 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         cppManual = "ManualTest";
         manualtest(cppManual);
     }else if(getCommand == "PatternTest"){
+        int patternNum = command["patternNum"].toInt();
         cppPattern = "PatternTest";
-        patterntest(cppPattern);
+        patterntest(patternNum);
+    }else if(getCommand == "dataPlotingA"){
+        cppCommand(qmlJson);
+    }else if(getCommand == "dataPlotingB"){
+        cppCommand(qmlJson);
+    }else if(getCommand == "dataPlotingC"){
+        cppCommand(qmlJson);
+    }else if(getCommand == "patthernA"){
+        cppCommand(qmlJson);
+    }else if(getCommand == "patthernB"){
+        cppCommand(qmlJson);
+    }else if(getCommand == "patthernC"){
+        cppCommand(qmlJson);
+    }else if(getCommand == "spinBoxDisplay"){
+        int levelofligth = command["displayLight"].toInt();
+        qDebug() << "levelofligth:" << levelofligth;
+        if(levelofligth == 10){
+            system("sudo pigs p 13 255");
+        }else if(levelofligth == 9){
+            system("sudo pigs p 13 230");
+        }else if(levelofligth == 8){
+            system("sudo pigs p 13 205");
+        }else if(levelofligth == 7){
+            system("sudo pigs p 13 180");
+        }else if(levelofligth == 6){
+            system("sudo pigs p 13 155");
+        }else if(levelofligth == 5){
+            system("sudo pigs p 13 130");
+        }else if(levelofligth == 4){
+            system("sudo pigs p 13 80");
+        }else if(levelofligth == 3){
+            system("sudo pigs p 13 55");
+        }else if(levelofligth == 2){
+            system("sudo pigs p 13 30");
+        }else if(levelofligth == 1){
+            system("sudo pigs p 13 5");
+        }
     }
 }
 
@@ -1058,12 +1096,13 @@ void mainwindows::connectToPLC(){
     emit sendToSocket(raw_data);
 }
 
-void mainwindows::calculate(QString msg) {
+void mainwindows::calculate(QString msg) { // รับค่าจาก Database
     qDebug() << "calculate:" << msg;
     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject command = d.object();
     QString getCommand = QJsonValue(command["objectName"]).toString();
 
+    // เก็บค่าก่อนหน้า
     double prevSagFactor = sagFactor;
     double prevSamplingRate = samplingRate;
     double prevDistanceToStart = distanceToStart;
@@ -1073,40 +1112,35 @@ void mainwindows::calculate(QString msg) {
     double prevThresholdB = thresholdB;
     double prevThresholdC = thresholdC;
 
-    if (command.contains("sagFactorInit")) {
-        sagFactor = command.value("sagFactorInit").toDouble();
-    }
-    if (command.contains("samplingRateInit")) {
-        samplingRate = command.value("samplingRateInit").toDouble();
-    }
-    if (command.contains("distanceToStartInit")) {
-        distanceToStart = command.value("distanceToStartInit").toDouble();
-    }
-    if (command.contains("distanceToShowInit")) {
-        distanceToShow = command.value("distanceToShowInit").toDouble();
-    }
-    if (command.contains("fulldistancesInit")) {
-        fulldistance = command.value("fulldistancesInit").toDouble();
-    }
-    if (command.contains("thresholdInitA")) {
-        thresholdA = command.value("thresholdInitA").toDouble();
-    }
-    if (command.contains("thresholdInitB")) {
-        thresholdB = command.value("thresholdInitB").toDouble();
-    }
-    if (command.contains("thresholdInitC")) {
-        thresholdC = command.value("thresholdInitC").toDouble();
-    }
+    // อัปเดตค่าจาก JSON ถ้ามี
+    if (command.contains("sagFactorInit")) sagFactor = command.value("sagFactorInit").toDouble();
+    if (command.contains("samplingRateInit")) samplingRate = command.value("samplingRateInit").toDouble();
+    if (command.contains("distanceToStartInit")) distanceToStart = command.value("distanceToStartInit").toDouble();
+    if (command.contains("distanceToShowInit")) distanceToShow = command.value("distanceToShowInit").toDouble();
+    if (command.contains("fulldistancesInit")) fulldistance = command.value("fulldistancesInit").toDouble();
+    if (command.contains("thresholdInitA")) thresholdA = command.value("thresholdInitA").toDouble();
+    if (command.contains("thresholdInitB")) thresholdB = command.value("thresholdInitB").toDouble();
+    if (command.contains("thresholdInitC")) thresholdC = command.value("thresholdInitC").toDouble();
 
-    bool isChanged = (prevSagFactor != sagFactor) ||
-                     (prevSamplingRate != samplingRate) ||
-                     (prevDistanceToStart != distanceToStart) ||
-                     (prevDistanceToShow != distanceToShow) ||
-                     (prevFulldistance != fulldistance) ||
-                     (prevThresholdA != thresholdA) ||
-                     (prevThresholdB != thresholdB) ||
-                     (prevThresholdC != thresholdC);
+    // ตรวจสอบค่าที่เปลี่ยนแปลง (Threshold)
+    bool isThresholdAChanged = (prevThresholdA != thresholdA);
+    bool isThresholdBChanged = (prevThresholdB != thresholdB);
+    bool isThresholdCChanged = (prevThresholdC != thresholdC);
 
+    // ตรวจสอบค่าที่เปลี่ยนแปลง (Parameter หลัก)
+    bool isSagFactorChanged = (prevSagFactor != sagFactor);
+    bool isSamplingRateChanged = (prevSamplingRate != samplingRate);
+    bool isDistanceToStartChanged = (prevDistanceToStart != distanceToStart);
+    bool isDistanceToShowChanged = (prevDistanceToShow != distanceToShow);
+    bool isFulldistanceChanged = (prevFulldistance != fulldistance);
+
+    // ตรวจสอบว่ามีการเปลี่ยนแปลงของ Threshold หรือพารามิเตอร์หลัก
+    bool isAnyThresholdChanged = isThresholdAChanged || isThresholdBChanged || isThresholdCChanged;
+    bool isAnyParameterChanged = isSagFactorChanged || isSamplingRateChanged ||
+                                 isDistanceToStartChanged || isDistanceToShowChanged ||
+                                 isFulldistanceChanged;
+
+    // ตรวจสอบค่าที่เป็น NaN หรือ Infinity
     bool isValid = true;
     if (std::isnan(sagFactor) || std::isinf(sagFactor)) isValid = false;
     if (std::isnan(samplingRate) || std::isinf(samplingRate)) isValid = false;
@@ -1117,35 +1151,128 @@ void mainwindows::calculate(QString msg) {
     if (std::isnan(thresholdB) || std::isinf(thresholdB)) isValid = false;
     if (std::isnan(thresholdC) || std::isinf(thresholdC)) isValid = false;
 
-    if (isValid && isChanged) {
-        qDebug() << "Debug parameter (Valid and Changed):" << sagFactor << samplingRate << distanceToStart << distanceToShow << fulldistance << thresholdA << thresholdB << thresholdC;
+    // **เช็คว่าอย่างน้อยมีการเปลี่ยนแปลงบางอย่าง**
+    if (isValid && (isAnyThresholdChanged || isAnyParameterChanged)) {
+        qDebug() << "Debug parameter (Valid and Changed):"
+                 << sagFactor << samplingRate << distanceToStart << distanceToShow
+                 << fulldistance << thresholdA << thresholdB << thresholdC;
 
-        // Check each threshold and call the corresponding plotGraph function
-        if (thresholdA > 0) {
+        // ✅ **กรณีที่ Threshold หรือ Parameter เปลี่ยนแปลง**
+        if ((isThresholdAChanged || isAnyParameterChanged) && thresholdA > 0) {
             qDebug() << "Threshold A triggered.";
             plotGraphA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
+            plotPatternA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
         }
-        if (thresholdB > 0) {
+        if ((isThresholdBChanged || isAnyParameterChanged) && thresholdB > 0) {
             qDebug() << "Threshold B triggered.";
             plotGraphB(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdB);
+            plotPatternB(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdB);
         }
-        if (thresholdC > 0) {
+        if ((isThresholdCChanged || isAnyParameterChanged) && thresholdC > 0) {
             qDebug() << "Threshold C triggered.";
             plotGraphC(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdC);
+            plotPatternC(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdC);
         }
 
-        // If no threshold is valid, do nothing
-        if (thresholdA <= 0 && thresholdB <= 0 && thresholdC <= 0) {
-            qDebug() << "No valid threshold triggered. No plotting performed.";
-        }
     } else {
-        qDebug() << "Debug parameter (Invalid or Unchanged):" << sagFactor << samplingRate << distanceToStart << distanceToShow << fulldistance << thresholdA << thresholdB << thresholdC;
+        qDebug() << "Debug parameter (Invalid or Unchanged):"
+                 << sagFactor << samplingRate << distanceToStart << distanceToShow
+                 << fulldistance << thresholdA << thresholdB << thresholdC;
     }
 }
 
+
+//void mainwindows::calculate(QString msg) { //getค่ามาจาก Database
+//    qDebug() << "calculate:" << msg;
+//    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+//    QJsonObject command = d.object();
+//    QString getCommand = QJsonValue(command["objectName"]).toString();
+
+//    double prevSagFactor = sagFactor;
+//    double prevSamplingRate = samplingRate;
+//    double prevDistanceToStart = distanceToStart;
+//    double prevDistanceToShow = distanceToShow;
+//    double prevFulldistance = fulldistance;
+//    double prevThresholdA = thresholdA;
+//    double prevThresholdB = thresholdB;
+//    double prevThresholdC = thresholdC;
+
+//    if (command.contains("sagFactorInit")) {
+//        sagFactor = command.value("sagFactorInit").toDouble();
+//    }
+//    if (command.contains("samplingRateInit")) {
+//        samplingRate = command.value("samplingRateInit").toDouble();
+//    }
+//    if (command.contains("distanceToStartInit")) {
+//        distanceToStart = command.value("distanceToStartInit").toDouble();
+//    }
+//    if (command.contains("distanceToShowInit")) {
+//        distanceToShow = command.value("distanceToShowInit").toDouble();
+//    }
+//    if (command.contains("fulldistancesInit")) {
+//        fulldistance = command.value("fulldistancesInit").toDouble();
+//    }
+//    if (command.contains("thresholdInitA")) {
+//        thresholdA = command.value("thresholdInitA").toDouble();
+//    }
+//    if (command.contains("thresholdInitB")) {
+//        thresholdB = command.value("thresholdInitB").toDouble();
+//    }
+//    if (command.contains("thresholdInitC")) {
+//        thresholdC = command.value("thresholdInitC").toDouble();
+//    }
+
+//    bool isChanged = (prevSagFactor != sagFactor) ||
+//                     (prevSamplingRate != samplingRate) ||
+//                     (prevDistanceToStart != distanceToStart) ||
+//                     (prevDistanceToShow != distanceToShow) ||
+//                     (prevFulldistance != fulldistance) ||
+//                     (prevThresholdA != thresholdA) ||
+//                     (prevThresholdB != thresholdB) ||
+//                     (prevThresholdC != thresholdC);
+
+//    bool isValid = true;
+//    if (std::isnan(sagFactor) || std::isinf(sagFactor)) isValid = false;
+//    if (std::isnan(samplingRate) || std::isinf(samplingRate)) isValid = false;
+//    if (std::isnan(distanceToStart) || std::isinf(distanceToStart)) isValid = false;
+//    if (std::isnan(distanceToShow) || std::isinf(distanceToShow)) isValid = false;
+//    if (std::isnan(fulldistance) || std::isinf(fulldistance)) isValid = false;
+//    if (std::isnan(thresholdA) || std::isinf(thresholdA)) isValid = false;
+//    if (std::isnan(thresholdB) || std::isinf(thresholdB)) isValid = false;
+//    if (std::isnan(thresholdC) || std::isinf(thresholdC)) isValid = false;
+
+//    if (isValid && isChanged) {
+//        qDebug() << "Debug parameter (Valid and Changed):" << sagFactor << samplingRate << distanceToStart << distanceToShow << fulldistance << thresholdA << thresholdB << thresholdC;
+
+//        // Check each threshold and call the corresponding plotGraph function
+//        if (thresholdA > 0) {
+//            qDebug() << "Threshold A triggered.";
+//            plotGraphA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
+//            plotPatternA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
+//        }
+//        if (thresholdB > 0) {
+//            qDebug() << "Threshold B triggered.";
+//            plotGraphB(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdB);
+//            plotPatternB(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdB);
+//        }
+//        if (thresholdC > 0) {
+//            qDebug() << "Threshold C triggered.";
+//            plotGraphC(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdC);
+//            plotPatternC(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdC);
+//        }
+
+//        // If no threshold is valid, do nothing
+//        if (thresholdA <= 0 && thresholdB <= 0 && thresholdC <= 0) {
+//            qDebug() << "No valid threshold triggered. No plotting performed.";
+//        }
+//    } else {
+//        qDebug() << "Debug parameter (Invalid or Unchanged):" << sagFactor << samplingRate << distanceToStart << distanceToShow << fulldistance << thresholdA << thresholdB << thresholdC;
+//    }
+//}
+
 void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
                             double distanceToShowInit, double fulldistance, double thresholdInitA) {
-    qDebug() << "Debug plotGraph:" << sagFactorInit << samplingRateInit << distanceToStartInit
+    qDebug() << "Debug plotGraphA:" << sagFactorInit << samplingRateInit << distanceToStartInit
              << distanceToShowInit << fulldistance << thresholdInitA;
 
     QString filePath = "/home/pi/data0.raw";
@@ -1168,7 +1295,7 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
         ptr += 2;
     }
 
-    qDebug() << "Total samples read: " << normalizedValues.size();
+//    qDebug() << "Total samples read: " << normalizedValues.size();
 
     const float threshold = thresholdInitA / 32768.0f;  // Convert to mV
     auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
@@ -1180,20 +1307,20 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
         return;
     }
     int startIndex = std::distance(normalizedValues.begin(), startIt);
-    qDebug() << "Starting index found at position:" << startIndex;
+//    qDebug() << "Starting index found at position:" << startIndex;
 
     int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
-    qDebug() << "Resampling rate:" << resampling;
+//    qDebug() << "Resampling rate:" << resampling;
 
     float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
     int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
     int trueDistancepoint = fullpoint / resampling; // Points after resampling
 
-    qDebug() << "Full points:" << fullpoint;
-    qDebug() << "True distance points after resampling:" << trueDistancepoint;
+//    qDebug() << "Full points:" << fullpoint;
+//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
 
     float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
-    qDebug() << "Point interval (m):" << pointInterval;
+//    qDebug() << "Point interval (m):" << pointInterval;
 
     std::vector<std::pair<float, float>> result;
     float currentDistance = distanceToStartInit * 1000; // Start in meters
@@ -1208,7 +1335,7 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
 
     qDebug() << "Final Total Points:" << result.size();
     for (const auto& [distance, voltage] : result) {
-        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
+//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
     }
 
     // JSON Output for Plotting
@@ -1225,11 +1352,11 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
 
     QJsonDocument jsonDoc(mainObject);
     QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-    qDebug() << "Generated JSON:" << raw_data;
+//    qDebug() << "Generated JSON:" << raw_data;
 
     rawdataArrayA = raw_data;
-//    emit plotingDataPhaseB(raw_data);
-    reSamplingNormalization(result);
+    reSamplingNormalizationA(result);
+
 }
 void mainwindows::plotGraphB(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
                             double distanceToShowInit, double fulldistance, double thresholdInitB) {
@@ -1268,20 +1395,20 @@ void mainwindows::plotGraphB(double sagFactorInit, double samplingRateInit, doub
         return;
     }
     int startIndex = std::distance(normalizedValues.begin(), startIt);
-    qDebug() << "Starting index found at position:" << startIndex;
+//    qDebug() << "Starting index found at position:" << startIndex;
 
     int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
-    qDebug() << "Resampling rate:" << resampling;
+//    qDebug() << "Resampling rate:" << resampling;
 
     float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
     int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
     int trueDistancepoint = fullpoint / resampling; // Points after resampling
 
-    qDebug() << "Full points:" << fullpoint;
-    qDebug() << "True distance points after resampling:" << trueDistancepoint;
+//    qDebug() << "Full points:" << fullpoint;
+//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
 
     float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
-    qDebug() << "Point interval (m):" << pointInterval;
+//    qDebug() << "Point interval (m):" << pointInterval;
 
     std::vector<std::pair<float, float>> result;
     float currentDistance = distanceToStartInit * 1000; // Start in meters
@@ -1296,7 +1423,7 @@ void mainwindows::plotGraphB(double sagFactorInit, double samplingRateInit, doub
 
     qDebug() << "Final Total Points:" << result.size();
     for (const auto& [distance, voltage] : result) {
-        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
+//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
     }
 
     // JSON Output for Plotting
@@ -1313,11 +1440,11 @@ void mainwindows::plotGraphB(double sagFactorInit, double samplingRateInit, doub
 
     QJsonDocument jsonDoc(mainObject);
     QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-    qDebug() << "Generated JSON:" << raw_data;
+//    qDebug() << "Generated JSON:" << raw_data;
 
     rawdataArrayA = raw_data;
-//    emit plotingDataPhaseB(raw_data);
-    reSamplingNormalization(result);
+//    emit plotingDataPhaseB(raw_data); reSamplingNormalizationB
+    reSamplingNormalizationB(result);
 }
 void mainwindows::plotGraphC(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
                             double distanceToShowInit, double fulldistance, double thresholdInitC) {
@@ -1344,7 +1471,7 @@ void mainwindows::plotGraphC(double sagFactorInit, double samplingRateInit, doub
         ptr += 2;
     }
 
-    qDebug() << "Total samples read: " << normalizedValues.size();
+//    qDebug() << "Total samples read: " << normalizedValues.size();
 
     const float threshold = thresholdInitC / 32768.0f;  // Convert to mV
     auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
@@ -1356,20 +1483,20 @@ void mainwindows::plotGraphC(double sagFactorInit, double samplingRateInit, doub
         return;
     }
     int startIndex = std::distance(normalizedValues.begin(), startIt);
-    qDebug() << "Starting index found at position:" << startIndex;
+//    qDebug() << "Starting index found at position:" << startIndex;
 
     int resampling = samplingRateInit / (60 * sagFactorInit);
-    qDebug() << "Resampling rate:" << resampling;
+//    qDebug() << "Resampling rate:" << resampling;
 
     float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
     int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
     int trueDistancepoint = fullpoint / resampling; // Points after resampling
 
-    qDebug() << "Full points:" << fullpoint;
-    qDebug() << "True distance points after resampling:" << trueDistancepoint;
+//    qDebug() << "Full points:" << fullpoint;
+//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
 
     float pointInterval = totalDistance / trueDistancepoint;
-    qDebug() << "Point interval (m):" << pointInterval;
+//    qDebug() << "Point interval (m):" << pointInterval;
 
     std::vector<std::pair<float, float>> result;
     float currentDistance = distanceToStartInit * 1000;
@@ -1384,7 +1511,7 @@ void mainwindows::plotGraphC(double sagFactorInit, double samplingRateInit, doub
 
     qDebug() << "Final Total Points:" << result.size();
     for (const auto& [distance, voltage] : result) {
-        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
+//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
     }
 
     // JSON Output for Plotting
@@ -1395,109 +1522,227 @@ void mainwindows::plotGraphC(double sagFactorInit, double samplingRateInit, doub
         volt.push_back(voltage);  // Already multiplied by 4096
     }
 
+    mainObject.insert("objectName", "dataPlotingC");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON C:" << raw_data;
+
+    rawdataArrayA = raw_data;
+//    emit plotingDataPhaseB(raw_data); reSamplingNormalizationC
+    reSamplingNormalizationC(result);
+}
+
+void mainwindows::reSamplingNormalizationA(const std::vector<std::pair<float, float>>& result) {
+    if (result.size() < 3) {
+        qDebug() << "Not enough data points to process.";
+        return;
+    }
+    qDebug() << "Starting peak detection and smoothing...";
+
+    // Step 1: Detect Peaks
+    std::vector<std::pair<float, double>> peakPoints;
+    std::pair<float, double> startPoint = {0.0, 0.0};
+
+    for (const auto& point : result) {
+        if (point.second > 0.0) { // First non-zero voltage
+            startPoint = {point.first, point.second};
+            break;
+        }
+    }
+    peakPoints.push_back(startPoint);
+
+    for (size_t i = 1; i < result.size() - 1; ++i) {
+        float prevVoltage = result[i - 1].second;
+        float currentVoltage = result[i].second;
+        float nextVoltage = result[i + 1].second;
+
+        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
+            peakPoints.emplace_back(result[i]);
+        }
+    }
+
+    peakPoints.push_back(result.back());
+
+    auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
+                                      [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
+                                          return a.second < b.second;
+                                      });
+    std::pair<float, double> maxPeak = *maxPeakIt;
+//    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
+
+    if (std::find(peakPoints.begin(), peakPoints.end(), maxPeak) == peakPoints.end()) {
+        peakPoints.push_back(maxPeak);
+    }
+
+    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+
+    for (const auto& peak : peakPoints) {
+//        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
+    }
+
+    // Step 2: Downsample Peak Points
+    std::vector<std::pair<float, double>> downsampledPeaks;
+    size_t step = std::max<size_t>(1, peakPoints.size() / 50); // Downsample to around 50 points
+    for (size_t i = 0; i < peakPoints.size(); i += step) {
+        downsampledPeaks.push_back(peakPoints[i]);
+    }
+    if (peakPoints.back() != downsampledPeaks.back()) {
+        downsampledPeaks.push_back(peakPoints.back()); // Ensure the last point is included
+    }
+
+    if (std::find(downsampledPeaks.begin(), downsampledPeaks.end(), maxPeak) == downsampledPeaks.end()) {
+        downsampledPeaks.push_back(maxPeak);
+    }
+
+    std::sort(downsampledPeaks.begin(), downsampledPeaks.end()); // Sort points by X
+//    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
+
+    // Step 3: Generate Smooth Curve
+    std::vector<std::pair<float, double>> smoothCurve;
+    for (size_t i = 0; i < downsampledPeaks.size() - 1; ++i) {
+        float x1 = downsampledPeaks[i].first;
+        float x2 = downsampledPeaks[i + 1].first;
+        double y1 = downsampledPeaks[i].second;
+        double y2 = downsampledPeaks[i + 1].second;
+
+        for (float x = x1; x <= x2; x += (x2 - x1) / 10.0) { // Add 10 points per segment
+            double t = (x - x1) / (x2 - x1); // Normalize x between 0 and 1
+            double y = (1 - t) * y1 + t * y2; // Linear interpolation
+            smoothCurve.emplace_back(x, y);
+        }
+    }
+
+    qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
+
+    // Step 4: Prepare JSON Output
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& point : smoothCurve) {
+        dist.push_back(point.first / 1000.0);  // Convert m to km
+        volt.push_back(point.second);         // Voltage in mV
+    }
+    mainObject.insert("objectName", "dataPlotingA");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
+
+
+    // Emit the signal for the curve
+    rawdataArrayA = std::move(raw_data);
+    emit plotingDataPhaseA(rawdataArrayA);
+}
+
+
+void mainwindows::reSamplingNormalizationB(const std::vector<std::pair<float, float>>& result) {
+    if (result.size() < 3) {
+        qDebug() << "Not enough data points to process.";
+        return;
+    }
+
+    qDebug() << "Starting peak detection and smoothing...";
+
+    std::vector<std::pair<float, double>> peakPoints;
+    std::pair<float, double> startPoint = {0.0, 0.0};
+
+    for (const auto& point : result) {
+        if (point.second > 0.0) { // First non-zero voltage
+            startPoint = {point.first, point.second};
+            break;
+        }
+    }
+    peakPoints.push_back(startPoint);
+
+    for (size_t i = 1; i < result.size() - 1; ++i) {
+        float prevVoltage = result[i - 1].second;
+        float currentVoltage = result[i].second;
+        float nextVoltage = result[i + 1].second;
+
+        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
+            peakPoints.emplace_back(result[i]);
+        }
+    }
+
+    peakPoints.push_back(result.back());
+
+    auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
+                                      [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
+                                          return a.second < b.second;
+                                      });
+    std::pair<float, double> maxPeak = *maxPeakIt;
+//    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
+
+    if (std::find(peakPoints.begin(), peakPoints.end(), maxPeak) == peakPoints.end()) {
+        peakPoints.push_back(maxPeak);
+    }
+
+//    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+
+    for (const auto& peak : peakPoints) {
+//        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
+    }
+
+    std::vector<std::pair<float, double>> downsampledPeaks;
+    size_t step = std::max<size_t>(1, peakPoints.size() / 50); // Downsample to around 50 points
+    for (size_t i = 0; i < peakPoints.size(); i += step) {
+        downsampledPeaks.push_back(peakPoints[i]);
+    }
+    if (peakPoints.back() != downsampledPeaks.back()) {
+        downsampledPeaks.push_back(peakPoints.back()); // Ensure the last point is included
+    }
+
+    if (std::find(downsampledPeaks.begin(), downsampledPeaks.end(), maxPeak) == downsampledPeaks.end()) {
+        downsampledPeaks.push_back(maxPeak);
+    }
+
+    std::sort(downsampledPeaks.begin(), downsampledPeaks.end()); // Sort points by X
+//    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
+
+    std::vector<std::pair<float, double>> smoothCurve;
+    for (size_t i = 0; i < downsampledPeaks.size() - 1; ++i) {
+        float x1 = downsampledPeaks[i].first;
+        float x2 = downsampledPeaks[i + 1].first;
+        double y1 = downsampledPeaks[i].second;
+        double y2 = downsampledPeaks[i + 1].second;
+
+        // Interpolate between peaks
+        for (float x = x1; x <= x2; x += (x2 - x1) / 10.0) { // Add 10 points per segment
+            double t = (x - x1) / (x2 - x1); // Normalize x between 0 and 1
+            double y = (1 - t) * y1 + t * y2; // Linear interpolation
+            smoothCurve.emplace_back(x, y);
+        }
+    }
+
+    qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
+
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& point : smoothCurve) {
+        dist.push_back(point.first / 1000.0);  // Convert m to km
+        volt.push_back(point.second);         // Voltage in mV
+    }
     mainObject.insert("objectName", "dataPlotingB");
     mainObject.insert("distance", dist);
     mainObject.insert("voltage", volt);
 
     QJsonDocument jsonDoc(mainObject);
     QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-    qDebug() << "Generated JSON:" << raw_data;
+//    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
 
-    rawdataArrayA = raw_data;
-//    emit plotingDataPhaseB(raw_data);
-//    reSamplingNormalization(result);
+    rawdataArrayB = std::move(raw_data);
+
+    // Emit the signal for the curve
+    emit plotingDataPhaseB(rawdataArrayB);
 }
 
-//void mainwindows::plotGraph(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
-//                            double distanceToShowInit, double fulldistance, double thresholdInitA) {
-//    qDebug() << "Debug plotGraph:" << sagFactorInit << samplingRateInit << distanceToStartInit
-//             << distanceToShowInit << fulldistance << thresholdInitA;
 
-//    QString filePath = "/home/pi/data0.raw";
-//    QFile file(filePath);
-//    if (!file.open(QIODevice::ReadOnly)) {
-//        qDebug() << "Unable to open file:" << filePath;
-//        return;
-//    }
-//    QByteArray data = file.readAll();
-//    file.close();
-
-//    std::vector<float> normalizedValues;
-//    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
-//    const uint8_t* endPtr = ptr + data.size();
-
-//    while (ptr + 2 <= endPtr) {
-//        uint16_t signedValue = static_cast<uint16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
-//        float normalizedValue = static_cast<float>(signedValue) / 32768.0f;  // Convert to mV
-//        normalizedValues.push_back(normalizedValue);
-//        ptr += 2;
-//    }
-
-//    qDebug() << "Total samples read: " << normalizedValues.size();
-
-//    const float threshold = thresholdInitA / 32768.0f;  // Convert to mV
-//    auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
-//        return val >= threshold;
-//    });
-
-//    if (startIt == normalizedValues.end()) {
-//        qDebug() << "Threshold value not found in data.";
-//        return;
-//    }
-//    int startIndex = std::distance(normalizedValues.begin(), startIt);
-//    qDebug() << "Starting index found at position:" << startIndex;
-
-//    // New Calculation Logic
-//    int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
-//    qDebug() << "Resampling rate:" << resampling;
-
-//    float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
-//    int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
-//    int trueDistancepoint = fullpoint / resampling; // Points after resampling
-
-//    qDebug() << "Full points:" << fullpoint;
-//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
-
-//    float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
-//    qDebug() << "Point interval (m):" << pointInterval;
-
-//    std::vector<std::pair<float, float>> result;
-//    float currentDistance = distanceToStartInit * 1000; // Start in meters
-
-//    for (int i = 0; i < trueDistancepoint; ++i) {
-//        float currentValue = (i * resampling + startIndex < normalizedValues.size())
-//                             ? normalizedValues[i * resampling + startIndex]
-//                             : 0.0f;
-//        result.emplace_back(currentDistance, currentValue);
-//        currentDistance += pointInterval;
-//    }
-
-//    qDebug() << "Final Total Points:" << result.size();
-//    for (const auto& [distance, voltage] : result) {
-//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << (voltage)*4096 << " mV";
-//    }
-
-//    // JSON Output for Plotting
-//    QJsonObject mainObject;
-//    QJsonArray dist, volt;
-//    for (const auto& [distance, voltage] : result) {
-//        dist.push_back(distance / 1000);  // Convert m to km
-//        volt.push_back((voltage/2)*4096);  // Already in mV
-//    }
-
-//    mainObject.insert("objectName", "dataPlotingB");
-//    mainObject.insert("distance", dist);
-//    mainObject.insert("voltage", volt);
-
-//    QJsonDocument jsonDoc(mainObject);
-//    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-//    qDebug() << "Generated JSON:" << raw_data;
-
-//    rawdataArrayA = raw_data;
-////    emit plotingDataPhaseB(raw_data);
-//    reSamplingNormalization(result);
-//}
-void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, float>>& result) {
+void mainwindows::reSamplingNormalizationC(const std::vector<std::pair<float, float>>& result) {
+    qDebug() << "reSamplingNormalizationC:" << result;
     if (result.size() < 3) {
         qDebug() << "Not enough data points to process.";
         return;
@@ -1529,27 +1774,24 @@ void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, flo
         }
     }
 
-    // Add the last point
     peakPoints.push_back(result.back());
 
-    // Find the maximum peak
     auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
                                       [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
                                           return a.second < b.second;
                                       });
     std::pair<float, double> maxPeak = *maxPeakIt;
-    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
+//    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
 
-    // Ensure the maximum peak is included
     if (std::find(peakPoints.begin(), peakPoints.end(), maxPeak) == peakPoints.end()) {
         peakPoints.push_back(maxPeak);
     }
 
-    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+//    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
 
     // Debug peaks
     for (const auto& peak : peakPoints) {
-        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
+//        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
     }
 
     // Step 2: Downsample Peak Points
@@ -1568,7 +1810,7 @@ void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, flo
     }
 
     std::sort(downsampledPeaks.begin(), downsampledPeaks.end()); // Sort points by X
-    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
+//    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
 
     // Step 3: Smoothing using Linear Interpolation
     std::vector<std::pair<float, double>> smoothCurve;
@@ -1586,6 +1828,198 @@ void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, flo
         }
     }
 
+//    qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
+
+    // Step 4: Prepare JSON Output
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& point : smoothCurve) {
+        dist.push_back(point.first / 1000.0);  // Convert m to km
+        volt.push_back(point.second);         // Voltage in mV
+    }
+    mainObject.insert("objectName", "dataPlotingC");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
+
+    rawdataArrayC = std::move(raw_data);
+
+    // Emit the signal for the curve
+    emit plotingDataPhaseC(rawdataArrayC);
+}
+
+void mainwindows::plotPatternA(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
+                            double distanceToShowInit, double fulldistance, double thresholdInitA) {
+    qDebug() << "Debug plotGraph:" << sagFactorInit << samplingRateInit << distanceToStartInit
+             << distanceToShowInit << fulldistance << thresholdInitA;
+
+    QString filePath = "/home/pi/data0.raw";
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "Unable to open file:" << filePath;
+        return;
+    }
+    QByteArray data = file.readAll();
+    file.close();
+
+    std::vector<float> normalizedValues;
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
+    const uint8_t* endPtr = ptr + data.size();
+
+    while (ptr + 2 <= endPtr) {
+        uint16_t signedValue = static_cast<uint16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
+        float normalizedValue = static_cast<float>(signedValue) / 32768.0f;  // Convert to mV
+        normalizedValues.push_back(normalizedValue);
+        ptr += 2;
+    }
+
+//    qDebug() << "Total samples read: " << normalizedValues.size();
+
+    const float threshold = thresholdInitA / 32768.0f;  // Convert to mV
+    auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
+        return val >= threshold;
+    });
+
+    if (startIt == normalizedValues.end()) {
+        qDebug() << "Threshold value not found in data.";
+        return;
+    }
+    int startIndex = std::distance(normalizedValues.begin(), startIt);
+//    qDebug() << "Starting index found at position:" << startIndex;
+
+    int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
+//    qDebug() << "Resampling rate:" << resampling;
+
+    float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
+    int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
+    int trueDistancepoint = fullpoint / resampling; // Points after resampling
+
+//    qDebug() << "Full points:" << fullpoint;
+//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
+
+    float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
+//    qDebug() << "Point interval (m):" << pointInterval;
+
+    std::vector<std::pair<float, float>> result;
+    float currentDistance = distanceToStartInit * 1000; // Start in meters
+
+    for (int i = 0; i < trueDistancepoint; ++i) {
+        float currentValue = (i * resampling + startIndex < normalizedValues.size())
+                             ? normalizedValues[i * resampling + startIndex] * 4096/2  // Multiply by 4096 here
+                             : 0.0f;
+        result.emplace_back(currentDistance, currentValue);
+        currentDistance += pointInterval;
+    }
+
+    qDebug() << "Final Total Points:" << result.size();
+    for (const auto& [distance, voltage] : result) {
+//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
+    }
+
+    // JSON Output for Plotting
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& [distance, voltage] : result) {
+        dist.push_back(distance / 1000);  // Convert m to km
+        volt.push_back(voltage);  // Already multiplied by 4096
+    }
+
+    mainObject.insert("objectName", "patthernA");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON:" << raw_data;
+
+    rawdataArrayA = raw_data;
+    reSamplingNormalizationPatternA(result);
+
+}
+
+void mainwindows::reSamplingNormalizationPatternA(const std::vector<std::pair<float, float>>& result) {
+    if (result.size() < 3) {
+        qDebug() << "Not enough data points to process.";
+        return;
+    }
+    qDebug() << "Starting peak detection and smoothing...";
+
+    // Step 1: Detect Peaks
+    std::vector<std::pair<float, double>> peakPoints;
+    std::pair<float, double> startPoint = {0.0, 0.0};
+
+    for (const auto& point : result) {
+        if (point.second > 0.0) { // First non-zero voltage
+            startPoint = {point.first, point.second};
+            break;
+        }
+    }
+    peakPoints.push_back(startPoint);
+
+    for (size_t i = 1; i < result.size() - 1; ++i) {
+        float prevVoltage = result[i - 1].second;
+        float currentVoltage = result[i].second;
+        float nextVoltage = result[i + 1].second;
+
+        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
+            peakPoints.emplace_back(result[i]);
+        }
+    }
+
+    peakPoints.push_back(result.back());
+
+    auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
+                                      [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
+                                          return a.second < b.second;
+                                      });
+    std::pair<float, double> maxPeak = *maxPeakIt;
+//    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
+
+    if (std::find(peakPoints.begin(), peakPoints.end(), maxPeak) == peakPoints.end()) {
+        peakPoints.push_back(maxPeak);
+    }
+
+    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+
+    for (const auto& peak : peakPoints) {
+//        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
+    }
+
+    // Step 2: Downsample Peak Points
+    std::vector<std::pair<float, double>> downsampledPeaks;
+    size_t step = std::max<size_t>(1, peakPoints.size() / 50); // Downsample to around 50 points
+    for (size_t i = 0; i < peakPoints.size(); i += step) {
+        downsampledPeaks.push_back(peakPoints[i]);
+    }
+    if (peakPoints.back() != downsampledPeaks.back()) {
+        downsampledPeaks.push_back(peakPoints.back()); // Ensure the last point is included
+    }
+
+    if (std::find(downsampledPeaks.begin(), downsampledPeaks.end(), maxPeak) == downsampledPeaks.end()) {
+        downsampledPeaks.push_back(maxPeak);
+    }
+
+    std::sort(downsampledPeaks.begin(), downsampledPeaks.end()); // Sort points by X
+//    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
+
+    // Step 3: Generate Smooth Curve
+    std::vector<std::pair<float, double>> smoothCurve;
+    for (size_t i = 0; i < downsampledPeaks.size() - 1; ++i) {
+        float x1 = downsampledPeaks[i].first;
+        float x2 = downsampledPeaks[i + 1].first;
+        double y1 = downsampledPeaks[i].second;
+        double y2 = downsampledPeaks[i + 1].second;
+
+        for (float x = x1; x <= x2; x += (x2 - x1) / 10.0) { // Add 10 points per segment
+            double t = (x - x1) / (x2 - x1); // Normalize x between 0 and 1
+            double y = (1 - t) * y1 + t * y2; // Linear interpolation
+            smoothCurve.emplace_back(x, y);
+        }
+    }
+
     qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
 
     // Step 4: Prepare JSON Output
@@ -1595,785 +2029,453 @@ void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, flo
         dist.push_back(point.first / 1000.0);  // Convert m to km
         volt.push_back(point.second);         // Voltage in mV
     }
-    mainObject.insert("objectName", "dataPlotingB");
+    mainObject.insert("objectName", "patthernA");
     mainObject.insert("distance", dist);
     mainObject.insert("voltage", volt);
 
     QJsonDocument jsonDoc(mainObject);
     QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
-
-    rawdataArrayA = std::move(raw_data);
+//    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
 
     // Emit the signal for the curve
+    rawdataArrayA = std::move(raw_data);
     emit plotingDataPhaseA(rawdataArrayA);
 }
 
 
-//void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, float>>& result) {
-//    if (result.size() < 3) {
-//        qDebug() << "Not enough data points to detect peaks.";
-//        return;
-//    }
+void mainwindows::plotPatternB(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
+                            double distanceToShowInit, double fulldistance, double thresholdInitB) {
+    qDebug() << "Debug plotPatternB:" << sagFactorInit << samplingRateInit << distanceToStartInit
+             << distanceToShowInit << fulldistance << thresholdInitB;
 
-//    std::vector<std::pair<float, double>> peakPoints;
-//    qDebug() << "Starting peak detection...";
+    QString filePath = "/home/pi/data0.raw";
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "Unable to open file:" << filePath;
+        return;
+    }
+    QByteArray data = file.readAll();
+    file.close();
 
-//    // Step 1: Identify the starting point
-//    std::pair<float, double> startPoint = {0.0, 0.0};
-//    for (const auto& point : result) {
-//        if (point.second > 0.0) { // Find the first non-zero voltage as the start point
-//            startPoint = {point.first, point.second};
-//            break;
-//        }
-//    }
-//    peakPoints.push_back(startPoint);
+    std::vector<float> normalizedValues;
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
+    const uint8_t* endPtr = ptr + data.size();
 
-//    qDebug() << "Starting point detected: X:" << startPoint.first / 1000.0 << "km, Y:" << startPoint.second << "mV";
+    while (ptr + 2 <= endPtr) {
+        uint16_t signedValue = static_cast<uint16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
+        float normalizedValue = static_cast<float>(signedValue) / 32768.0f;  // Convert to mV
+        normalizedValues.push_back(normalizedValue);
+        ptr += 2;
+    }
 
-//    // Step 2: Detect peaks
-//    for (size_t i = 1; i < result.size() - 1; ++i) {
-//        float prevVoltage = result[i - 1].second;
-//        float currentVoltage = result[i].second;
-//        float nextVoltage = result[i + 1].second;
+//    qDebug() << "Total samples read: " << normalizedValues.size();
 
-//        // Detect a peak if the current voltage is higher than both its neighbors
-//        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
-//            peakPoints.emplace_back(result[i]);
-//        }
-//    }
+    const float threshold = thresholdInitB / 32768.0f;  // Convert to mV
+    auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
+        return val >= threshold;
+    });
 
-//    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+    if (startIt == normalizedValues.end()) {
+        qDebug() << "Threshold value not found in data.";
+        return;
+    }
+    int startIndex = std::distance(normalizedValues.begin(), startIt);
+//    qDebug() << "Starting index found at position:" << startIndex;
 
-//    // Debug the number of points used in plotting
-//    int pointsUsed = peakPoints.size();
-//    qDebug() << "Total points used for plotting the graph:" << pointsUsed;
+    int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
+//    qDebug() << "Resampling rate:" << resampling;
 
-//    for (const auto& peak : peakPoints) {
+    float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
+    int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
+    int trueDistancepoint = fullpoint / resampling; // Points after resampling
+
+//    qDebug() << "Full points:" << fullpoint;
+//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
+
+    float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
+//    qDebug() << "Point interval (m):" << pointInterval;
+
+    std::vector<std::pair<float, float>> result;
+    float currentDistance = distanceToStartInit * 1000; // Start in meters
+
+    for (int i = 0; i < trueDistancepoint; ++i) {
+        float currentValue = (i * resampling + startIndex < normalizedValues.size())
+                             ? normalizedValues[i * resampling + startIndex] * 4096/2  // Multiply by 4096 here
+                             : 0.0f;
+        result.emplace_back(currentDistance, currentValue);
+        currentDistance += pointInterval;
+    }
+
+    qDebug() << "Final Total Points:" << result.size();
+    for (const auto& [distance, voltage] : result) {
+//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
+    }
+
+    // JSON Output for Plotting
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& [distance, voltage] : result) {
+        dist.push_back(distance / 1000);  // Convert m to km
+        volt.push_back(voltage);  // Already multiplied by 4096
+    }
+
+    mainObject.insert("objectName", "patthernB");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON:" << raw_data;
+
+    rawdataArrayB = raw_data;
+    reSamplingNormalizationPatternB(result);
+
+}
+
+void mainwindows::reSamplingNormalizationPatternB(const std::vector<std::pair<float, float>>& result) {
+    if (result.size() < 3) {
+        qDebug() << "Not enough data points to process.";
+        return;
+    }
+    qDebug() << "Starting peak detection and smoothing...";
+
+    // Step 1: Detect Peaks
+    std::vector<std::pair<float, double>> peakPoints;
+    std::pair<float, double> startPoint = {0.0, 0.0};
+
+    for (const auto& point : result) {
+        if (point.second > 0.0) { // First non-zero voltage
+            startPoint = {point.first, point.second};
+            break;
+        }
+    }
+    peakPoints.push_back(startPoint);
+
+    for (size_t i = 1; i < result.size() - 1; ++i) {
+        float prevVoltage = result[i - 1].second;
+        float currentVoltage = result[i].second;
+        float nextVoltage = result[i + 1].second;
+
+        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
+            peakPoints.emplace_back(result[i]);
+        }
+    }
+
+    peakPoints.push_back(result.back());
+
+    auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
+                                      [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
+                                          return a.second < b.second;
+                                      });
+    std::pair<float, double> maxPeak = *maxPeakIt;
+//    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
+
+    if (std::find(peakPoints.begin(), peakPoints.end(), maxPeak) == peakPoints.end()) {
+        peakPoints.push_back(maxPeak);
+    }
+
+    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+
+    for (const auto& peak : peakPoints) {
 //        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
-//    }
-
-//    // Step 3: Prepare JSON Output
-//    QJsonObject mainObject;
-//    QJsonArray dist, volt;
-//    for (const auto& point : peakPoints) {
-//        dist.push_back(point.first / 1000.0);  // Convert m to km
-//        volt.push_back(point.second);         // Voltage in mV
-//    }
-//    mainObject.insert("objectName", "dataPlotingA");
-//    mainObject.insert("distance", dist);
-//    mainObject.insert("voltage", volt);
-
-//    QJsonDocument jsonDoc(mainObject);
-//    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-//    qDebug() << "Generated JSON for peak points:" << raw_data;
-
-//    rawdataArrayA = std::move(raw_data);
-
-//    // Emit the signal for the peak points
-//    emit plotingDataPhaseA(rawdataArrayA);
-//}
-
-//void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, float>>& result) {
-//    if (result.size() < 3) {
-//        qDebug() << "Not enough data points to detect peaks.";
-//        return;
-//    }
-//    std::vector<std::pair<float, double>> peakPoints;
-//    qDebug() << "Starting peak detection...";
-
-//    // Step 1: Detect Peaks
-//    peakPoints.push_back(result.front());
-//    for (size_t i = 1; i < result.size() - 1; ++i) {
-//        float prevVoltage = result[i - 1].second;
-//        float currentVoltage = result[i].second;
-//        float nextVoltage = result[i + 1].second;
-
-//        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
-//            peakPoints.emplace_back(result[i]);
-//        }
-//    }
-//    peakPoints.push_back(result.back());
-//    qDebug() << "Peaks detected. Total:" << peakPoints.size();
-
-//    auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
-//                                      [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
-//                                          return a.second < b.second;
-//                                      });
-//    double maxPeakValue = maxPeakIt->second;
-
-//    if (peakPoints.size() >= 3) {
-//        const int windowSize = std::min(2, static_cast<int>(peakPoints.size())); // ถ้าน้อยมันจะไม่ละเอียดถ้ามากมันจะละเอียด
-//        const double sigma = 1.5; //น้อยจะเข้าใกล้จุดพีคมากขึ้น ถ้ามากก็จะห่างออกไป
-//        const int halfWindow = windowSize / 2;
-
-//        std::vector<double> kernel(windowSize);
-//        double kernelSum = 0.0;
-//        for (int i = -halfWindow; i <= halfWindow; ++i) {
-//            kernel[i + halfWindow] = exp(-0.5 * (i * i) / (sigma * sigma));
-//            kernelSum += kernel[i + halfWindow];
-//        }
-//        for (auto& k : kernel) k /= kernelSum;
-
-//        std::vector<std::pair<float, double>> smoothPeaks(peakPoints.size());
-//        for (size_t i = 0; i < peakPoints.size(); ++i) {
-//            if (peakPoints[i].second == maxPeakValue) {
-//                smoothPeaks[i] = peakPoints[i];
-//                continue;
-//            }
-
-//            double weightedSum = 0.0;
-//            double weightSum = 0.0;
-//            for (int j = -halfWindow; j <= halfWindow; ++j) {
-//                int index = static_cast<int>(i) + j;
-//                if (index >= 0 && index < static_cast<int>(peakPoints.size())) {
-//                    weightedSum += peakPoints[index].second * kernel[j + halfWindow];
-//                    weightSum += kernel[j + halfWindow];
-//                }
-//            }
-//            smoothPeaks[i] = {peakPoints[i].first, weightedSum / weightSum};
-//        }
-//        peakPoints = std::move(smoothPeaks);
-//        qDebug() << "Smoothing completed:" << peakPoints;
-//    } else {
-//        qDebug() << "Not enough peaks for Gaussian smoothing.";
-//    }
-
-//    // Step 3: Prepare JSON Output
-//    QJsonObject mainObject;
-//    QJsonArray dist, volt;
-//    for (const auto& point : peakPoints) {
-//        dist.push_back(point.first / 1000.0);  // Convert m to km
-//        volt.push_back(point.second);
-//    }
-//    mainObject.insert("objectName", "dataPlotingA");
-//    mainObject.insert("distance", dist);
-//    mainObject.insert("voltage", volt);
-
-//    QJsonDocument jsonDoc(mainObject);
-//    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-//    qDebug() << "Generated JSON for smoothed peaks:" << raw_data;
-
-//    rawdataArrayA = std::move(raw_data);
-
-//    if (temp.isEmpty()) {
-//        temp = rawdataArrayA;
-//    } else if (rawdataArrayA != temp && count > 2) {
-//        temp = rawdataArrayA;
-//    }
-//    emit plotingDataPhaseA(rawdataArrayA);
-//}
-
-
-//void mainwindows::calculate(QString msg) {
-//    qDebug() << "calculate:" << msg;
-//    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
-//    QJsonObject command = d.object();
-//    QString getCommand = QJsonValue(command["objectName"]).toString();
-//    // Default values
-//    static double thresholdInit = 0;
-//    static double sagFactorInit = 0;
-//    static double samplingRateInit = 0;
-//    static double distanceToStartInit = 0;
-//    static double distanceToShowInit = 0;
-//    static double fulldistanceInit = 0;
-//    // Update parameters only if the relevant object is found
-////    if (getCommand == "updataParameterDisplay") {
-//        if (QString::number(command.value("sagFactorInit").toInt())!= ""){
-//            sagFactorInit = command.value("sagFactorInit").toDouble();
-//        }
-//        if (QString::number(command.value("samplingRateInit").toInt())!= ""){
-//            samplingRateInit = command.value("samplingRateInit").toDouble();
-//        }
-//        if (QString::number(command.value("distanceToStartInit").toInt())!= ""){
-//            distanceToStartInit = command.value("distanceToStartInit").toDouble();
-//        }
-//        if (QString::number(command.value("distanceToShowInit").toInt())!= ""){
-//            distanceToShowInit = command.value("distanceToShowInit").toDouble();
-//        }
-//        if (QString::number(command.value("fulldistancesInit").toInt())!= ""){
-//            fulldistanceInit = command.value("fulldistancesInit").toDouble();
-//        }    if (QString::number(command.value("thresholdInitA").toInt())!= ""){
-//            thresholdInit = command.value("thresholdInitA").toDouble();
-//        }
-
-//        qDebug() << "GetSettingDisplay received:";
-//        qDebug() << "sagFactorInit:" << sagFactorInit;
-//        qDebug() << "samplingRateInit:" << samplingRateInit;
-//        qDebug() << "distanceToStartInit:" << distanceToStartInit;
-//        qDebug() << "distanceToShowInit:" << distanceToShowInit;
-//        qDebug() << "fulldistanceInit:" << fulldistanceInit;
-////    }
-
-////    if (getCommand == "updatethresholdParam") {
-//    if (QString::number(command.value("thresholdInitA").toInt())!= ""){
-//        thresholdInit = command.value("thresholdInitA").toDouble();
-//    }
-//        qDebug() << "getThreshold received:";
-//        qDebug() << "thresholdInit:" << thresholdInit;
-////    }
-
-//    // After processing the messages, use the updated values in calculations
-//    qDebug() << "Debug display parameter:" << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit << thresholdInit;
-//    // Setting parameters
-//    sagFactor = sagFactorInit;       // SAG factor
-//    samplingRate = samplingRateInit; // Sampling rate (meters per sample)
-//    distanceToStart = distanceToStartInit * 1000; // Starting distance (km)
-//    distanceToShow = distanceToShowInit * 1000;   // Ending distance (km)
-//    valuetheshold = thresholdInit; // Threshold value
-//    const float threshold = valuetheshold / 32768.0f;
-
-
-//        // Path of the file
-//        QString filePath = "/home/pi/data0.raw"; //adc_ch1_voltage.dat
-//        QFile file(filePath);
-
-//        // Check if the file can be opened
-//        if (!file.open(QIODevice::ReadOnly)) {
-//            qDebug() << "Unable to open file:" << filePath;
-//            return;
-//        }
-
-//        // Read data from the file
-//        QByteArray data = file.readAll();
-//        file.close();
-
-//        qDebug() << "Debug display parameter:" << sagFactor << samplingRate << distanceToStart << distanceToShow << valuetheshold << threshold;
-
-//        // Calculate total distance adjusted by SAG factor
-//        float totalDistance = (distanceToShow - distanceToStart) * sagFactor;
-
-//        // Calculate total number of points (distance / point distance) adjusted by sampling rate
-
-//        const float pointDistance =  samplingRate / distancePointBetweenPoint; // Adjust point distance using sampling rate ยิ่งsampling rate มากใันก็จะยิ่งหยาบมากขึ้น
-//        int totalPoints = static_cast<int>(std::ceil(totalDistance / pointDistance));
-
-//        // Read data from file and normalize values
-//        std::vector<float> normalizedValues;
-//        const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
-//        const uint8_t* endPtr = ptr + data.size();
-
-
-//        while (ptr + 2 <= endPtr) {
-//            // Read the raw 2 bytes as a signed 16-bit integer
-//            int16_t signedValue = static_cast<int16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
-
-//            // Normalize the value (handling both negative and positive values)
-//            float normalizedValue = static_cast<float>(signedValue) / 32768.0f;
-
-//            // Store the normalized value in the vector
-//            normalizedValues.push_back(normalizedValue);
-
-//            // Move the pointer forward by 2 bytes
-//            ptr += 2;
-//        }
-
-
-//        // Find the value that matches the threshold
-//        auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
-//            return val >= threshold; // Find the value greater than or equal to threshold
-//        });
-
-//        if (startIt == normalizedValues.end()) {
-//            qDebug() << "Threshold value not found in data";
-//            return;
-//        }
-
-//        // Get the starting index of the found threshold
-//        int startIndex = std::distance(normalizedValues.begin(), startIt);
-
-//        // Create result (X: distance, Y: normalized voltage)
-//        std::vector<std::pair<float, float>> result; // (X: distance, Y: normalized voltage)
-//        float currentDistance = distanceToStart;
-
-//        // Get the values starting from the threshold found
-//        for (int i = startIndex; i < startIndex + totalPoints && i < normalizedValues.size(); ++i) {
-//            // Set Y value (normalized voltage)
-//            float currentValue = normalizedValues[i];
-
-//            // Add the point to the result
-//            result.emplace_back(currentDistance, currentValue);
-
-//            // Increment the distance by the point distance adjusted by sampling rate
-//            currentDistance += pointDistance;
-//        }
-
-//        // Display the result
-//        qDebug() << "Result (Distance, Normalized Voltage):";
-//        for (const auto& [distance, voltage] : result) {
-//            qDebug() << "X:" << distance << "m, Y:" << voltage << "mV";
-//        }
-
-//        // Summary
-//        qDebug() << "SAG Factor:" << sagFactor;
-//        qDebug() << "Sampling Rate (m/samples):" << samplingRate;
-//        qDebug() << "Distance to Start:" << distanceToStart;
-//        qDebug() << "Distance to Show:" << distanceToShow;
-//        qDebug() << "Total Distance after SAG Adjustment:" << totalDistance;
-//        qDebug() << "Total Points to Plot:" << totalPoints;
-//        rawdataArrayA = "";
-//        // Pack the distance and voltage data into a JSON format
-//        QString rawDataString = "[";
-//        if(getCommand == "startPlotingDataPhaseA"){
-//            QJsonObject mainObject;
-//            QJsonArray dist,volt;
-//            QJsonDocument jsonDoc,loraDoc;
-//            QJsonObject lora_sent;
-//            for (size_t i = 0; i < result.size(); i++) {
-//                const auto& [distance, voltage] = result[i];
-//                dist.push_back(distance);
-//                volt.push_back(voltage);
-//            }
-//            mainObject.insert("objectName", "dataPlotingA");
-//            mainObject.insert("distance", dist);
-//            mainObject.insert("voltage", volt);
-//            jsonDoc.setObject(mainObject);
-//            QString raw_data = QJsonDocument(mainObject).toJson(QJsonDocument::Compact).toStdString().c_str();
-//            qDebug() << "mainObject:" << raw_data;
-
-//    //        QString rawDataString = "[";
-//    //        for (size_t i = 0; i < result.size(); ++i) {
-//    //            const auto& [distance, voltage] = result[i];
-//    //            // Format each data point
-//    //            QString pointData = QString(
-//    //                                        "\"distance\":%1,"
-//    //                                        "\"voltage \":%2}")
-//    //                                    .arg(distance, 0, 'f', 6) // 6 decimal places
-//    //                                    .arg(voltage, 0, 'f', 6); // 6 decimal places
-//    //            rawDataString += pointData;
-//    //            // Add a comma between data points
-//    //            if (i < result.size() - 1) {
-//    //                rawDataString += ",";
-//    //            }
-//    //        }
-//    //        rawDataString += "]";
-
-//            // Create the final JSON array
-//    //        rawdataArray = QString("{\"objectName\":\"dataPlotingA\","
-//    //                                       "\"packageRawDataA\":%1}").arg(raw_data);
-//            rawdataArrayA = raw_data;
-//            qDebug() << "rawdataArray" <<raw_data ;
-//            if(temp == ""){
-//                temp = rawdataArrayA;
-//            }
-//            else if(rawdataArrayA != temp && count > 2){
-//                temp = rawdataArrayA;
-//    //            emit cppCommand(temp);
-//                emit plotingDataPhaseA(temp);
-//            }
-
-//        if(count > 2){
-
-//        }else{
-//            count++;
-//        }
-//        emit plotingDataPhaseA(raw_data);
-//        }
-
-//}
-void mainwindows::calculateDataPhaseB(QString msg) {
-//    qDebug() << "calculateDataPhaseB:" << msg;
-//    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
-//    QJsonObject command = d.object();
-//    QString getCommand = QJsonValue(command["objectName"]).toString();
-//    // Default values
-//    static double thresholdInit = 0;
-//    static double sagFactorInit = 0;
-//    static double samplingRateInit = 0;
-//    static double distanceToStartInit = 0;
-//    static double distanceToShowInit = 0;
-//    static double fulldistanceInit = 0;
-//    // Update parameters only if the relevant object is found
-//    if (getCommand == "updataParameterDisplay") {
-//        if (QString::number(command.value("sagFactorInit").toInt())!= ""){
-//            sagFactorInit = command.value("sagFactorInit").toDouble();
-//        }
-//        if (QString::number(command.value("samplingRateInit").toInt())!= ""){
-//            samplingRateInit = command.value("samplingRateInit").toDouble();
-//        }
-//        if (QString::number(command.value("distanceToStartInit").toInt())!= ""){
-//            distanceToStartInit = command.value("distanceToStartInit").toDouble();
-//        }
-//        if (QString::number(command.value("distanceToShowInit").toInt())!= ""){
-//            distanceToShowInit = command.value("distanceToShowInit").toDouble();
-//        }
-//        if (QString::number(command.value("fulldistancesInit").toInt())!= ""){
-//            fulldistanceInit = command.value("fulldistancesInit").toDouble();
-//        }    if (QString::number(command.value("thresholdInitA").toInt())!= ""){
-//            thresholdInit = command.value("thresholdInitA").toDouble();
-//        }
-
-//        qDebug() << "GetSettingDisplay received:";
-//        qDebug() << "sagFactorInit:" << sagFactorInit;
-//        qDebug() << "samplingRateInit:" << samplingRateInit;
-//        qDebug() << "distanceToStartInit:" << distanceToStartInit;
-//        qDebug() << "distanceToShowInit:" << distanceToShowInit;
-//        qDebug() << "fulldistanceInit:" << fulldistanceInit;
-//    }
-
-//    if (getCommand == "updatethresholdParam") {
-//    if (QString::number(command.value("thresholdInitB").toInt())!= ""){
-//        thresholdInit = command.value("thresholdInitB").toDouble();
-//    }
-//        qDebug() << "getThreshold received:";
-//        qDebug() << "thresholdInit:" << thresholdInit;
-//    }
-
-//    // After processing the messages, use the updated values in calculations
-//    qDebug() << "Debug display parameter:" << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit << thresholdInit;
-//    // Setting parameters
-//    sagFactor = sagFactorInit;       // SAG factor
-//    samplingRate = samplingRateInit; // Sampling rate (meters per sample)
-//    distanceToStart = distanceToStartInit * 1000; // Starting distance (km)
-//    distanceToShow = distanceToShowInit * 1000;   // Ending distance (km)
-//    valuetheshold = thresholdInit; // Threshold value
-//    const float threshold = valuetheshold / 32768.0f;
-
-
-//        // Path of the file
-//        QString filePath = "/home/pi/data1.raw"; //adc_ch1_voltage.dat
-//        QFile file(filePath);
-
-//        // Check if the file can be opened
-//        if (!file.open(QIODevice::ReadOnly)) {
-//            qDebug() << "Unable to open file:" << filePath;
-//            return;
-//        }
-
-//        // Read data from the file
-//        QByteArray data = file.readAll();
-//        file.close();
-
-//        qDebug() << "Debug display parameter:" << sagFactor << samplingRate << distanceToStart << distanceToShow << valuetheshold << threshold;
-
-//        // Calculate total distance adjusted by SAG factor
-//        float totalDistance = (distanceToShow - distanceToStart) * sagFactor;
-
-//        // Calculate total number of points (distance / point distance) adjusted by sampling rate
-
-//        const float pointDistance =  samplingRate / distancePointBetweenPoint; // Adjust point distance using sampling rate ยิ่งsampling rate มากใันก็จะยิ่งหยาบมากขึ้น
-//        int totalPoints = static_cast<int>(std::ceil(totalDistance / pointDistance));
-
-//        // Read data from file and normalize values
-//        std::vector<float> normalizedValues;
-//        const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
-//        const uint8_t* endPtr = ptr + data.size();
-
-
-//        while (ptr + 2 <= endPtr) {
-//            // Read the raw 2 bytes as a signed 16-bit integer
-//            int16_t signedValue = static_cast<int16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
-
-//            // Normalize the value (handling both negative and positive values)
-//            float normalizedValue = static_cast<float>(signedValue) / 32768.0f;
-
-//            // Store the normalized value in the vector
-//            normalizedValues.push_back(normalizedValue);
-
-//            // Move the pointer forward by 2 bytes
-//            ptr += 2;
-//        }
-
-
-//        // Find the value that matches the threshold
-//        auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
-//            return val >= threshold; // Find the value greater than or equal to threshold
-//        });
-
-//        if (startIt == normalizedValues.end()) {
-//            qDebug() << "Threshold value not found in data";
-//            return;
-//        }
-
-//        // Get the starting index of the found threshold
-//        int startIndex = std::distance(normalizedValues.begin(), startIt);
-
-//        // Create result (X: distance, Y: normalized voltage)
-//        std::vector<std::pair<float, float>> result; // (X: distance, Y: normalized voltage)
-//        float currentDistance = distanceToStart;
-
-//        // Get the values starting from the threshold found
-//        for (int i = startIndex; i < startIndex + totalPoints && i < normalizedValues.size(); ++i) {
-//            // Set Y value (normalized voltage)
-//            float currentValue = normalizedValues[i];
-
-//            // Add the point to the result
-//            result.emplace_back(currentDistance, currentValue);
-
-//            // Increment the distance by the point distance adjusted by sampling rate
-//            currentDistance += pointDistance;
-//        }
-
-//        // Display the result
-//        qDebug() << "Result (Distance, Normalized Voltage):";
-//        for (const auto& [distance, voltage] : result) {
-//            qDebug() << "X:" << distance << "m, Y:" << voltage << "mV";
-//        }
-
-//        // Summary
-//        qDebug() << "SAG Factor:" << sagFactor;
-//        qDebug() << "Sampling Rate (m/samples):" << samplingRate;
-//        qDebug() << "Distance to Start:" << distanceToStart;
-//        qDebug() << "Distance to Show:" << distanceToShow;
-//        qDebug() << "Total Distance after SAG Adjustment:" << totalDistance;
-//        qDebug() << "Total Points to Plot:" << totalPoints;
-//        rawdataArrayB = "";
-//        // Pack the distance and voltage data into a JSON format
-
-//        QJsonObject mainObject;
-//        QJsonArray dist,volt;
-//        QJsonDocument jsonDoc,loraDoc;
-//        QJsonObject lora_sent;
-//        for (size_t i = 0; i < result.size(); ++i) {
-//            const auto& [distance, voltage] = result[i];
-//            dist.push_back(distance);
-//            volt.push_back(voltage);
-//        }
-//        mainObject.insert("objectName", "dataPlotingB");
-//        mainObject.insert("distance", dist);
-//        mainObject.insert("voltage", volt);
-//        jsonDoc.setObject(mainObject);
-//        QString raw_data = QJsonDocument(mainObject).toJson(QJsonDocument::Compact).toStdString().c_str();
-//        qDebug() << "mainObject:" << raw_data;
-
-////        QString rawDataString = "[";
-////        for (size_t i = 0; i < result.size(); ++i) {
-////            const auto& [distance, voltage] = result[i];
-////            // Format each data point
-////            QString pointData = QString(
-////                                        "\"distance\":%1,"
-////                                        "\"voltage \":%2}")
-////                                    .arg(distance, 0, 'f', 6) // 6 decimal places
-////                                    .arg(voltage, 0, 'f', 6); // 6 decimal places
-////            rawDataString += pointData;
-////            // Add a comma between data points
-////            if (i < result.size() - 1) {
-////                rawDataString += ",";
-////            }
-////        }
-////        rawDataString += "]";
-
-//        // Create the final JSON array
-////        rawdataArray = QString("{\"objectName\":\"dataPlotingA\","
-////                                       "\"packageRawDataA\":%1}").arg(raw_data);
-//        rawdataArrayB = raw_data;
-//        qDebug() << "rawdataArray" <<raw_data ;
-//        if(temp2 == ""){
-//            temp2 = rawdataArrayB;
-//        }
-//        else if(rawdataArrayB != temp2 && count2 > 2){
-//            temp2 = rawdataArrayB;
-//            emit cppCommand(temp2);
-//        }
-
-//    if(count2 > 2){
-
-//    }else{
-//        count2++;
-//    }
+    }
+
+    // Step 2: Downsample Peak Points
+    std::vector<std::pair<float, double>> downsampledPeaks;
+    size_t step = std::max<size_t>(1, peakPoints.size() / 50); // Downsample to around 50 points
+    for (size_t i = 0; i < peakPoints.size(); i += step) {
+        downsampledPeaks.push_back(peakPoints[i]);
+    }
+    if (peakPoints.back() != downsampledPeaks.back()) {
+        downsampledPeaks.push_back(peakPoints.back()); // Ensure the last point is included
+    }
+
+    if (std::find(downsampledPeaks.begin(), downsampledPeaks.end(), maxPeak) == downsampledPeaks.end()) {
+        downsampledPeaks.push_back(maxPeak);
+    }
+
+    std::sort(downsampledPeaks.begin(), downsampledPeaks.end()); // Sort points by X
+//    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
+
+    // Step 3: Generate Smooth Curve
+    std::vector<std::pair<float, double>> smoothCurve;
+    for (size_t i = 0; i < downsampledPeaks.size() - 1; ++i) {
+        float x1 = downsampledPeaks[i].first;
+        float x2 = downsampledPeaks[i + 1].first;
+        double y1 = downsampledPeaks[i].second;
+        double y2 = downsampledPeaks[i + 1].second;
+
+        for (float x = x1; x <= x2; x += (x2 - x1) / 10.0) { // Add 10 points per segment
+            double t = (x - x1) / (x2 - x1); // Normalize x between 0 and 1
+            double y = (1 - t) * y1 + t * y2; // Linear interpolation
+            smoothCurve.emplace_back(x, y);
+        }
+    }
+
+    qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
+
+    // Step 4: Prepare JSON Output
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& point : smoothCurve) {
+        dist.push_back(point.first / 1000.0);  // Convert m to km
+        volt.push_back(point.second);         // Voltage in mV
+    }
+    mainObject.insert("objectName", "patthernB");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
+
+    // Emit the signal for the curve
+    rawdataArrayB = std::move(raw_data);
+    emit plotingDataPhaseB(rawdataArrayB);
 }
 
-void mainwindows::calculateDataPhaseC(QString msg) {
-//    qDebug() << "calculateDataPhaseC:" << msg;
-//    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
-//    QJsonObject command = d.object();
-//    QString getCommand = QJsonValue(command["objectName"]).toString();
-//    // Default values
-//    static double thresholdInit = 0;
-//    static double sagFactorInit = 0;
-//    static double samplingRateInit = 0;
-//    static double distanceToStartInit = 0;
-//    static double distanceToShowInit = 0;
-//    static double fulldistanceInit = 0;
-//    // Update parameters only if the relevant object is found
-//    if (getCommand == "updataParameterDisplay") {
-//        if (QString::number(command.value("sagFactorInit").toInt())!= ""){
-//            sagFactorInit = command.value("sagFactorInit").toDouble();
-//        }
-//        if (QString::number(command.value("samplingRateInit").toInt())!= ""){
-//            samplingRateInit = command.value("samplingRateInit").toDouble();
-//        }
-//        if (QString::number(command.value("distanceToStartInit").toInt())!= ""){
-//            distanceToStartInit = command.value("distanceToStartInit").toDouble();
-//        }
-//        if (QString::number(command.value("distanceToShowInit").toInt())!= ""){
-//            distanceToShowInit = command.value("distanceToShowInit").toDouble();
-//        }
-//        if (QString::number(command.value("fulldistancesInit").toInt())!= ""){
-//            fulldistanceInit = command.value("fulldistancesInit").toDouble();
-//        }    if (QString::number(command.value("thresholdInitA").toInt())!= ""){
-//            thresholdInit = command.value("thresholdInitA").toDouble();
-//        }
+void mainwindows::plotPatternC(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
+                            double distanceToShowInit, double fulldistance, double thresholdInitC) {
+    qDebug() << "Debug plotGraph:" << sagFactorInit << samplingRateInit << distanceToStartInit
+             << distanceToShowInit << fulldistance << thresholdInitC;
 
-//        qDebug() << "GetSettingDisplay received:";
-//        qDebug() << "sagFactorInit:" << sagFactorInit;
-//        qDebug() << "samplingRateInit:" << samplingRateInit;
-//        qDebug() << "distanceToStartInit:" << distanceToStartInit;
-//        qDebug() << "distanceToShowInit:" << distanceToShowInit;
-//        qDebug() << "fulldistanceInit:" << fulldistanceInit;
-//    }
+    QString filePath = "/home/pi/data0.raw";
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "Unable to open file:" << filePath;
+        return;
+    }
+    QByteArray data = file.readAll();
+    file.close();
 
-//    if (getCommand == "updatethresholdParam") {
-//    if (QString::number(command.value("thresholdInitC").toInt())!= ""){
-//        thresholdInit = command.value("thresholdInitC").toDouble();
-//    }
-//        qDebug() << "getThreshold received:";
-//        qDebug() << "thresholdInit:" << thresholdInit;
-//    }
+    std::vector<float> normalizedValues;
+    const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
+    const uint8_t* endPtr = ptr + data.size();
 
-//    // After processing the messages, use the updated values in calculations
-//    qDebug() << "Debug display parameter:" << sagFactorInit << samplingRateInit << distanceToStartInit << distanceToShowInit << thresholdInit;
-//    // Setting parameters
-//    sagFactor = sagFactorInit;       // SAG factor
-//    samplingRate = samplingRateInit; // Sampling rate (meters per sample)
-//    distanceToStart = distanceToStartInit * 1000; // Starting distance (km)
-//    distanceToShow = distanceToShowInit * 1000;   // Ending distance (km)
-//    valuetheshold = thresholdInit; // Threshold value
-//    const float threshold = valuetheshold / 32768.0f;
+    while (ptr + 2 <= endPtr) {
+        uint16_t signedValue = static_cast<uint16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
+        float normalizedValue = static_cast<float>(signedValue) / 32768.0f;  // Convert to mV
+        normalizedValues.push_back(normalizedValue);
+        ptr += 2;
+    }
 
+//    qDebug() << "Total samples read: " << normalizedValues.size();
 
-//        // Path of the file
-//        QString filePath = "/home/pi/data3.raw"; //adc_ch1_voltage.dat
-//        QFile file(filePath);
+    const float threshold = thresholdInitC / 32768.0f;  // Convert to mV
+    auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
+        return val >= threshold;
+    });
 
-//        // Check if the file can be opened
-//        if (!file.open(QIODevice::ReadOnly)) {
-//            qDebug() << "Unable to open file:" << filePath;
-//            return;
-//        }
+    if (startIt == normalizedValues.end()) {
+        qDebug() << "Threshold value not found in data.";
+        return;
+    }
+    int startIndex = std::distance(normalizedValues.begin(), startIt);
+//    qDebug() << "Starting index found at position:" << startIndex;
 
-//        // Read data from the file
-//        QByteArray data = file.readAll();
-//        file.close();
+    int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
+//    qDebug() << "Resampling rate:" << resampling;
 
-//        qDebug() << "Debug display parameter:" << sagFactor << samplingRate << distanceToStart << distanceToShow << valuetheshold << threshold;
+    float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
+    int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
+    int trueDistancepoint = fullpoint / resampling; // Points after resampling
 
-//        // Calculate total distance adjusted by SAG factor
-//        float totalDistance = (distanceToShow - distanceToStart) * sagFactor;
+//    qDebug() << "Full points:" << fullpoint;
+//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
 
-//        // Calculate total number of points (distance / point distance) adjusted by sampling rate
+    float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
+//    qDebug() << "Point interval (m):" << pointInterval;
 
-//        const float pointDistance =  samplingRate / distancePointBetweenPoint; // Adjust point distance using sampling rate ยิ่งsampling rate มากใันก็จะยิ่งหยาบมากขึ้น
-//        int totalPoints = static_cast<int>(std::ceil(totalDistance / pointDistance));
+    std::vector<std::pair<float, float>> result;
+    float currentDistance = distanceToStartInit * 1000; // Start in meters
 
-//        // Read data from file and normalize values
-//        std::vector<float> normalizedValues;
-//        const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data.constData());
-//        const uint8_t* endPtr = ptr + data.size();
+    for (int i = 0; i < trueDistancepoint; ++i) {
+        float currentValue = (i * resampling + startIndex < normalizedValues.size())
+                             ? normalizedValues[i * resampling + startIndex] * 4096/2  // Multiply by 4096 here
+                             : 0.0f;
+        result.emplace_back(currentDistance, currentValue);
+        currentDistance += pointInterval;
+    }
 
+    qDebug() << "Final Total Points:" << result.size();
+    for (const auto& [distance, voltage] : result) {
+//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
+    }
 
-//        while (ptr + 2 <= endPtr) {
-//            // Read the raw 2 bytes as a signed 16-bit integer
-//            int16_t signedValue = static_cast<int16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
+    // JSON Output for Plotting
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& [distance, voltage] : result) {
+        dist.push_back(distance / 1000);  // Convert m to km
+        volt.push_back(voltage);  // Already multiplied by 4096
+    }
 
-//            // Normalize the value (handling both negative and positive values)
-//            float normalizedValue = static_cast<float>(signedValue) / 32768.0f;
+    mainObject.insert("objectName", "patthernC");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
 
-//            // Store the normalized value in the vector
-//            normalizedValues.push_back(normalizedValue);
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON:" << raw_data;
 
-//            // Move the pointer forward by 2 bytes
-//            ptr += 2;
-//        }
+    rawdataArrayC = raw_data;
+    reSamplingNormalizationPatternC(result);
 
-
-//        // Find the value that matches the threshold
-//        auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
-//            return val >= threshold; // Find the value greater than or equal to threshold
-//        });
-
-//        if (startIt == normalizedValues.end()) {
-//            qDebug() << "Threshold value not found in data";
-//            return;
-//        }
-
-//        // Get the starting index of the found threshold
-//        int startIndex = std::distance(normalizedValues.begin(), startIt);
-
-//        // Create result (X: distance, Y: normalized voltage)
-//        std::vector<std::pair<float, float>> result; // (X: distance, Y: normalized voltage)
-//        float currentDistance = distanceToStart;
-
-//        // Get the values starting from the threshold found
-//        for (int i = startIndex; i < startIndex + totalPoints && i < normalizedValues.size(); ++i) {
-//            // Set Y value (normalized voltage)
-//            float currentValue = normalizedValues[i];
-
-//            // Add the point to the result
-//            result.emplace_back(currentDistance, currentValue);
-
-//            // Increment the distance by the point distance adjusted by sampling rate
-//            currentDistance += pointDistance;
-//        }
-
-//        // Display the result
-//        qDebug() << "Result (Distance, Normalized Voltage):";
-//        for (const auto& [distance, voltage] : result) {
-//            qDebug() << "X:" << distance << "m, Y:" << voltage << "mV";
-//        }
-
-//        // Summary
-//        qDebug() << "SAG Factor:" << sagFactor;
-//        qDebug() << "Sampling Rate (m/samples):" << samplingRate;
-//        qDebug() << "Distance to Start:" << distanceToStart;
-//        qDebug() << "Distance to Show:" << distanceToShow;
-//        qDebug() << "Total Distance after SAG Adjustment:" << totalDistance;
-//        qDebug() << "Total Points to Plot:" << totalPoints;
-//        rawdataArrayC = "";
-//        // Pack the distance and voltage data into a JSON format
-
-//        QJsonObject mainObject;
-//        QJsonArray dist,volt;
-//        QJsonDocument jsonDoc,loraDoc;
-//        QJsonObject lora_sent;
-//        for (size_t i = 0; i < result.size(); ++i) {
-//            const auto& [distance, voltage] = result[i];
-//            dist.push_back(distance);
-//            volt.push_back(voltage);
-//        }
-//        mainObject.insert("objectName", "dataPlotingC");
-//        mainObject.insert("distance", dist);
-//        mainObject.insert("voltage", volt);
-//        jsonDoc.setObject(mainObject);
-//        QString raw_data = QJsonDocument(mainObject).toJson(QJsonDocument::Compact).toStdString().c_str();
-//        qDebug() << "mainObject:" << raw_data;
-
-////        QString rawDataString = "[";
-////        for (size_t i = 0; i < result.size(); ++i) {
-////            const auto& [distance, voltage] = result[i];
-////            // Format each data point
-////            QString pointData = QString(
-////                                        "\"distance\":%1,"
-////                                        "\"voltage \":%2}")
-////                                    .arg(distance, 0, 'f', 6) // 6 decimal places
-////                                    .arg(voltage, 0, 'f', 6); // 6 decimal places
-////            rawDataString += pointData;
-////            // Add a comma between data points
-////            if (i < result.size() - 1) {
-////                rawDataString += ",";
-////            }
-////        }
-////        rawDataString += "]";
-
-//        // Create the final JSON array
-////        rawdataArray = QString("{\"objectName\":\"dataPlotingA\","
-////                                       "\"packageRawDataA\":%1}").arg(raw_data);
-//        rawdataArrayC = raw_data;
-//        qDebug() << "rawdataArray" <<raw_data ;
-//        if(temp3 == ""){
-//            temp3 = rawdataArrayC;
-//        }
-//        else if(rawdataArrayB != temp3 && count3 > 2){
-//            temp3 = rawdataArrayC;
-//            emit cppCommand(temp3);
-//        }
-
-//    if(count3 > 2){
-
-//    }else{
-//        count3++;
-//    }
 }
+
+void mainwindows::reSamplingNormalizationPatternC(const std::vector<std::pair<float, float>>& result) {
+    if (result.size() < 3) {
+        qDebug() << "Not enough data points to process.";
+        return;
+    }
+    qDebug() << "Starting peak detection and smoothing...";
+
+    // Step 1: Detect Peaks
+    std::vector<std::pair<float, double>> peakPoints;
+    std::pair<float, double> startPoint = {0.0, 0.0};
+
+    for (const auto& point : result) {
+        if (point.second > 0.0) { // First non-zero voltage
+            startPoint = {point.first, point.second};
+            break;
+        }
+    }
+    peakPoints.push_back(startPoint);
+
+    for (size_t i = 1; i < result.size() - 1; ++i) {
+        float prevVoltage = result[i - 1].second;
+        float currentVoltage = result[i].second;
+        float nextVoltage = result[i + 1].second;
+
+        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
+            peakPoints.emplace_back(result[i]);
+        }
+    }
+
+    peakPoints.push_back(result.back());
+
+    auto maxPeakIt = std::max_element(peakPoints.begin(), peakPoints.end(),
+                                      [](const std::pair<float, double>& a, const std::pair<float, double>& b) {
+                                          return a.second < b.second;
+                                      });
+    std::pair<float, double> maxPeak = *maxPeakIt;
+//    qDebug() << "Maximum peak detected at X:" << maxPeak.first / 1000.0 << "km, Y:" << maxPeak.second << "mV";
+
+    if (std::find(peakPoints.begin(), peakPoints.end(), maxPeak) == peakPoints.end()) {
+        peakPoints.push_back(maxPeak);
+    }
+
+    qDebug() << "Peaks detected. Total peaks:" << peakPoints.size();
+
+    for (const auto& peak : peakPoints) {
+//        qDebug() << "Peak at X:" << peak.first / 1000.0 << "km, Y:" << peak.second << "mV";
+    }
+
+    // Step 2: Downsample Peak Points
+    std::vector<std::pair<float, double>> downsampledPeaks;
+    size_t step = std::max<size_t>(1, peakPoints.size() / 50); // Downsample to around 50 points
+    for (size_t i = 0; i < peakPoints.size(); i += step) {
+        downsampledPeaks.push_back(peakPoints[i]);
+    }
+    if (peakPoints.back() != downsampledPeaks.back()) {
+        downsampledPeaks.push_back(peakPoints.back()); // Ensure the last point is included
+    }
+
+    if (std::find(downsampledPeaks.begin(), downsampledPeaks.end(), maxPeak) == downsampledPeaks.end()) {
+        downsampledPeaks.push_back(maxPeak);
+    }
+
+    std::sort(downsampledPeaks.begin(), downsampledPeaks.end()); // Sort points by X
+//    qDebug() << "Downsampling completed. Total downsampled points:" << downsampledPeaks.size();
+
+    // Step 3: Generate Smooth Curve
+    std::vector<std::pair<float, double>> smoothCurve;
+    for (size_t i = 0; i < downsampledPeaks.size() - 1; ++i) {
+        float x1 = downsampledPeaks[i].first;
+        float x2 = downsampledPeaks[i + 1].first;
+        double y1 = downsampledPeaks[i].second;
+        double y2 = downsampledPeaks[i + 1].second;
+
+        for (float x = x1; x <= x2; x += (x2 - x1) / 10.0) { // Add 10 points per segment
+            double t = (x - x1) / (x2 - x1); // Normalize x between 0 and 1
+            double y = (1 - t) * y1 + t * y2; // Linear interpolation
+            smoothCurve.emplace_back(x, y);
+        }
+    }
+
+    qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
+
+    // Step 4: Prepare JSON Output
+    QJsonObject mainObject;
+    QJsonArray dist, volt;
+    for (const auto& point : smoothCurve) {
+        dist.push_back(point.first / 1000.0);  // Convert m to km
+        volt.push_back(point.second);         // Voltage in mV
+    }
+    mainObject.insert("objectName", "patthernC");
+    mainObject.insert("distance", dist);
+    mainObject.insert("voltage", volt);
+
+    QJsonDocument jsonDoc(mainObject);
+    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+//    qDebug() << "Generated JSON for smoothed curve:" << raw_data;
+
+    // Emit the signal for the curve
+    rawdataArrayC = std::move(raw_data);
+    emit plotingDataPhaseC(rawdataArrayC);
+}
+
+
+
+void* mainwindows::ThreadFuncA(void* pTr) {
+    ThreadData* data = static_cast<ThreadData*>(pTr);
+    data->instance->plotGraphA(data->sagFactorInit, data->samplingRateInit, data->distanceToStartInit,
+                               data->distanceToShowInit, data->fulldistance, data->thresholdInit);
+    return NULL;
+}
+void* mainwindows::ThreadFuncB(void* pTr) {
+    ThreadData* data = static_cast<ThreadData*>(pTr);
+    data->instance->plotGraphB(data->sagFactorInit, data->samplingRateInit, data->distanceToStartInit,
+                               data->distanceToShowInit, data->fulldistance, data->thresholdInit);
+    return NULL;
+}
+
+void* mainwindows::ThreadFuncC(void* pTr) {
+    ThreadData* data = static_cast<ThreadData*>(pTr);
+    data->instance->plotGraphC(data->sagFactorInit, data->samplingRateInit, data->distanceToStartInit,
+                               data->distanceToShowInit, data->fulldistance, data->thresholdInit);
+    return NULL;
+}
+void mainwindows::startThreads(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
+                               double distanceToShowInit, double fulldistance, double thresholdInitA,
+                               double thresholdInitB, double thresholdInitC) {
+    dataA = {this, sagFactorInit, samplingRateInit, distanceToStartInit, distanceToShowInit, fulldistance, thresholdInitA};
+    dataB = {this, sagFactorInit, samplingRateInit, distanceToStartInit, distanceToShowInit, fulldistance, thresholdInitB};
+    dataC = {this, sagFactorInit, samplingRateInit, distanceToStartInit, distanceToShowInit, fulldistance, thresholdInitC};
+
+    int ret;
+    ret = pthread_create(&idThreadA, NULL, ThreadFuncA, &dataA);
+    if (ret == 0) {
+        qDebug() << "Thread A created successfully.";
+    } else {
+        qDebug() << "Thread A not created.";
+    }
+
+    ret = pthread_create(&idThreadB, NULL, ThreadFuncB, &dataB);
+    if (ret == 0) {
+        qDebug() << "Thread B created successfully.";
+    } else {
+        qDebug() << "Thread B not created.";
+    }
+
+    ret = pthread_create(&idThreadC, NULL, ThreadFuncC, &dataC);
+    if (ret == 0) {
+        qDebug() << "Thread C created successfully.";
+    } else {
+        qDebug() << "Thread C not created.";
+    }
+}
+
 
 void mainwindows::manualtest(QString msg) {
     qDebug() << "manualtest:" << msg;
@@ -2389,162 +2491,15 @@ void mainwindows::manualtest(QString msg) {
 }
 
 
-void mainwindows::patterntest(QString msg) {
+void mainwindows::patterntest(int msg) {
     qDebug() << "PatternTest:" << msg;
-    if(msg == "PatternTest"){
+//    if(msg == "PatternTest"){
 //        uint8_t n = obj["number"].toInt();
         QJsonDocument jsonDoc;
         QJsonObject Param;
         Param.insert("objectName","PatternTest");
-        Param.insert("number",10);//
+        Param.insert("number",msg);//
         QString raw_data = QJsonDocument(Param).toJson(QJsonDocument::Compact).toStdString().c_str();
         emit sendMessage(raw_data);
-    }
+//    }
 }
-
-
-//void mainwindows::reSamplingNormalization(
-//    const std::vector<std::pair<float, float>>& result,
-//    float distanceToStart, float distanceToShow,
-//    float samplingRate, float sagFactor, float thresholdA) {
-
-//    std::vector<std::pair<float, double>> peakPoints;
-//    qDebug() << "reSamplingNormalization with params:"
-//             << "distanceToStart:" << distanceToStart
-//             << "distanceToShow:" << distanceToShow
-//             << "samplingRate:" << samplingRate
-//             << "sagFactor:" << sagFactor
-//             << "thresholdA:" << thresholdA;
-
-//    if (result.size() < 3) {
-//        qDebug() << "Not enough data points to detect peaks.";
-//        return;
-//    }
-
-//    qDebug() << "Finding peaks from voltage data...";
-//    for (size_t i = 1; i < result.size() - 1; ++i) {
-//        double prevVoltage = result[i - 1].second;
-//        double currentVoltage = result[i].second;
-//        double nextVoltage = result[i + 1].second;
-
-//        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage && currentVoltage >= thresholdA) {
-//            peakPoints.push_back(result[i]);
-//            qDebug() << "Peak found at X:" << result[i].first << "m, Y:" << currentVoltage << "mV";
-//        }
-//    }
-
-//    qDebug() << "Total Peaks Found:" << peakPoints.size();
-
-//    // ปรับค่า X ให้อยู่ในระยะที่ต้องการแสดงผล
-//    QJsonObject mainObject;
-//    QJsonArray dist, volt;
-//    for (const auto& point : peakPoints) {
-//        if (point.first >= distanceToStart && point.first <= distanceToStart + distanceToShow) {
-//            dist.push_back(point.first);
-//            volt.push_back(point.second * sagFactor);  // ใช้ sagFactor ในการปรับค่า
-//        }
-//    }
-
-//    mainObject.insert("objectName", "dataPlotingA");
-//    mainObject.insert("distance", dist);
-//    mainObject.insert("voltage", volt);
-//    QJsonDocument jsonDoc(mainObject);
-//    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-
-//    qDebug() << "Updated mainObject:" << raw_data;
-
-//    rawdataArrayA = raw_data;
-//    if (temp.isEmpty() || (rawdataArrayA != temp && count > 2)) {
-//        temp = rawdataArrayA;
-//    }
-
-//    emit plotingDataPhaseA(raw_data);
-//}
-
-
-
-//void mainwindows::reSamplingNormalization(const std::vector<std::pair<float, float>>& result) {
-//    std::vector<std::pair<float, double>> peakPoints;  // เก็บ (X, Y) ของพีค
-//    qDebug() << "reSamplingNormalization" << result;
-
-//    if (result.size() < 3) {  // ต้องมีอย่างน้อย 3 จุดเพื่อหาพีค
-//        qDebug() << "Not enough data points to detect peaks.";
-//        return;
-//    }
-
-//    qDebug() << "Finding peaks from voltage data...";
-
-//    for (size_t i = 1; i < result.size() - 1; ++i) {
-//        double prevVoltage = result[i - 1].second;
-//        double currentVoltage = result[i].second;
-//        double nextVoltage = result[i + 1].second;
-
-//        // ตรวจสอบว่าเป็นจุด Peak หรือไม่
-//        if (prevVoltage < currentVoltage && currentVoltage > nextVoltage) {
-//            peakPoints.push_back(result[i]);
-//            qDebug() << "Peak found at X:" << result[i].first << "m, Y:" << currentVoltage << "mV";
-//        }
-//    }
-
-//    qDebug() << "Total Peaks Found:" << peakPoints.size();
-
-//    if (peakPoints.size() < 3) {
-//        qDebug() << "Not enough peak points for smoothing.";
-//    } else {
-//        // Gaussian Smoothing
-//        int windowSize = 10; //
-//        double sigma = 1.0;
-//        int halfWindow = windowSize / 2;
-//        std::vector<double> kernel(windowSize);
-//        double sum = 0;
-
-//        for (int i = -halfWindow; i <= halfWindow; ++i) {
-//            kernel[i + halfWindow] = exp(-0.5 * (i * i) / (sigma * sigma));
-//            sum += kernel[i + halfWindow];
-//        }
-//        for (double& k : kernel) k /= sum;
-
-//        std::vector<std::pair<float, double>> smoothPeaks(peakPoints.size());
-//        for (size_t i = 0; i < peakPoints.size(); ++i) {
-//            double weightedSum = 0;
-//            double weightSum = 0;
-
-//            for (int j = -halfWindow; j <= halfWindow; ++j) {
-//                int index = i + j;
-//                if (index >= 0 && index < peakPoints.size()) {
-//                    weightedSum += peakPoints[index].second * kernel[j + halfWindow];
-//                    weightSum += kernel[j + halfWindow];
-//                }
-//            }
-//            smoothPeaks[i] = {peakPoints[i].first, weightedSum / weightSum};
-//        }
-
-//        peakPoints = smoothPeaks;
-//    }
-
-//    QJsonObject mainObject;
-//    QJsonArray dist, volt;
-//    QJsonDocument jsonDoc;
-
-//    for (const auto& point : peakPoints) {
-//        dist.push_back(point.first);
-//        volt.push_back(point.second);
-//    }
-
-//    mainObject.insert("objectName", "dataPlotingA");
-//    mainObject.insert("distance", dist);
-//    mainObject.insert("voltage", volt);
-//    jsonDoc.setObject(mainObject);
-//    qDebug() << "result:" << volt << dist;
-//    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-//    qDebug() << "mainObject:" << raw_data << "volt:" << volt << "dist:" << dist;
-
-//    rawdataArrayA = raw_data;
-
-//    if (temp.isEmpty()) {
-//        temp = rawdataArrayA;
-//    } else if (rawdataArrayA != temp && count > 2) {
-//        temp = rawdataArrayA;
-//    }
-//    emit plotingDataPhaseA(raw_data);
-//}
