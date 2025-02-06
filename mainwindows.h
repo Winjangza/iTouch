@@ -86,6 +86,14 @@ public:
     explicit mainwindows(QObject *parent = nullptr);
     static mainwindows *instance();
 
+    static void* ThreadFuncA(void* pTr);
+    static void* ThreadFuncB(void* pTr);
+    static void* ThreadFuncC(void* pTr);
+
+    void startThreads(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
+                      double distanceToShowInit, double fulldistance, double thresholdInitA,
+                      double thresholdInitB, double thresholdInitC);
+
 public slots:
 //    void boardcasttomessaege(QString msg);
 //    void receivemessaege(QString msg);
@@ -98,14 +106,20 @@ public slots:
     void reconnectTimerTimeout();
     void connectTimeOut();
     void calculate(QString);
-    void calculateDataPhaseB(QString);
-    void calculateDataPhaseC(QString);
     void manualtest(QString);
-    void patterntest(QString);
+    void patterntest(int);
     void plotGraphA(double,double,double,double,double,double);
     void plotGraphB(double,double,double,double,double,double);
     void plotGraphC(double,double,double,double,double,double);
-    void reSamplingNormalization(const std::vector<std::pair<float, float>>& result);
+    void plotPatternA(double,double,double,double,double,double);
+    void plotPatternB(double,double,double,double,double,double);
+    void plotPatternC(double,double,double,double,double,double);
+    void reSamplingNormalizationA(const std::vector<std::pair<float, float>>& result);
+    void reSamplingNormalizationB(const std::vector<std::pair<float, float>>& result);
+    void reSamplingNormalizationC(const std::vector<std::pair<float, float>>& result);
+    void reSamplingNormalizationPatternA(const std::vector<std::pair<float, float>>& result);
+    void reSamplingNormalizationPatternB(const std::vector<std::pair<float, float>>& result);
+    void reSamplingNormalizationPatternC(const std::vector<std::pair<float, float>>& result);
 
 private:
     ChatServer *SocketServer;
@@ -156,6 +170,20 @@ private:
     QString cppPattern;
     double pointsPerWave;
 
+
+    pthread_t idThreadA, idThreadB, idThreadC;
+
+    struct ThreadData {
+        mainwindows* instance;
+        double sagFactorInit;
+        double samplingRateInit;
+        double distanceToStartInit;
+        double distanceToShowInit;
+        double fulldistance;
+        double thresholdInit;
+    };
+
+    ThreadData dataA, dataB, dataC;
 };
 
 #endif // MAINWINDOWS_H
