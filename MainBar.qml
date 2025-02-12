@@ -3,6 +3,8 @@ import QtCharts 2.0
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.0
 import QtQml 2.2
+import QtQuick.Controls.Material 2.4
+
 Item {
     width: 1024
     height: 600
@@ -160,10 +162,10 @@ Item {
         }
 
         RowLayout {
-            x: 430
+            x: 446
             y: 0
-            width: 401
-            height: 52
+            width: 385
+            height: 62
             ToolButton {
                 id: backtoMainpage
                 Layout.fillHeight: true
@@ -288,14 +290,41 @@ Item {
             }
 
         }
+        ToolButton {
+            id: capture
+            x: 378
+            y: 0
+            width: 62
+            height: 62
+            Layout.preferredHeight: 58
+            icon.width: 32
+            icon.height: 32
+            Layout.preferredWidth: 58
+            Layout.fillHeight: false
+            Layout.fillWidth: false
+            contentItem: Image {
+                width: 50
+                height: 50
+                source: "images/capture.png"
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
+            onClicked: {
+                window.getScreenshot();
+                console.log("Capture screen")
+            }
+        }
     }
+
 
 }
 
 
 
+
+
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:4}
+    D{i:0;formeditorZoom:0.75}
 }
 ##^##*/

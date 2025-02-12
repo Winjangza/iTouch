@@ -95,7 +95,7 @@ Item {
                 Layout.preferredHeight: 40
                 placeholderText: qsTr("Current SNMP Server")
                 Layout.fillWidth: true
-                text: "10.197.2.30"
+                text: ip_snmp
                 readOnly: true // ป้องกันการแก้ไขโดยตรง
             }
 
@@ -155,7 +155,7 @@ Item {
                 Layout.preferredHeight: 40
                 placeholderText: qsTr("Current Time Sync Server")
                 Layout.fillWidth: true
-                text: "10.187.2.201"
+                text: ip_timeserver
                 readOnly: true
             }
             TextField {
@@ -264,7 +264,7 @@ Item {
 
             TextField {
                 id: currentIPaddress
-                text: "10.187.2.203"
+                text: ip_address
                 horizontalAlignment: Text.AlignHCenter
                 Layout.fillWidth: true
                 Layout.leftMargin: 3
@@ -323,7 +323,7 @@ Item {
                 Layout.preferredHeight: 40
                 placeholderText: qsTr("Current GateWay")
                 Layout.fillWidth: true
-                text: "10.187.2.1"
+                text: ip_gateway
                 readOnly: true // เพื่อป้องกันการเปลี่ยนแปลงค่าจากผู้ใช้
             }
 

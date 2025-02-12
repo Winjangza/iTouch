@@ -21,7 +21,8 @@ SOURCES += \
         SocketClient.cpp \
         database.cpp \
         main.cpp \
-        mainwindows.cpp
+        mainwindows.cpp \
+        screencapture.cpp
 
 RESOURCES += qml.qrc
 
@@ -48,4 +49,5 @@ HEADERS += \
     ChatServer.h \
     SocketClient.h \
     database.h \
-    mainwindows.h
+    mainwindows.h \
+    screencapture.h

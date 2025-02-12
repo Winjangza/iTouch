@@ -31,6 +31,13 @@ Item {
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
     property bool handwritingInputPanelActive: false
+    property bool lflFail: false
+    property bool lflOperate: false
+
+    property double voltageInfoSetting: voltageInfo
+    property string substationInfoSetting: substationInfo
+    property string directionInfoSetting: directionInfo
+    property int linenoInfoSetting: linenoInfo
 
     onFocustextInformationChanged: {
         if(focustextInformation == false){
@@ -56,8 +63,8 @@ Item {
         }
         if(textTime.color == "#ff0000"){
             textTime.text = textforinformation
-        }
-        console.log("onTextforinformationChanged",textforinformation,valueVoltage.text,valueVoltage.color)
+        }        
+        console.log("onTextforinformationChanged",textforinformation,valueVoltage.text,valueVoltage.color,substationInfoSetting)
     }
 
     Rectangle {
@@ -166,10 +173,9 @@ Item {
             Layout.fillHeight: false
             Layout.fillWidth: true
             font.pointSize: 11
-            placeholderText: qsTr("Enter Voltage") ? voltageInfo : qsTr("Enter Voltage")
+            placeholderText: qsTr("Enter Voltage") ? voltageInfoSetting : qsTr("Enter Voltage")
             inputMethodHints: Qt.ImhFormattedNumbersOnly
             focus: false
-            //                text: valueVoltage.color == "#ff0000" ?  textforinformation : text
             onFocusChanged: {
                 if (focus) {
                     valueVoltage.focus = false
@@ -181,9 +187,9 @@ Item {
                     textInformation.text = "";
                     textInformation.focus = true;
                     valueVoltage.color = "#ff0000"
+
                 }
             }
-
         }
 
         Text {
@@ -202,7 +208,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             font.pointSize: 11
-            placeholderText: qsTr("Enter Substation") ? substationInfo : qsTr("Enter Substation")
+            placeholderText: qsTr("Enter Substation") ? substationInfoSetting : qsTr("Enter Substation")
             focus: false
             onFocusChanged: {
                 if (focus) {
@@ -214,8 +220,7 @@ Item {
                     textInformation.inputMethodHints = Qt.ImhPreferUppercase;
                     textInformation.text = "";
                     textInformation.focus = true;
-                    color = "#ff0000"
-
+                    valueSubstation.color = "#ff0000"
                 }
             }
         }
@@ -236,7 +241,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             font.pointSize: 11
-            placeholderText: qsTr("Enter DIRECTION") ? directionInfo :  qsTr("Enter DIRECTION")
+            placeholderText: qsTr("Enter DIRECTION") ? directionInfoSetting :  qsTr("Enter DIRECTION")
             focus: false
             onFocusChanged: {
                 if (focus) {
@@ -248,7 +253,7 @@ Item {
                     textInformation.inputMethodHints = Qt.ImhPreferUppercase;
                     textInformation.text = "";
                     textInformation.focus = true;
-                    color = "#ff0000"
+                    valueDirection.color = "#ff0000"
                 }
             }
         }
@@ -269,7 +274,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             font.pointSize: 11
-            placeholderText: qsTr("Enter Number") ? linenoInfo : qsTr("Enter Number")
+            placeholderText: qsTr("Enter Number") ? linenoInfoSetting : qsTr("Enter Number")
             focus: false
             onFocusChanged: {
                 if (focus) {
@@ -281,7 +286,7 @@ Item {
                     textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                     textInformation.text = "";
                     textInformation.focus = true;
-                    color = "#ff0000"
+                    valueLineNo.color = "#ff0000"
 
                 }
             }
@@ -587,14 +592,14 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: true
+                property bool isActive: lflFail
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        checklflfail.isActive = true
-                        checkoperate.isActive = false
-                        checkAct = true
+                        checklflfail.isActive = !checklflfail.isActive
+//                        checkoperate.isActive = false
+//                        checkAct = true
                         var CheckStatusFail = '{"objectName":"statusFail","LFLFAIL":'+checklflfail.isActive+'}'
                         qmlCommand(CheckStatusFail)
                     }
@@ -609,14 +614,14 @@ Item {
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: false
+                property bool isActive: lflOperate
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        checkoperate.isActive = true
-                        checklflfail.isActive = false
-                        checkAct = false
+                        checkoperate.isActive = !checkoperate.isActive
+//                        checklflfail.isActive = false
+//                        checkAct = false
                         var CheckStatusOperate = '{"objectName":"statusOperate","LFLOPERATE":'+checkoperate.isActive+'}'
                         qmlCommand(CheckStatusOperate)
                     }

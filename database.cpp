@@ -1704,9 +1704,111 @@ void Database::closeMySQL() {
         db.close();
         qDebug() << "All database connections are closed.";
     } else {
-        qDebug() << "Database is already closed.";
+        qDebug() << "Database is already closed. ";
     }
 }
+
+void Database::UpdateMarginSettingParameter(QString msg) {
+    qDebug() << "Updating MarginSettingParameter with data:" << msg;
+
+    QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject obj = doc.object();
+    int marginA = obj["marginA"].toInt();
+    double valueVoltageA = obj["valueVoltageA"].toDouble();
+    int focusIndex = obj["focusIndex"].toInt();
+    QString phase = obj["PHASE"].toString();
+
+    if (!db.open()) {
+        qDebug() << "Error: Unable to open database" << db.lastError().text();
+        return;
+    }
+    QSqlQuery query(db);
+    QString selectSQL = "SELECT id FROM MarginSettingParameter WHERE PHASE = :phase";
+    query.prepare(selectSQL);
+    query.bindValue(":phase", phase);
+
+    if (!query.exec()) {
+        qDebug() << "Error: Unable to query database" << query.lastError().text();
+        db.close();
+        return;
+    }
+
+    if (query.next()) {
+        int id = query.value(0).toInt();
+        QString updateSQL = R"(
+            UPDATE MarginSettingParameter
+            SET margin = :marginA, valueVoltage = :valueVoltageA, focusIndex = :focusIndex
+            WHERE id = :id
+        )";
+        query.prepare(updateSQL);
+        query.bindValue(":margin", marginA);
+        query.bindValue(":valueVoltage", valueVoltageA);
+        query.bindValue(":focusIndex", focusIndex);
+        query.bindValue(":id", id);
+
+        if (!query.exec()) {
+            qDebug() << "Error: Unable to update data" << query.lastError().text();
+        } else {
+            qDebug() << "Updated MarginSettingParameter for PHASE:" << phase;
+        }
+    } else {
+
+        if (!query.exec()) {
+            qDebug() << "Error: Unable to insert data" << query.lastError().text();
+        } else {
+            qDebug() << "Inserted new MarginSettingParameter for PHASE: " << phase;
+        }
+    }
+
+    db.close();
+}
+
+void Database::updateMargin() {
+    qDebug() << "Fetching margin data from database...";
+
+    if (!db.isOpen()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        if (!db.open()) {
+            qDebug() << "Failed to open database:" << db.lastError().text();
+            return;
+        }
+    }
+
+    QSqlQuery query(db);
+    QString queryString = "SELECT margin, valueVoltage, focusIndex, PHASE FROM MarginSettingParameter";
+
+    if (!query.exec(queryString)) {
+        qDebug() << "Failed to fetch data from MarginSettingParameter:" << query.lastError().text();
+        return;
+    }
+
+    while (query.next()) {
+        int margin = query.value("margin").toInt();
+        double valueVoltage = query.value("valueVoltage").toDouble();
+        int focusIndex = query.value("focusIndex").toInt();
+        QString phase = query.value("PHASE").toString();
+
+        QString updateMargin = QString("{"
+                                       "\"objectName\":\"updateParameterMargin\","
+                                       "\"margin\":%1,"
+                                       "\"valueVoltage\":%2,"
+                                       "\"focusIndex\":%3,"
+                                       "\"PHASE\":\"%4\""
+                                       "}")
+                                   .arg(margin)
+                                   .arg(valueVoltage)
+                                   .arg(focusIndex)
+                                   .arg(phase);
+
+        qDebug() << "Generated JSON for update Margin:" << updateMargin;
+
+        emit sendMarginUpdate(updateMargin);
+    }
+    db.close();
+}
+
+
+
 
 void Database::configParemeterMarginA(QString msg) {
     qDebug() << "configParemeterMarginA:" << msg;
@@ -1775,9 +1877,9 @@ void Database::configParemeterThreshold(QString msg) {
 
     QSqlQuery query;
 
-    QStringList phases = {"A", "B", "C"}; // List of all phases to process
+    QStringList phases = {"A", "B", "C"};
     for (const QString &phase : phases) {
-        QString thresholdKey = "thresholdInit" + phase; // e.g., "thresholdA", "thresholdB", etc.
+        QString thresholdKey = "thresholdInit" + phase;
         if (!command.contains(thresholdKey)) {
             qDebug() << "No threshold data for phase:" << phase << ", skipping...";
             continue;
@@ -1881,6 +1983,138 @@ void Database::getThreshold() {
     closeMySQL();
 }
 
+void Database::updateSettingInfo(QString msg) {
+    qDebug() << "updateSettingInfo:" << msg;
+
+    // ✅ Store received values until all are available
+    static int receivedVoltage = 0;
+    static QString receivedSubstation = "";
+    static QString receivedDirection = "";
+    static int receivedLineNo = 0;
+
+    static bool hasVoltage = false;
+    static bool hasSubstation = false;
+    static bool hasDirection = false;
+    static bool hasLineNo = false;
+
+    // ✅ Convert msg into JSON
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    if (d.isNull() || !d.isObject()) {
+        qDebug() << "Invalid JSON format!";
+        return;
+    }
+
+    QJsonObject command = d.object();
+
+    // ✅ Store received values but do not update until all are received
+    if (command.contains("Voltage")) {
+        receivedVoltage = command["Voltage"].toInt();
+        hasVoltage = true;
+        qDebug() << "Received Voltage:" << receivedVoltage;
+    }
+
+    if (command.contains("Substation")) {
+        receivedSubstation = command["Substation"].toString();
+        hasSubstation = true;
+        qDebug() << "Received Substation:" << receivedSubstation;
+    }
+
+    if (command.contains("Direction")) {
+        receivedDirection = command["Direction"].toString();
+        hasDirection = true;
+        qDebug() << "Received Direction:" << receivedDirection;
+    }
+
+    if (command.contains("LineNo")) {
+        receivedLineNo = command["LineNo"].toInt();
+        hasLineNo = true;
+        qDebug() << "Received LineNo:" << receivedLineNo;
+    }
+
+    // ✅ If all values are received, update the database and send JSON
+    if (hasVoltage && hasSubstation && hasDirection && hasLineNo) {
+        qDebug() << "All values received, updating database...";
+
+        // ✅ Open the database
+        if (!db.isOpen()) {
+            qDebug() << "Database is not open, attempting to open...";
+            if (!db.open()) {
+                qDebug() << "Failed to open the database:" << db.lastError().text();
+                return;
+            }
+        }
+
+        QSqlQuery query(db);
+        query.prepare("UPDATE SettingGaneral SET voltage = :voltage, substation = :substation, direction = :direction, line_no = :line_no WHERE id = 1");
+        query.bindValue(":voltage", receivedVoltage);
+        query.bindValue(":substation", receivedSubstation);
+        query.bindValue(":direction", receivedDirection);
+        query.bindValue(":line_no", receivedLineNo);
+
+        if (query.exec()) {
+            qDebug() << "Database updated successfully.";
+        } else {
+            qDebug() << "Failed to update database:" << query.lastError().text();
+        }
+
+        // ✅ Pack updated values as JSON
+        QString getSettingInfo = QString(
+            "{\"objectName\":\"getSettingInfo\", "
+            "\"voltage\":%1, "
+            "\"substation\":\"%2\", "
+            "\"direction\":\"%3\", "
+            "\"line_no\":%4}")
+            .arg(receivedVoltage)
+            .arg(receivedSubstation)
+            .arg(receivedDirection)
+            .arg(receivedLineNo);
+
+        qDebug() << "Setting Info JSON:" << getSettingInfo;
+        emit UpdateSettingInfo(getSettingInfo);
+
+        // ✅ Call ToShowSettingInfo to verify and send final JSON
+        ToShowSettingInfo(getSettingInfo);
+
+        // ✅ Close the database
+        db.close();
+        qDebug() << "Database closed successfully.";
+
+        // ✅ Reset received data flags
+        hasVoltage = hasSubstation = hasDirection = hasLineNo = false;
+    } else {
+        qDebug() << "Waiting for all values before updating...";
+    }
+}
+
+
+void Database::ToShowSettingInfo(QString msg) {
+    qDebug() << "ToShowSettingInfo Received:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand =  QJsonValue(command["objectName"]).toString();
+    double actualVoltage = QJsonValue(command["voltage"]).toDouble();
+    QString actualSubstation = QJsonValue(command["substation"]).toString();
+    QString actualDirection = QJsonValue(command["direction"]).toString();
+    int actualLineNo = QJsonValue(command["line_no"]).toInt();
+    QString formattedString = QString("%1 kV %2 - %3 #%4")
+                                    .arg(actualVoltage)
+                                    .arg(actualSubstation)
+                                    .arg(actualDirection)
+                                    .arg(actualLineNo);
+
+    QJsonObject jsonOutput;
+    jsonOutput["objectName"] = "detailInfoSetting";
+    jsonOutput["data"] = formattedString;
+
+    QJsonDocument doc(jsonOutput);
+    QString combinedData = doc.toJson(QJsonDocument::Compact);
+
+    qDebug() << "Final JSON Output:" << combinedData;
+    emit showUpdateInfoSetting(combinedData);
+}
+
+
 void Database::getSettingInfo() {
     qDebug() << "getSettingInfo!";
 
@@ -1924,6 +2158,7 @@ void Database::getSettingInfo() {
             lineNo = query.value("line_no").toInt();
         }
 
+        // ✅ ข้อมูล JSON แบบดั้งเดิม (ส่งไปที่ UpdateSettingInfo)
         QString getSettingInfo = QString(
             "{\"objectName\":\"getSettingInfo\", "
             "\"voltage\":%1, "
@@ -1935,9 +2170,27 @@ void Database::getSettingInfo() {
             .arg(direction)
             .arg(lineNo);
 
-        qDebug() << "Setting Info:" << getSettingInfo;
-        UpdateSettingInfo(getSettingInfo);
+        qDebug() << "Setting Info JSON:" << getSettingInfo;
+        emit UpdateSettingInfo(getSettingInfo);
 
+        // ✅ ฟอร์แมตข้อมูลเป็น "230 kV CR - PY #1"
+        QString formattedString = QString("%1 kV %2 - %3 #%4")
+                                      .arg(voltage)
+                                      .arg(substation)
+                                      .arg(direction)
+                                      .arg(lineNo);
+
+        // ✅ ห่อข้อมูลใน JSON ใหม่ (objectName: "getSettingInfo")
+        QJsonObject jsonOutput;
+        jsonOutput["objectName"] = "detailInfoSetting";
+        jsonOutput["data"] = formattedString;  // ✅ ใส่ string ใน key "data"
+
+        // ✅ แปลง JSON เป็น QString
+        QJsonDocument doc(jsonOutput);
+        QString combinedData = doc.toJson(QJsonDocument::Compact);
+
+        qDebug() << "Formatted JSON Output:" << combinedData;
+        emit showUpdateInfoSetting(combinedData);  // ✅ ส่งข้อมูลอีกรูปแบบ
     } else {
         qDebug() << "Table `SettingGaneral` does not exist.";
     }
@@ -2018,7 +2271,6 @@ void Database::getpreiodicInfo() {
 
      db.close();
 }
-
 
 
 

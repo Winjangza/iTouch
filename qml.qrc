@@ -53,5 +53,16 @@
         <file>images/pinPointerTagging.png</file>
         <file>TaggingPointer.qml</file>
         <file>images/remoteButton.png</file>
+        <file>images/capture.png</file>
+        <file>images/button-Manual-Test.jpg</file>
+        <file>images/buttonManualPress.png</file>
+        <file>images/manual_unpress_test.png</file>
+        <file>images/manual_press_test.png</file>
+        <file>images/pattern_unpress_test.png</file>
+        <file>images/pattern_press_test.png</file>
+        <file>images/button_clear.png</file>
+        <file>images/arrowLeft.png</file>
+        <file>images/arrowRigth.png</file>
+        <file>images/button.png</file>
     </qresource>
 </RCC>

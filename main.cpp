@@ -7,7 +7,8 @@
 #include <QtQml/QQmlEngine>
 #include <QQuickWindow>
 #include <QApplication>
-
+#include "screencapture.h"
+#include "database.h"
 //sudo mysql -u root -pOTL324$
 int main(int argc, char *argv[])
 {
@@ -22,14 +23,16 @@ int main(int argc, char *argv[])
     }
 
     QApplication app(argc, argv);
+    QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
 
     QQmlApplicationEngine engine;
+    ImageProvider *imageProvider = new ImageProvider();
+    engine.addImageProvider(QLatin1String("screenshots"), imageProvider);
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl)
-            QCoreApplication::exit(-1);
-    }, Qt::QueuedConnection);
+            QCoreApplication::exit(-1);   }, Qt::QueuedConnection);
 
     engine.load(url);
     mainwindows mainwindows;
@@ -37,5 +40,9 @@ int main(int argc, char *argv[])
     QQuickWindow *qmlWindow = qobject_cast<QQuickWindow *>(topLevel);
     QObject::connect(qmlWindow, SIGNAL(qmlCommand(QString)),&mainwindows, SLOT(cppSubmitTextFiled(QString)));
     QObject::connect(&mainwindows,SIGNAL(cppCommand(QVariant)),qmlWindow, SLOT(qmlSubmitTextFiled(QVariant)));
+
+    QQuickWindow *view = dynamic_cast<QQuickWindow *>(engine.rootObjects().at(0));
+    QObject::connect(view, SIGNAL(getScreenshot()),imageProvider, SLOT(makeScreenshot()));
+
     return app.exec();
 }

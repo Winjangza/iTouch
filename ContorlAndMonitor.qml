@@ -6,8 +6,8 @@ Item {
     width: 1024
     height: 600
     id: controlAndMonitor
-    property var distanceA: distanceRawA
-    property var plotdataA: voltageRawA
+    property var distanceA: distanceRawA //x
+    property var plotdataA: voltageRawA //y
     property var distanceB: distanceRawB
     property var plotdataB: voltageRawB
     property var distanceC: distanceRawC
@@ -21,15 +21,15 @@ Item {
     property int timestep: 0
     property double movetoleft: cursorleft
     property real pointerX: 0
-    property real pointerY: 0
+    property double pointerY: 0
     property int globalNum: 0
     property int number: 0
-
-    // สำหรับ RawDataA
+//     สำหรับ RawDataA
     onPlotdataAChanged: {
         try {
             if (plotdataA && distanceA && plotdataA.length === distanceA.length) {
                 seriesRawA.clear();
+                 console.log("pointerY:",pointerY)
                 for (var i = 0; i < plotdataA.length; i++) {
                     if (isFinite(plotdataA[i]) && isFinite(distanceA[i])) {
 //                        console.log("Appending:", distanceA[i], plotdataA[i]); // Debug log
@@ -39,6 +39,7 @@ Item {
                     }
                 }
                 adjustAxes(distanceA, [plotdataA]); // Adjust the axes
+                axisY.min = 0;
             } else {
 //                console.log("Data mismatch for plotdataA. Lengths:", plotdataA.length, distanceA.length);
             }
@@ -46,7 +47,7 @@ Item {
 //            console.log("Error in onPlotdataAChanged:", e);
         }
     }
-    // สำหรับ RawDataB
+//     สำหรับ RawDataB
     onPlotdataBChanged: {
         try {
             if (plotdataB && distanceB && plotdataB.length === distanceB.length) {
@@ -60,6 +61,7 @@ Item {
                     }
                 }
                 adjustAxes(distanceB, [plotdataB]); // Adjust the axes for series2
+                axisY.min = 0;
             } else {
 //                console.log("Data mismatch for plotdataB. Lengths:", plotdataB.length, distanceB.length);
             }
@@ -81,6 +83,7 @@ Item {
                     }
                 }
                 adjustAxes(distanceC, [plotdataC]); // Adjust the axes for series3
+                axisY.min = 0;
             } else {
 //                console.log("Data mismatch for plotdataC. Lengths:", plotdataC.length, distanceC.length);
             }
@@ -104,6 +107,7 @@ Item {
                 }
 
                 adjustAxes(distancepatternA, [plotdatapatternA]);
+                axisY.min = 0;
                 console.log("Graph updated successfully.");
             } else {
                 console.log("Data mismatch or empty for plotdatapatternA");
@@ -115,6 +119,7 @@ Item {
 
     // สำหรับ distancepatternB
     onPlotdatapatternBChanged: {
+        console.log("PlotdatapatternB plotting graph");
         try {
             console.log("PlotdataPatternB changed");
             if (plotdatapatternB && distancepatternB && plotdatapatternB.length === distancepatternB.length) {
@@ -126,6 +131,7 @@ Item {
                     }
                 }
                 adjustAxes(distancepatternB, [plotdatapatternB]); // Adjust the axes
+                axisY.min = 0;
                 console.log("Series2 updated");
             } else {
                 console.log("Data mismatch or empty for plotdatapatternB");
@@ -137,6 +143,7 @@ Item {
 
     // สำหรับ distancepatternC
     onPlotdatapatternCChanged: {
+        console.log("PlotdatapatternC plotting graph");
         try {
             console.log("PlotdataPatternC changed");
             if (plotdatapatternC && distancepatternC && plotdatapatternC.length === distancepatternC.length) {
@@ -148,6 +155,7 @@ Item {
                     }
                 }
                 adjustAxes(distancepatternC, [plotdatapatternC]); // Adjust the axes
+                axisY.min = 0;
                 console.log("Series3 updated");
             } else {
                 console.log("Data mismatch or empty for plotdatapatternC");
@@ -177,7 +185,76 @@ Item {
         }
     }
 
-
+    function clearGraphDataPhaseA() {
+        distanceA = [];
+        plotdataA = [];
+    }
+    function clearGraphDataPhaseB() {
+        distanceB = [];
+        plotdataB = [];
+    }
+    function clearGraphDataPhaseC() {
+        distanceC = [];
+        plotdataC = [];
+    }
+    function clearGraphPatternPhaseA() {
+        distancepatternA = [];
+        plotdatapatternA = [];
+    }
+    function clearGraphPatternPhaseB() {
+        distancepatternB = [];
+        plotdatapatternB = [];
+    }
+    function clearGraphPatternPhaseC() {
+        distancepatternC = [];
+        plotdatapatternC = [];
+    }
+    function replotDataA() {
+        distanceA=distanceRawA
+        plotdataA =voltageRawA
+    }
+    function replotDataB() {
+        distanceB =distanceRawB
+        plotdataB =voltageRawB
+    }
+    function replotDataC() {
+        distanceC =distanceRawC
+        plotdataC =voltageRawC
+    }
+    function replotPatternA() {
+        distancepatternA = distancePatternA
+        plotdatapatternA = voltagePatternA
+    }
+    function replotPatternB() {
+        distancepatternB = distancePatternB
+        plotdatapatternB = voltagePatternB
+    }
+    function replotPatternC() {
+        distancepatternC = distancePatternC
+        plotdatapatternC = voltagePatternC
+    }
+    function cleardisplay() {
+        distanceA = [];
+        plotdataA = [];
+        distanceB = [];
+        plotdataB = [];
+        distanceC = [];
+        plotdataC = [];
+        distancepatternA = [];
+        plotdatapatternA = [];
+        distancepatternB = [];
+        plotdatapatternB = [];
+        distancepatternC = [];
+        plotdatapatternC = [];
+    }
+    function clearpattern() {
+        distancepatternA = [];
+        plotdatapatternA = [];
+        distancepatternB = [];
+        plotdatapatternB = [];
+        distancepatternC = [];
+        plotdatapatternC = [];
+    }
     // กราฟ
     ChartView {
         id: chartView
@@ -204,8 +281,8 @@ Item {
 
         ValueAxis {
             id: axisY
-            min: 0
-            max: 3000
+            min: 0 // Ensure Y-axis starts at 0
+            max: 4096
             titleText: "<font color='#ffffff'>Voltage (mV)</font>"
             titleFont.bold: true
             titleFont.pixelSize: 12
@@ -221,7 +298,7 @@ Item {
             id: series1
             axisX: axisX
             axisY: axisY
-            name: "Phase A"
+            name: "Pattern A"
             color: "#f7cbac"
             width: 3
 
@@ -230,7 +307,7 @@ Item {
             id: series2
             axisX: axisX
             axisY: axisY
-            name: "Phase B"
+            name: "Pattern B"
             color: "#bc9121"
             width: 3
         }
@@ -239,7 +316,7 @@ Item {
             id: series3
             axisX: axisX
             axisY: axisY
-            name: "Phase C"
+            name: "Pattern C"
             color: "#bed6ed"
             width: 3
         }
@@ -268,7 +345,7 @@ Item {
             axisX: axisX
             axisY: axisY
             name: "Data C"
-            color: "#244d77"
+            color: "#0088ff"
             width: 3
         }
 
@@ -306,6 +383,7 @@ Item {
             MouseArea {
                 id: dragArea
                 anchors.fill: parent
+                anchors.topMargin: 0
                 anchors.leftMargin: -25
                 anchors.rightMargin: -25
                 cursorShape: Qt.OpenHandCursor
@@ -339,7 +417,7 @@ Item {
                 }
             }
         }
-}
+    }
 
     Cursorcontrol {
         id: cursorcontrol
@@ -363,10 +441,10 @@ Item {
         radius: 5
         border.color: "#9b9b9b"
         anchors.fill: parent
-        anchors.rightMargin: 209
-        anchors.bottomMargin: 503
-        anchors.leftMargin: 620
-        anchors.topMargin: 67
+        anchors.rightMargin: 214
+        anchors.bottomMargin: 510
+        anchors.leftMargin: 615
+        anchors.topMargin: 60
 
         Text {
             id: textdatafilename
@@ -384,10 +462,10 @@ Item {
         radius: 5
         border.color: "#9b9b9b"
         anchors.fill: parent
-        anchors.leftMargin: 821
-        anchors.topMargin: 67
-        anchors.rightMargin: 8
-        anchors.bottomMargin: 503
+        anchors.leftMargin: 816
+        anchors.topMargin: 60
+        anchors.rightMargin: 13
+        anchors.bottomMargin: 510
 
         Text {
             id: textpatternfilename
@@ -400,8 +478,4 @@ Item {
     }
 }
 
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:0.75}
-}
-##^##*/
+

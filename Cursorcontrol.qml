@@ -31,219 +31,378 @@ Item {
         color: "#e2e2e2"
         border.color: "#c8595959"
         border.width: 1
-        ToolButton {
-            id: clearalarm
-            text: qsTr("CLEAR \n ALARM")
-            anchors.fill: parent
-            font.pointSize: 9
-            anchors.leftMargin: 8
-            anchors.topMargin: 0
-            anchors.rightMargin: 259
-            anchors.bottomMargin: 151
-        }
 
-        ToolButton {
-            id: cleardisplay
-            text: qsTr("CLEAR \n DISPLAY")
-            anchors.fill: parent
-            font.pointSize: 9
-            anchors.leftMargin: 8
-            anchors.topMargin: 75
-            anchors.rightMargin: 259
-            anchors.bottomMargin: 84
-        }
-
-        ToolButton {
-            id: cleardisplay1
-            text: qsTr("CLEAR \n PATTERN")
-            anchors.fill: parent
-            font.pointSize: 9
-            anchors.leftMargin: 8
-            anchors.topMargin: 142
-            anchors.rightMargin: 259
-            anchors.bottomMargin: 8
-        }
 
         Text {
             id: text5
             text: qsTr("CURSOR(KM)")
             anchors.fill: parent
-            font.pixelSize: 20
+            font.pixelSize: 16
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            anchors.leftMargin: 172
-            anchors.topMargin: 0
-            anchors.rightMargin: 74
-            anchors.bottomMargin: 191
+            anchors.topMargin: 4
+            anchors.rightMargin: 68
+            anchors.leftMargin: 185
+            anchors.bottomMargin: 195
         }
 
 
-        ToolButton {
-            id: cursorLeft
-            Layout.preferredHeight: 58
-//            icon.source: "images/leftArrow.png"
-//            icon.width: 45
-//            icon.height: 45
-            Layout.preferredWidth: 58
-            Layout.fillHeight: false
-            Layout.fillWidth: false
-             contentItem: Image {
-                 source: "images/leftArrow.png"
-                 width: 70
-                 height: 60
-             }
 
-            x: 112
-            y: 35
-            width: 69
-            height: 56
 
-            Timer {
-                id: holdTimer
-                interval: 100
-                repeat: true
-                property double decrease: 0.1
-                property double safeMargin: 41.53
-                property double graphStartOffset: 95.25
-                property double graphEndX: chartView.width - safeMargin
-                property double totalDecrease: 0.0
-                onTriggered: {
-                    cursor.distance = Math.max(axisX.min, cursor.distance - decrease);
-                    cursor.x = graphStartOffset + ((cursor.distance - axisX.min) / (axisX.max - axisX.min)) * (graphEndX - graphStartOffset);
+        RowLayout {
+            x: 128
+            y: 117
+            width: 212
+            height: 103
 
-                    totalDecrease += decrease;
+            RowLayout {
+                x: 128
+                y: 117
+                width: 212
+                height: 103
 
-                    var decreaseValue = '{"objectName":"decreaseValue","decreaseValue": ' + cursor.distance.toFixed(2) + '}';
-                    console.log("decreaseValue:", cursor.distance.toFixed(2), cursor.x.toFixed(2), decreaseValue);
-                    qmlCommand(decreaseValue);
+                ToolButton {
+                    id: patterntest
+                    text: qsTr("PATTERN \n TEST")
+                    contentItem: Image {
+                        width: 90
+                        height: 90
+                        source: "images/pattern_unpress_test.png"
+                        sourceSize.height: 90
+                        sourceSize.width: 90
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+
+                    onClicked: {
+                        console.log("Pattern Test Clicked. Sending DAC Level:", patternLevel);
+                        var pattern = `{"objectName":"PatternTest", "patternNum": ${patternLevel}}`;
+                        qmlCommand(pattern); // ส่งค่า buffer ไปกับ PatternTest
+                    }
                 }
             }
 
-            MouseArea {
-                anchors.fill: parent
-                anchors.rightMargin: 0
-                anchors.bottomMargin: 0
-                anchors.leftMargin: 0
-                anchors.topMargin: 0
-                onPressed: {
-                    holdTimer.start();
+            ToolButton {
+                id: manualtest
+                text: qsTr("MANUAL \n TEST")
+                contentItem: Image {
+                    width: 90
+                    height: 90
+
+                    source: "images/manual_unpress_test.png"
+                    sourceSize.height: 90
+                    sourceSize.width: 90
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
                 }
-                onReleased: {
-                    holdTimer.stop();
-                    console.log("Total decrease during hold:", totalDecrease.toFixed(2));
-                    totalDecrease = 0.0;
-                }
-            }
-        }
-
-
-        ToolButton {
-            id: cursorRight
-            Layout.preferredHeight: 58
-//            icon.source: "images/rightArrow.png"
-//            icon.width: 45
-//            icon.height: 45
-            Layout.preferredWidth: 58
-            Layout.fillHeight: false
-            Layout.fillWidth: false
-            property bool isRight: false
-            contentItem: Image {
-                source: "images/rightArrow.png"
-                width: 70
-                height: 60
-            }
-            x: 292
-            y: 32
-            width: 69
-            height: 56
-            Timer {
-                id: holdTimer2
-                interval: 100
-                repeat: true
-                property double decrease: 0.1
-                property double safeMargin: 41.53
-                property double graphStartOffset: 95.25
-                property double graphEndX: chartView.width - safeMargin
-                onTriggered: {
-                    cursor.distance = Math.max(axisX.min, cursor.distance + decrease);
-                    cursor.x = graphStartOffset + ((cursor.distance - axisX.min) / (axisX.max - axisX.min)) * (graphEndX - graphStartOffset);
-
-                    totalDecrease += decrease;
-
-                    var increaseValue = '{"objectName":"increaseValue","increaseValue": ' + cursor.distance.toFixed(2) + '}';
-                    console.log("decreaseValue:", cursor.distance.toFixed(2), cursor.x.toFixed(2), increaseValue);
-                    qmlCommand(increaseValue);
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onPressed: {
-                    holdTimer2.start();
-                }
-                onReleased: {
-                    holdTimer2.stop();
-                    console.log("Total decrease during hold:", totalDecrease.toFixed(2));
-                    totalDecrease = 0.0;
+                onClicked: {
+                    console.log("Manual Test")
+                    var manual = '{"objectName":"ManualTest"}';
+                    qmlCommand(manual);
                 }
             }
         }
 
-        Rectangle {
-            id: cursorDistance
-            color: "#ffffff"
-            radius: 5
-            border.color: "#7a7a7a"
-            border.width: 1
+        ColumnLayout {
             anchors.fill: parent
-            anchors.leftMargin: 187
-            anchors.topMargin: 35
-            anchors.rightMargin: 89
-            anchors.bottomMargin: 136
-            TextField {
-                id: rangeOfDistance
-                anchors.fill: parent
-                anchors.rightMargin: 1
-                anchors.leftMargin: 1
-                anchors.bottomMargin: 1
-                anchors.topMargin: 1
-                placeholderText: cursorposition ? cursor.distance.toFixed(2) : updateNewDistance
+            anchors.rightMargin: 270
 
-                onFocusChanged: {
-                    if (focus) {
-                        Qt.inputMethod.show();
-                        rangeOfDistance.focus = false;
-                        currentField = "rangedistance";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.text = "";
-                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
-                        textInformation.focus = true;
-                        rangeOfDistance.color = "#ff0000";
+            ToolButton {
+                id: clearalarm
+                width: 90
+                height: 90
+                text: qsTr("CLEAR \n ALARM")
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                font.pointSize: 9
+                contentItem: Image {
+                    width: 150
+                    height: 150
+                    source: "images/button_clear.png"
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+
+                    Text {
+                        id: text1
+                        x: 0
+                        y: 0
+                        width: 71
+                        height: 50
+                        anchors.fill: parent
+                        text: qsTr("CLEAR \n ALARM")
+                        font.pixelSize: 12
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+                onClicked: {
+                    console.log("CLEAR ALARM")
+                    var pattern = '{"objectName":"ClearAlarm"}';
+                    qmlCommand(pattern);
+                }
+            }
+
+            ToolButton {
+                id: cleardisplay
+                width: 90
+                height: 90
+                text: qsTr("CLEAR \n DISPLAY")
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                font.pointSize: 9
+                contentItem: Image {
+                    width: 150
+                    height: 150
+                    source: "images/button_clear.png"
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+
+                    Text {
+                        id: cleardisplaybutton
+                        x: 8
+                        y: 0
+                        width: 74
+                        height: 49
+                        anchors.fill: parent
+                        text: qsTr("CLEAR \n DISPLAY")
+                        font.pixelSize: 12
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+                onClicked: {
+                    console.log("CLEAR ALARM")
+                    contorlAndMonitor.cleardisplay();
+//                    var pattern = '{"objectName":"cleardisplay"}';
+//                    qmlCommand(pattern);
+                }
+            }
+
+            ToolButton {
+                id: clearpattern
+                width: 90
+                height: 90
+                text: qsTr("CLEAR \n PATTERN")
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                font.pointSize: 9
+                contentItem: Image {
+                    width: 150
+                    height: 150
+                    source: "images/button_clear.png"
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+
+                    Text {
+                        id: clearPatternbutton
+                        x: 0
+                        y: 0
+                        width: 82
+                        height: 58
+                        anchors.fill: parent
+                        text: qsTr("CLEAR \n PATTERN")
+                        font.pixelSize: 12
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+                onClicked: {
+                    console.log("CLEAR ALARM")
+                    contorlAndMonitor.clearpattern();
+//                    var pattern = '{"objectName":"clearpattern"}';
+//                    qmlCommand(pattern);
+                }
+            }
+        }
+
+        ColumnLayout {
+            x: 128
+            y: 27
+            width: 233
+            height: 84
+
+            RowLayout {
+
+                ToolButton {
+                    id: cursorLeft
+                    highlighted: false
+                    flat: false
+                    Layout.preferredHeight: 58
+                    //            icon.source: "images/leftArrow.png"
+                    //            icon.width: 45
+                    //            icon.height: 45
+                    Layout.preferredWidth: 76
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    contentItem: Image {
+                        anchors.fill: parent
+                        source: "images/arrowLeft.png"
+                        sourceSize.width: 237
+                    }
+
+
+                    Timer {
+                        id: holdTimer
+                        interval: 100
+                        repeat: true
+                        property double decrease: 0.1
+                        property double safeMargin: 41.53
+                        property double graphStartOffset: 95.25
+                        property double graphEndX: chartView.width - safeMargin
+                        property double totalDecrease: 0.0
+                        onTriggered: {
+                            cursor.distance = Math.max(axisX.min, cursor.distance - decrease);
+                            cursor.x = graphStartOffset + ((cursor.distance - axisX.min) / (axisX.max - axisX.min)) * (graphEndX - graphStartOffset);
+
+                            totalDecrease += decrease;
+
+                            var decreaseValue = '{"objectName":"decreaseValue","decreaseValue": ' + cursor.distance.toFixed(2) + '}';
+                            console.log("decreaseValue:", cursor.distance.toFixed(2), cursor.x.toFixed(2), decreaseValue);
+                            qmlCommand(decreaseValue);
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: {
+                            holdTimer.start();
+                        }
+                        onReleased: {
+                            holdTimer.stop();
+                            console.log("Total decrease during hold:", totalDecrease.toFixed(2));
+                            totalDecrease = 0.0;
+                        }
+                    }
+                }
+
+                TextField {
+                    id: rangeOfDistance
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    placeholderText: cursorposition ? cursor.distance.toFixed(2) : updateNewDistance
+
+                    onFocusChanged: {
+                        if (focus) {
+                            Qt.inputMethod.show();
+                            rangeOfDistance.focus = false;
+                            currentField = "rangedistance";
+                            inputPanel.visible = true;
+                            textInformation.visible = true;
+                            textInformation.text = "";
+                            textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                            textInformation.focus = true;
+                            rangeOfDistance.color = "#ff0000";
+                        }
+                    }
+                }
+
+                ToolButton {
+                    id: cursorRight
+                    Layout.preferredHeight: 58
+                    //            icon.source: "images/rightArrow.png"
+                    //            icon.width: 45
+                    //            icon.height: 45
+                    Layout.preferredWidth: 76
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    property bool isRight: false
+                    contentItem: Image {
+                        anchors.fill: parent
+                        source: "images/arrowRigth.png"
+                    }
+                    Timer {
+                        id: holdTimer2
+                        interval: 100
+                        repeat: true
+                        property double decrease: 0.1
+                        property double safeMargin: 41.53
+                        property double graphStartOffset: 95.25
+                        property double graphEndX: chartView.width - safeMargin
+                        onTriggered: {
+                            cursor.distance = Math.max(axisX.min, cursor.distance + decrease);
+                            cursor.x = graphStartOffset + ((cursor.distance - axisX.min) / (axisX.max - axisX.min)) * (graphEndX - graphStartOffset);
+
+                            totalDecrease += decrease;
+
+                            var increaseValue = '{"objectName":"increaseValue","increaseValue": ' + cursor.distance.toFixed(2) + '}';
+                            console.log("decreaseValue:", cursor.distance.toFixed(2), cursor.x.toFixed(2), increaseValue);
+                            qmlCommand(increaseValue);
+                        }
+                    }
+
+                    MouseArea {
+                        y: 19
+                        anchors.fill: parent
+                        onPressed: {
+                            holdTimer2.start();
+                        }
+                        onReleased: {
+                            holdTimer2.stop();
+                            console.log("Total decrease during hold:", totalDecrease.toFixed(2));
+                            totalDecrease = 0.0;
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: basePattern
+                color: "#ffffff"
+                border.color: "#ffffff"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 31
+                Layout.preferredWidth: 280
+
+                // ตัวแปรเก็บค่า DAC Level
+                property int patternLevel: 1  // ค่าเริ่มต้น
+
+                Slider {
+                    id: sliderDACLevels
+                    anchors.fill: parent
+                    anchors.rightMargin: 108
+                    anchors.bottomMargin: 0
+                    anchors.topMargin: 0
+                    anchors.leftMargin: 0
+                    stepSize: 1
+                    Layout.preferredHeight: 55
+                    Layout.preferredWidth: 130
+                    rotation: 0
+                    to: 30
+                    from: 1
+                    layer.textureMirroring: ShaderEffectSource.MirrorVertically
+                    value: patternLevel // ใช้ค่า buffer แทน
+
+                    onValueChanged: {
+                        patternLevel = value.toFixed(0); // อัปเดตค่า buffer
+                    }
+                }
+
+                SpinBox {
+                    id: spinBoxDACLevel
+                    x: 670
+                    y: 16
+                    anchors.fill: parent
+                    anchors.bottomMargin: 0
+                    anchors.topMargin: 0
+                    anchors.rightMargin: 0
+                    anchors.leftMargin: 131
+                    value: patternLevel // ใช้ค่า buffer
+                    to: 30
+                    from: 1
+                    layer.textureMirroring: ShaderEffectSource.MirrorVertically
+                    rotation: 0
+
+                    onValueChanged: {
+                        patternLevel = Math.max(value, 1); // อัปเดตค่า buffer
                     }
                 }
             }
         }
 
-        ToolButton {
-            id: patterntest
-            text: qsTr("PATTERN \n TEST")
-            anchors.fill: parent
-            anchors.rightMargin: 138
-            anchors.bottomMargin: 28
-            anchors.leftMargin: 138
-            anchors.topMargin: 127
-        }
-        ToolButton {
-            id: manualtest
-            text: qsTr("MANUAL \n TEST")
-            anchors.fill: parent
-            anchors.rightMargin: 8
-            anchors.bottomMargin: 28
-            anchors.leftMargin: 268
-            anchors.topMargin: 127
-        }
     }
+
+
 
 
 }

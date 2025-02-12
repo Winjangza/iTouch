@@ -10,9 +10,9 @@ Item {
     property bool isGreenC: false // สถานะเริ่มต้น
     property bool isGreenฺButA: false // สถานะเริ่มต้น
     property bool isGreenButB: false // สถานะเริ่มต้น
-    property bool isGreenButC: false // สถานะเริ่มต้น
+    property bool isGreenButC: false // สถานะเริ่มต้น detailwireInformation
     property var voltageDataA: dataPointA
-
+    property string detailwire: detailwireInformation
 
     Rectangle {
         id: mainDataInfo
@@ -126,7 +126,7 @@ Item {
 
                 Rectangle {
                     id: rectangle3
-                    color: "#244d77"
+                    color: "#0088ff"
                     Layout.preferredHeight: 5
                     Layout.preferredWidth: 50
 
@@ -212,7 +212,7 @@ Item {
                     contentItem: Image {
                         width: 50
                         height: 50
-                        source: isGreenฺButA ? "images/GreenButton2.png" : "images/grayButton.png"
+                        source: isGreenฺButA ?  "images/grayButton.png" : "images/GreenButton2.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
@@ -220,16 +220,18 @@ Item {
                     Layout.fillHeight: false
                     onClicked: {
                         isGreenฺButA = !isGreenฺButA;
-                        console.log("Button clicked. Current state isGreen:", isGreenA ? "Green" : "Gray");
+                        console.log("Button clicked. Current state isGreen:", isGreenฺButA ? "Green" : "Gray");
 
                         if (!isGreenฺButA) {
-                            var cleardataPhaseA = '{"objectName":"clearDatabuttonPhaseA","rawdataA": "cleardataA"}';
-                            qmlCommand(cleardataPhaseA);
-                            console.log("Sent getdataPhaseA command");
-                        } else {
                             var getdataPhaseA = '{"objectName":"getDatabuttonPhaseA","rawdataA": "getdataA"}';
-                            qmlCommand(getdataPhaseA);
+                            //                            qmlCommand(getdataPhaseA);
                             console.log("Sent cleardataPhaseA command");
+                            controlAndMonitor.replotDataA();
+                        } else {
+                            var cleardataPhaseA = '{"objectName":"clearDatabuttonPhaseA","rawdataA": "cleardataA"}';
+                            //                            qmlCommand(cleardataPhaseA);
+                            console.log("Sent getdataPhaseA command");
+                            controlAndMonitor.clearGraphDataPhaseA();
                         }
                     }
                     background: Rectangle {
@@ -246,7 +248,7 @@ Item {
                     contentItem: Image {
                         width: 50
                         height: 50
-                        source: isGreenButB ? "images/GreenButton2.png" : "images/grayButton.png"
+                        source: isGreenButB ?  "images/grayButton.png" : "images/GreenButton2.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
@@ -254,16 +256,18 @@ Item {
                     Layout.fillHeight: false
                     onClicked: {
                         isGreenButB = !isGreenButB;
-                        console.log("Button clicked. Current state isGreen:", isGreenB ? "Green" : "Gray");
+                        console.log("Button clicked. Current state isGreen:", isGreenButB ? "Green" : "Gray");
 
                         if (!isGreenButB) {
-                            var cleardataPhaseB = '{"objectName":"clearDatabuttonPhaseB","patternB": "cleardataB"}';
-                            qmlCommand(cleardataPhaseB);
-                            console.log("Sent getdataPhaseB command");
-                        } else {
                             var getdataPhaseB = '{"objectName":"getDatabuttonPhaseB","patternB": "getdataB"}';
-                            qmlCommand(getdataPhaseB);
+                            //                            qmlCommand(getdataPhaseB);
                             console.log("Sent cleardataPhaseB command");
+                            controlAndMonitor.replotDataB();
+                        } else {
+                            var cleardataPhaseB = '{"objectName":"clearDatabuttonPhaseB","patternB": "cleardataB"}';
+                            //                            qmlCommand(cleardataPhaseB);
+                            console.log("Sent getdataPhaseB command");
+                            controlAndMonitor.clearGraphDataPhaseB();
                         }
                     }
                     background: Rectangle {
@@ -280,7 +284,7 @@ Item {
                     contentItem: Image {
                         width: 50
                         height: 50
-                        source: isGreenButC ? "images/GreenButton2.png" : "images/grayButton.png"
+                        source: isGreenButC ?  "images/grayButton.png" : "images/GreenButton2.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
@@ -288,16 +292,18 @@ Item {
                     Layout.fillHeight: false
                     onClicked: {
                         isGreenButC = !isGreenButC;
-                        console.log("Button clicked. Current state isGreen:", isGreenC ? "Green" : "Gray");
+                        console.log("Button clicked. Current state isGreen:", isGreenButC ? "Green" : "Gray");
 
                         if (!isGreenButC) {
-                            var cleardataPhaseC = '{"objectName":"clearDatabuttonPhaseC","patternC": "cleardataC"}';
-                            qmlCommand(cleardataPhaseC);
-                            console.log("Sent getdataPhaseC command");
-                        } else {
                             var getdataPhaseC = '{"objectName":"getDatabuttonPhaseC","patternC": "getdataC"}';
-                            qmlCommand(getdataPhaseC);
+                            //                            qmlCommand(getdataPhaseC);
                             console.log("Sent cleardataPhaseC command");
+                            controlAndMonitor.replotDataC();
+                        } else {
+                            var cleardataPhaseC = '{"objectName":"clearDatabuttonPhaseC","patternC": "cleardataC"}';
+                            //                            qmlCommand(cleardataPhaseC);
+                            console.log("Sent getdataPhaseC command");
+                            controlAndMonitor.clearGraphDataPhaseC();
                         }
                     }
                     background: Rectangle {
@@ -321,7 +327,7 @@ Item {
                     contentItem: Image {
                         width: 50
                         height: 50
-                        source: isGreenA ? "images/GreenButton2.png" : "images/grayButton.png"
+                        source: isGreenA ?   "images/grayButton.png" : "images/GreenButton2.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
@@ -333,12 +339,14 @@ Item {
 
                         if (!isGreenA) {
                             var clearPatternPhaseA = '{"objectName":"ClearDisplayPhaseA","patternA": "clearpatternA"}';
-                            qmlCommand(clearPatternPhaseA);
+                            //                            qmlCommand(clearPatternPhaseA);
                             console.log("Sent clearpatternPhaseA command");
+                            controlAndMonitor.replotPatternA();
                         } else {
                             var getPatternPhaseA = '{"objectName":"getpatternPhaseA","patternA": "getpatternA"}';
-                            qmlCommand(getPatternPhaseA);
+                            //                            qmlCommand(getPatternPhaseA);
                             console.log("Sent getpatternPhaseA command");
+                            controlAndMonitor.clearGraphPatternPhaseA();
                         }
                     }
                     background: Rectangle {
@@ -354,7 +362,7 @@ Item {
                     contentItem: Image {
                         width: 50
                         height: 50
-                        source: isGreenB ? "images/GreenButton2.png" : "images/grayButton.png"
+                        source: isGreenB ? "images/grayButton.png" : "images/GreenButton2.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
@@ -366,12 +374,14 @@ Item {
 
                         if (!isGreenB) {
                             var clearPatternPhaseB = '{"objectName":"ClearDisplayPhaseB","patternB": "clearpatternB"}';
-                            qmlCommand(clearPatternPhaseB);
+                            //                            qmlCommand(clearPatternPhaseB);
                             console.log("Sent clearpatternPhaseB command");
+                            controlAndMonitor.replotPatternB();
                         } else {
                             var getPatternPhaseB = '{"objectName":"getpatternPhaseB","patternB": "getpatternB"}';
-                            qmlCommand(getPatternPhaseB);
+                            //                            qmlCommand(getPatternPhaseB);
                             console.log("Sent getpatternPhaseB command");
+                            controlAndMonitor.clearGraphPatternPhaseB();
                         }
                     }
                     background: Rectangle {
@@ -389,7 +399,7 @@ Item {
                     contentItem: Image {
                         width: 50
                         height: 50
-                        source: isGreenC ? "images/GreenButton2.png" : "images/grayButton.png"
+                        source: isGreenC ? "images/grayButton.png" : "images/GreenButton2.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
@@ -401,12 +411,14 @@ Item {
 
                         if (!isGreenC) {
                             var clearPatternPhaseC = '{"objectName":"ClearDisplayPhaseC","patternC": "clearpatternC"}';
-                            qmlCommand(clearPatternPhaseC);
+                            //                            qmlCommand(clearPatternPhaseC);
                             console.log("Sent clearpatternPhaseC command");
+                            controlAndMonitor.replotPatternC();
                         } else {
                             var getPatternPhaseC = '{"objectName":"getpatternPhaseC","patternC": "getpatternC"}';
-                            qmlCommand(getPatternPhaseC);
+                            //                            qmlCommand(getPatternPhaseC);
                             console.log("Sent getpatternPhaseC command");
+                            controlAndMonitor.clearGraphPatternPhaseC();
                         }
                     }
                     background: Rectangle {
@@ -653,10 +665,10 @@ Item {
     }
 
     RowLayout {
-        x: 0
-        y: -16
-        width: 650
-        height: 54
+        x: 8
+        y: 0
+        width: 634
+        height: 38
 
         Rectangle {
             id: detailofwire
@@ -665,7 +677,17 @@ Item {
             border.color: "#509d9d9d"
             border.width: 2
             Layout.preferredHeight: 29
-            Layout.preferredWidth: 307
+            Layout.preferredWidth: 200
+
+            Text {
+                id: detailInfor
+                text: detailwire
+                anchors.fill: parent
+                font.pixelSize: 16
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
         }
 
         Rectangle {
@@ -675,15 +697,15 @@ Item {
             border.color: "#827d7d"
             border.width: 1
             Layout.preferredHeight: 28
-            Layout.preferredWidth: 176
+            Layout.preferredWidth: 200
         }
 
         ToolButton {
             id: toolButton2
             text: ""
             Layout.fillWidth: true
-            Layout.preferredHeight: 60
-            Layout.preferredWidth: 200
+            Layout.preferredHeight: 38
+            Layout.preferredWidth: 174
             font.pointSize: 10
 
             contentItem: Item {
@@ -706,7 +728,10 @@ Item {
                         anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        anchors.rightMargin: 0
+                        anchors.leftMargin: -14
+                        anchors.topMargin: 8
+                        anchors.bottomMargin: 9
+                        anchors.rightMargin: -24
                         font.pointSize: 7
                         font.bold: true
                         color: "#000000"
@@ -755,6 +780,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.33}D{i:10}
+    D{i:0;formeditorZoom:2}D{i:70}
 }
 ##^##*/

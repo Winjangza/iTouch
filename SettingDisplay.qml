@@ -108,7 +108,7 @@ Item {
             TextField {
                 id: sagText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Sag") ? sagfactor : qsTr("Enter Sag")
+                placeholderText: (typeof sagfactor !== "undefined" && sagfactor !== null) ? sagfactor : qsTr("Enter Sag")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -120,7 +120,7 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        sagText.color = "#ff0000"
+                        sagText.color = "#ff0000";
                     }
                 }
             }
@@ -128,7 +128,7 @@ Item {
             TextField {
                 id: samplingText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Sampling") ? sampling : qsTr("Enter Sampling")
+                placeholderText: (typeof sampling !== "undefined" && sampling !== null) ? sampling : qsTr("Enter Sampling")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -140,8 +140,7 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        samplingText.color = "#ff0000"
-
+                        samplingText.color = "#ff0000";
                     }
                 }
             }
@@ -149,7 +148,7 @@ Item {
             TextField {
                 id: distancetostartText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Dist. Start")? displayStart : qsTr("Enter Dist. Start")
+                placeholderText: (typeof displayStart !== "undefined" && displayStart !== null) ? displayStart : qsTr("Enter Dist. Start")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -161,7 +160,7 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        distancetostartText.color = "#ff0000"
+                        distancetostartText.color = "#ff0000";
                     }
                 }
             }
@@ -169,7 +168,7 @@ Item {
             TextField {
                 id: distancetoshowText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Dist. Show")? displayShow : qsTr("Enter Dist. Show")
+                placeholderText: (typeof displayShow !== "undefined" && displayShow !== null) ? displayShow : qsTr("Enter Dist. Show")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -181,8 +180,7 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        distancetoshowText.color = "#ff0000"
-
+                        distancetoshowText.color = "#ff0000";
                     }
                 }
             }
@@ -190,7 +188,7 @@ Item {
             TextField {
                 id: fulldistanceText
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter Full Dist.")? fulldistances : qsTr("Enter Full Dist")
+                placeholderText: (typeof fulldistances !== "undefined" && fulldistances !== null) ? fulldistances : qsTr("Enter Full Dist")
                 focus: false
                 onFocusChanged: {
                     if (focus) {
@@ -198,16 +196,16 @@ Item {
                         currentField = "fulldistanceText";
                         inputPanel.visible = true;
                         textInformation.visible = true;
-                        textInformation.placeholderText = qsTr("Enter Dist. Show");
+                        textInformation.placeholderText = qsTr("Enter Full Dist.");
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        fulldistanceText.color = "#ff0000"
+                        fulldistanceText.color = "#ff0000";
                     }
                 }
             }
-
         }
+
     }
 
     RowLayout {

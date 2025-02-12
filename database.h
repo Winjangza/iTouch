@@ -55,6 +55,8 @@ signals:
     void SetNetworkSNMP(QString);
     void updateDisplaySetting(QString);
     void settingDisplayInfo(QString);
+    void sendMarginUpdate(QString);
+    void showUpdateInfoSetting(QString);
 public slots:
     void getEventandAlarm(QString msg);
     void DistanceandDetailPhaseA(QString msg);
@@ -81,6 +83,8 @@ public slots:
     void getThreshold();
 
     void getSettingInfo();
+    void updateSettingInfo(QString);
+    void ToShowSettingInfo(QString);
 
     void getpreiodicInfo();
 
@@ -105,7 +109,8 @@ public slots:
     void SettingDisplay(QString);
     void GetSettingDisplay();
     void calculateDisplay(double);
-
+    void UpdateMarginSettingParameter(QString);
+    void updateMargin();
 //    void emitEvent();
 
 private:

@@ -36,33 +36,43 @@ Item {
 
         Text {
             id: thresholdsetting
-            x: 8
-            y: 19
             text: qsTr("THRESHOLD SETTING")
+            anchors.fill: parent
             font.pixelSize: 18
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            anchors.leftMargin: 8
+            anchors.rightMargin: 8
+            anchors.topMargin: 8
+            anchors.bottomMargin: 431
         }
 
         Text {
             id: text1
-            x: 8
-            y: 102
-            width: 600
-            height: 29
             text: "MARGIN SETTING: each margin cover FULL DISTANCE divided by MARGIN"
+            anchors.fill: parent
             font.pixelSize: 15
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
+            anchors.rightMargin: 0
+            anchors.leftMargin: 0
+            anchors.topMargin: 96
+            anchors.bottomMargin: 356
+            font.underline: false
             font.pointSize: 20
         }
 
         RowLayout {
-            x: 8
-            y: 147
-            width: 984
-            height: 305
+            anchors.fill: parent
+            anchors.rightMargin: 0
+            anchors.leftMargin: 0
+            anchors.bottomMargin: 8
+            anchors.topMargin: 144
 
             ParameterPhaseA {
                 id: parameterPhaseA
+                height: 300
+                Layout.fillHeight: false
                 Layout.fillWidth: true
                 Layout.preferredHeight: 305
                 Layout.preferredWidth: 275
@@ -70,6 +80,8 @@ Item {
 
             ParameterPhaseB {
                 id: parameterPhaseB
+                height: 300
+                Layout.fillHeight: false
                 Layout.fillWidth: true
                 Layout.preferredHeight: 305
                 Layout.preferredWidth: 283
@@ -77,16 +89,19 @@ Item {
 
             ParameterPhaseC {
                 id: parameterPhaseC
+                width: 330
+                height: 300
+                Layout.fillHeight: false
                 Layout.fillWidth: true
-                Layout.preferredHeight: 299
-                Layout.preferredWidth: 291
+                Layout.preferredHeight: 305
+                Layout.preferredWidth: 283
             }
         }
 
         RowLayout {
-            x: 61
-            y: 57
-            width: 926
+            x: 8
+            y: 50
+            width: 984
             height: 40
 
             RowLayout {
@@ -198,6 +213,53 @@ Item {
                     text: qsTr("mV")
                     font.pixelSize: 16
                 }
+            }
+        }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.rightMargin: 8
+            anchors.leftMargin: 8
+            anchors.bottomMargin: 332
+            anchors.topMargin: 125
+
+            Text {
+                id: text2
+                text: qsTr("PHASE A")
+                font.pixelSize: 18
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.bold: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 24
+                Layout.preferredWidth: 51
+            }
+
+            Text {
+                id: text3
+                text: qsTr("PHASE B")
+                font.pixelSize: 18
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.bold: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.preferredHeight: 24
+                Layout.preferredWidth: 51
+            }
+
+            Text {
+                id: text4
+                text: qsTr("PHASE C")
+                font.pixelSize: 18
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                font.bold: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.preferredHeight: 24
+                Layout.preferredWidth: 51
             }
         }
     }

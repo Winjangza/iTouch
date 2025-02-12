@@ -26,6 +26,8 @@
 #include <QTextStream>
 #include <QPointer>
 #include <QtMath>
+#include <QTextStream>
+
 #define SwVersion "V0.2 26122024"
 #define HwVersion "Raspberry Pi"
 #define HwName "Monitor"
@@ -36,7 +38,11 @@
 #define PASSWORD "11111"
 #define IP_ADDRESS "192.168.10.191"
 #define FILES "/opt/OpenPLC/bin/OpenPLC"
-
+#define FILESETTINGMASTER "/home/pi/.config/monitor/master.ini"
+#define FILESETTINGSLAVE "/home/pi/.config/monitor/slave.ini"
+#define NETWORK_SERVER "NETWORK"
+#define SNMP_SERVER "SNMP_SERVER"
+#define TIME_SERVER "TIME_SERVER"
 typedef int		pj_status_t;
 class mainwindows : public QObject
 {
@@ -82,6 +88,9 @@ signals:
      void plotingDataPhaseB(QString);
      void plotingDataPhaseC(QString);
      void sendMessage(QString);
+     void UpdateMarginSettingParameter(QString);
+     void getMarginUpdate();
+     void updateDisplayInfoSetting(QString);
 public:
     explicit mainwindows(QObject *parent = nullptr);
     static mainwindows *instance();
@@ -120,7 +129,9 @@ public slots:
     void reSamplingNormalizationPatternA(const std::vector<std::pair<float, float>>& result);
     void reSamplingNormalizationPatternB(const std::vector<std::pair<float, float>>& result);
     void reSamplingNormalizationPatternC(const std::vector<std::pair<float, float>>& result);
-
+    void RecalculateWithMargin(QString);
+    void getSetting();
+    void updateNetwork();
 private:
     ChatServer *SocketServer;
     Database *mysql;
@@ -169,8 +180,29 @@ private:
     QString cppManual;
     QString cppPattern;
     double pointsPerWave;
+    int thelistNumOfMargin;
+    struct Network{
+        // network
+        QString dhcpmethod;
+        QString ip_address = "127.0.0.1";
+        QString subnet;
+        QString ip_gateway = "";
+        QString pridns;
+        QString secdns;
+        QString phyName = "eth0";
 
+        QString ip_snmp = "";
+        QString location_snmp = "";
 
+        QString ip_timeserver = "";
+
+        void printinfo(){
+            qDebug() << "dhcpmethod:" << dhcpmethod << " ip_address:" << ip_address
+                     << " subnet:" << subnet << " ip_gateway:" << ip_gateway << " pridns:" << pridns
+                     << " secdns:" << secdns << " phyName:" << phyName << " ip_timeserver:" << ip_timeserver;
+        }
+    };
+    Network *networks;
     pthread_t idThreadA, idThreadB, idThreadC;
 
     struct ThreadData {
@@ -184,6 +216,16 @@ private:
     };
 
     ThreadData dataA, dataB, dataC;
+
+    int storedVoltage = 0;
+    QString storedSubstation = "";
+    QString storedDirection = "";
+    int storedLineNo = 0;
+
+    bool hasVoltage = false;
+    bool hasSubstation = false;
+    bool hasDirection = false;
+    bool hasLineNo = false;
 };
 
 #endif // MAINWINDOWS_H

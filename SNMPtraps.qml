@@ -5,23 +5,23 @@ import QtQuick.Controls 2.15
 Item {
     width: 400
     height: 460
-    property bool selectPLCDoError      :false
-    property bool selectPLCDiError      :false
-    property bool selectPhaseAError     :false
-    property bool selectPhaseBError     :false
-    property bool selectPhaseCError     :false
-    property bool selectModbusErrorA    :false
-    property bool selectModbusErrorB    :false
-    property bool selectModbusErrorC    :false
-    property bool selectGPSModule       :false
-    property bool selectSystemInit      :false
-    property bool selectCommuError      :false
-    property bool selectRelayStart      :false
-    property bool selectSurageStart     :false
-    property bool selectPeriodicStart   :false
-    property bool selectManualTest      :false
-    property bool selectLFLfail         :false
-    property bool selectLFLOperate      :false
+    property bool selectPLCDoError      :plc_do_error
+    property bool selectPLCDiError      :plc_di_error
+    property bool selectPhaseAError     :internal_phase_A_error
+    property bool selectPhaseBError     :internal_phase_B_error
+    property bool selectPhaseCError     :internal_phase_C_error
+    property bool selectModbusErrorA    :module_hi_speed_phase_A_error
+    property bool selectModbusErrorB    :module_hi_speed_phase_B_error
+    property bool selectModbusErrorC    :module_hi_speed_phase_C_error
+    property bool selectGPSModule       :gps_module_fail
+    property bool selectSystemInit      :system_initial
+    property bool selectCommuError      :communication_error
+    property bool selectRelayStart      :relay_start_event
+    property bool selectSurageStart     :surage_start_event
+    property bool selectPeriodicStart   :periodic_test_event
+    property bool selectManualTest      :manual_test_event
+    property bool selectLFLfail         :lfl_fail
+    property bool selectLFLOperate      :lfl_operate
     Rectangle {
         id: rectangle
         color: "#e7e6e6"
@@ -126,14 +126,14 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectPhaseAError
+                            property bool isActive: selectModbusErrorA
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
                                     hispeedPhaseA.isActive = !hispeedPhaseA.isActive;
                                     var SelectSNMP = '{"objectName":"SNMPenable", "hispeedPhaseA": ' + hispeedPhaseA.isActive + '}';
                                     qmlCommand(SelectSNMP);
-                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseAError);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorA);
                                 }
                             }
                         }
@@ -154,14 +154,14 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectPhaseBError
+                            property bool isActive: selectModbusErrorB
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
                                     hispeedPhaseB.isActive = !hispeedPhaseB.isActive;
                                     var SelectSNMP = '{"objectName":"SNMPenable", "hispeedPhaseB": ' + hispeedPhaseB.isActive + '}';
                                     qmlCommand(SelectSNMP);
-                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseBError);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorB);
                                 }
                             }
                         }
@@ -182,14 +182,14 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectPhaseCError
+                            property bool isActive: selectModbusErrorC
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
                                     hispeedPhaseC.isActive = !hispeedPhaseC.isActive;
                                     var SelectSNMP = '{"objectName":"SNMPenable", "hispeedPhaseC": ' + hispeedPhaseC.isActive + '}';
                                     qmlCommand(SelectSNMP);
-                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseCError);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorC);
                                 }
                             }
                         }
@@ -210,14 +210,14 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectModbusErrorA
+                            property bool isActive: selectPhaseAError
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
                                     commuPhaseA.isActive = !commuPhaseA.isActive;
                                     var SelectSNMP = '{"objectName":"SNMPenable", "commuPhaseA": ' + commuPhaseA.isActive + '}';
                                     qmlCommand(SelectSNMP);
-                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorA);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseAError);
                                 }
                             }
                         }
@@ -238,14 +238,14 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectModbusErrorB
+                            property bool isActive: selectPhaseBError
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
                                     commuPhaseB.isActive = !commuPhaseB.isActive;
                                     var SelectSNMP = '{"objectName":"SNMPenable", "commuPhaseB": ' + commuPhaseB.isActive + '}';
                                     qmlCommand(SelectSNMP);
-                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorB);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseBError);
                                 }
                             }
                         }
@@ -266,14 +266,14 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectModbusErrorC
+                            property bool isActive: selectPhaseCError
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
                                     commuPhaseC.isActive = !commuPhaseC.isActive;
                                     var SelectSNMP = '{"objectName":"SNMPenable", "commuPhaseC": ' + commuPhaseC.isActive + '}';
                                     qmlCommand(SelectSNMP);
-                                    console.log("Current status SNMP: " + SelectSNMP, selectModbusErrorC);
+                                    console.log("Current status SNMP: " + SelectSNMP, selectPhaseCError);
                                 }
                             }
                         }
@@ -322,7 +322,7 @@ Item {
                             border.width: 1
                             Layout.preferredHeight: 35
                             Layout.preferredWidth: 35
-                            property bool isActive: selectGPSModule
+                            property bool isActive: selectSystemInit
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
