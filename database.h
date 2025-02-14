@@ -42,6 +42,8 @@ signals:
     void updatedataTableC(QString message);
     void updataEditDataA(QString);
     void listOfMarginA(QString);
+    void listOfMarginB(QString);
+    void listOfMarginC(QString);
     void updateThresholdA(QString);
     void updateThresholdB(QString);
     void updateThresholdC(QString);
@@ -57,6 +59,10 @@ signals:
     void settingDisplayInfo(QString);
     void sendMarginUpdate(QString);
     void showUpdateInfoSetting(QString);
+    void sendUpdatedMarginList(QString);
+    void sendUpdatedMarginListB(QString);
+    void sendUpdatedMarginListC(QString);
+
 public slots:
     void getEventandAlarm(QString msg);
     void DistanceandDetailPhaseA(QString msg);
@@ -77,6 +83,8 @@ public slots:
     void closeMySQL();
 
     void configParemeterMarginA(QString);
+    void configParemeterMarginB(QString);
+    void configParemeterMarginC(QString);
 
     void configParemeterThreshold(QString);
 
@@ -111,6 +119,10 @@ public slots:
     void calculateDisplay(double);
     void UpdateMarginSettingParameter(QString);
     void updateMargin();
+    void updataListOfMarginA(QString);
+    void updataListOfMarginB(QString);
+    void updataListOfMarginC(QString);
+
 //    void emitEvent();
 
 private:

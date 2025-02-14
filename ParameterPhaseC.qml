@@ -9,7 +9,7 @@ Item {
     width: 300
     height: 380
 
-    property int marginCountC: valueMarginC
+    property int marginCountC: updateMarginC
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
     property var updateValueMarginC : updateMarginC
@@ -71,7 +71,7 @@ Item {
                 Layout.fillHeight: true
                 Layout.preferredHeight: 33
                 Layout.preferredWidth: 60
-//                placeholderText: qsTr("Enter Count")
+                text: marginCountC
                 inputMethodHints: Qt.ImhDigitsOnly
                 Keys.onReturnPressed: Qt.inputMethod.hide();
 
@@ -146,25 +146,20 @@ Item {
                 Keys.onReturnPressed: Qt.inputMethod.hide();
 
                 onClicked: {
-                    var voltageValue = parseInt(valueVoltage.text); // อ่านค่าจาก valueVoltage
+                    var voltageValue = parseInt(valueVoltage.text);
                     if (!isNaN(voltageValue)) {
                         console.log("Updating all valueMarginC to:", voltageValue);
 
-                        for (let i = 0; i < newlistMarginA.count; i++) {
-                            let item = newlistMarginA.get(i);
-                            newlistMarginA.set(i, {
-                                "voltageIndex": i,
-                                "list_marginC": item.list_marginC,
-                                "valueMarginC": voltageValue,
-                                "unitMaginC": item.unitMaginC,
-                                "statusMaginC": item.statusMaginC
-                            });
+                        for (let i = 0; i < newlistMarginC.count; i++) {
+                            newlistMarginC.setProperty(i, "valueMarginC", voltageValue);
                         }
+
+                        var autoCMD = '{"objectName":"autoSetValueMarginC", "autoValueVoltage":' + valueVoltage.text + ', "rangeofmargin":' + textFieldMarginNumber.text + ' , "PHASE": "C"}';
+                        console.log("Sending Auto Command:", autoCMD);
+                        qmlCommand(autoCMD);
                     } else {
                         console.log("Invalid voltage value. Please enter a valid number in valueVoltage.");
                     }
-                    var autoValue = '{"objectName":"AutoValue","value": '+valueVoltage.text+'}'
-                    qmlCommand(autoValue);
                 }
             }
         }
@@ -250,6 +245,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.1}D{i:5}
+    D{i:0;formeditorZoom:1.1}
 }
 ##^##*/

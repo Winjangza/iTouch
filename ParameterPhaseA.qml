@@ -9,7 +9,7 @@ Item {
     width: 300
     height: 380
 
-    property int marginCountA: valueMarginA
+    property int marginCountA: updateMarginA
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
 
@@ -49,7 +49,7 @@ Item {
             id: rowLayout
             y: 3
             height: 33
-            anchors.top: text1.bottom
+//            anchors.top: text1.bottom
             anchors.leftMargin: 8
             anchors.rightMargin: 8
             anchors.left: parent.left
@@ -72,6 +72,7 @@ Item {
                 Layout.fillHeight: true
                 Layout.preferredHeight: 33
                 Layout.preferredWidth: 60
+                text: marginCountA
                 inputMethodHints: Qt.ImhDigitsOnly
                 Keys.onReturnPressed: Qt.inputMethod.hide();
                 onAccepted: {
@@ -149,7 +150,7 @@ Item {
                             newlistMarginA.setProperty(i, "valueMarginA", voltageValue);
                         }
 
-                        var autoCMD = '{"objectName":"autoValue", "autoValueVoltage":' + valueVoltage.text + ', "PHASE": "A"}';
+                        var autoCMD = '{"objectName":"autoSetValueMarginA", "autoValueVoltage":' + valueVoltage.text + ', "rangeofmargin":' + textFieldMarginNumber.text + ' , "PHASE": "A"}';
                         console.log("Sending Auto Command:", autoCMD);
                         qmlCommand(autoCMD);
                     } else {
@@ -205,7 +206,7 @@ Item {
                             onFocusChanged: {
                                 if (focus) {
                                     Qt.inputMethod.show();
-                                    currentField = "cheangeValueofVoltageA";
+                                    currentField = "changeValueofVoltageA";
                                     inputPanel.visible = true;
                                     textInformation.visible = true;
                                     textInformation.text = "";
@@ -220,7 +221,7 @@ Item {
                             }
 
                             Keys.onReturnPressed: {
-                                Qt.inputMethod.hide(); // ซ่อนแป้นพิมพ์เมื่อกด Enter
+                                Qt.inputMethod.hide();
                                 focusIndex = -1
                                 console.log("KeysonReturnPressed:",focusIndex,model.voltageIndex,model.list_marginA)
                             }
@@ -241,6 +242,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.1}D{i:5}
+    D{i:0;formeditorZoom:1.1}
 }
 ##^##*/

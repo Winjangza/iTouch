@@ -9,7 +9,7 @@ Item {
     width: 300
     height: 380
 
-    property int marginCountB: valueMarginB
+    property int marginCountB: updateMarginB
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
     property var updateValueMarginB : updateMarginB
@@ -71,7 +71,7 @@ Item {
                 Layout.fillHeight: true
                 Layout.preferredHeight: 33
                 Layout.preferredWidth: 60
-//                placeholderText: qsTr("Enter Count")
+                text: marginCountB
                 inputMethodHints: Qt.ImhDigitsOnly
                 Keys.onReturnPressed: Qt.inputMethod.hide();
 
@@ -116,7 +116,7 @@ Item {
                 onFocusChanged: {
                     if (focus) {
                         Qt.inputMethod.show();
-                        currentField = "valueVoltageA";
+                        currentField = "valueVoltageB";
                         inputPanel.visible = true;
                         textInformation.visible = true;
                         textInformation.text = "";
@@ -146,25 +146,21 @@ Item {
                 Keys.onReturnPressed: Qt.inputMethod.hide();
 
                 onClicked: {
-                    var voltageValue = parseInt(valueVoltage.text);
+                    var voltageValue = parseInt(valueVoltage.text); // Read `valueVoltage`
+
                     if (!isNaN(voltageValue)) {
-                        console.log("Updating all valueMarginA to:", voltageValue);
+                        console.log("Updating all valueMarginB to:", voltageValue);
 
                         for (let i = 0; i < newlistMarginB.count; i++) {
-                            let item = newlistMarginB.get(i);
-                            newlistMarginB.set(i, {
-                                "voltageIndex": i,
-                                "list_marginB": item.list_marginB,
-                                "valueMarginB": voltageValue,
-                                "unitMaginB": item.unitMaginB,
-                                "statusMaginB": item.statusMaginB
-                            });
+                            newlistMarginB.setProperty(i, "valueMarginB", voltageValue);
                         }
+
+                        var autoCMD = '{"objectName":"autoSetValueMarginB", "autoValueVoltage":' + valueVoltage.text + ', "rangeofmargin":' + textFieldMarginNumber.text + ' , "PHASE": "B"}';
+                        console.log("Sending Auto Command:", autoCMD);
+                        qmlCommand(autoCMD);
                     } else {
                         console.log("Invalid voltage value. Please enter a valid number in valueVoltage.");
                     }
-                    var autoValue = '{"objectName":"AutoValue","value": '+valueVoltage.text+'}'
-                    qmlCommand(autoValue);
                 }
             }
         }

@@ -1713,10 +1713,11 @@ void Database::UpdateMarginSettingParameter(QString msg) {
 
     QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject obj = doc.object();
-    int marginA = obj["marginA"].toInt();
-    double valueVoltageA = obj["valueVoltageA"].toDouble();
+    int margin = obj["marginA"].toInt() ?  obj["marginA"].toInt() : obj["marginB"].toInt() ? obj["marginB"].toInt() : obj["marginC"].toInt();
+    double valueVoltage = obj["valueVoltageA"].toDouble() ? obj["valueVoltageA"].toDouble() : obj["valueVoltageB"].toDouble() ?obj["valueVoltageB"].toDouble():obj["valueVoltageC"].toDouble();
     int focusIndex = obj["focusIndex"].toInt();
     QString phase = obj["PHASE"].toString();
+    qDebug() << "UPhase update Margin:" << margin << valueVoltage << focusIndex << phase;
 
     if (!db.open()) {
         qDebug() << "Error: Unable to open database" << db.lastError().text();
@@ -1737,12 +1738,12 @@ void Database::UpdateMarginSettingParameter(QString msg) {
         int id = query.value(0).toInt();
         QString updateSQL = R"(
             UPDATE MarginSettingParameter
-            SET margin = :marginA, valueVoltage = :valueVoltageA, focusIndex = :focusIndex
+            SET margin = :margin, valueVoltage = :valueVoltage, focusIndex = :focusIndex
             WHERE id = :id
         )";
         query.prepare(updateSQL);
-        query.bindValue(":margin", marginA);
-        query.bindValue(":valueVoltage", valueVoltageA);
+        query.bindValue(":margin", margin);
+        query.bindValue(":valueVoltage", valueVoltage);
         query.bindValue(":focusIndex", focusIndex);
         query.bindValue(":id", id);
 
@@ -1761,6 +1762,7 @@ void Database::UpdateMarginSettingParameter(QString msg) {
     }
 
     db.close();
+    updateMargin();
 }
 
 void Database::updateMargin() {
@@ -1803,47 +1805,120 @@ void Database::updateMargin() {
         qDebug() << "Generated JSON for update Margin:" << updateMargin;
 
         emit sendMarginUpdate(updateMargin);
+        if(phase == "A"){
+            QString updateMarginA = QString("{"
+                                           "\"objectName\":\"marginCountA\","
+                                           "\"marginA\":%1,"
+                                           "\"valueVoltage\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}")
+                                       .arg(margin)
+                                       .arg(valueVoltage)
+                                       .arg(focusIndex)
+                                       .arg(phase);
+
+            configParemeterMarginA(updateMarginA);
+        }
+        if(phase == "B"){
+            QString updateMarginB = QString("{"
+                                           "\"objectName\":\"marginCountB\","
+                                           "\"marginB\":%1,"
+                                           "\"valueVoltage\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}")
+                                       .arg(margin)
+                                       .arg(valueVoltage)
+                                       .arg(focusIndex)
+                                       .arg(phase);
+
+            configParemeterMarginB(updateMarginB);
+        }
+        if(phase == "C"){
+            QString updateMarginC = QString("{"
+                                           "\"objectName\":\"marginCountC\","
+                                           "\"marginC\":%1,"
+                                           "\"valueVoltage\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}")
+                                       .arg(margin)
+                                       .arg(valueVoltage)
+                                       .arg(focusIndex)
+                                       .arg(phase);
+
+            configParemeterMarginC(updateMarginC);
+        }
     }
     db.close();
 }
 
 
-
-
 void Database::configParemeterMarginA(QString msg) {
     qDebug() << "configParemeterMarginA:" << msg;
+
+    if (!db.isOpen() && !db.open()) {
+        qDebug() << "Failed to open the database:" << db.lastError().text();
+        return;
+    }
 
     QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject command = d.object();
     QString getCommand = command["objectName"].toString();
     int numOfMarginA = command["marginA"].toInt();
-    QString phase = command["phase"].toString();
+    QString phase = command["PHASE"].toString();
+    int focusIndex = command.contains("focusIndex") ? command["focusIndex"].toInt() : -1;
 
-    if (getCommand.contains("marginCountA")) {
-        qDebug() << "Number of margins to fetch:" << numOfMarginA;
+    if (phase == "A" && command.contains("marginA") && command.contains("PHASE")) {
+        qDebug() << "Updating MarginSettingParameter with marginA: " << numOfMarginA;
 
-        if (!db.isOpen() && !db.open()) {
-            qDebug() << "Failed to open the database:" << db.lastError().text();
+        QSqlQuery updateQuery(db);
+        updateQuery.prepare("UPDATE MarginSettingParameter SET margin = :numOfMarginA WHERE PHASE = 'A'");
+        updateQuery.bindValue(":numOfMarginA", numOfMarginA);
+
+        if (!updateQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginSettingParameter" << updateQuery.lastError().text();
+            db.close();            return;
+        }
+        qDebug() << "Updated MarginSettingParameter for Phase A.";
+    }
+
+    if (phase == "A" && command.contains("focusIndex")) {
+        qDebug() << "Updating focusIndex for MarginSettingParameter...";
+
+        QSqlQuery updateFocusQuery(db);
+        updateFocusQuery.prepare("UPDATE MarginSettingParameter SET focusIndex = :focusIndex WHERE PHASE = 'A'");
+        updateFocusQuery.bindValue(":focusIndex", focusIndex);
+
+        if (!updateFocusQuery.exec()) {
+            qDebug() << "Error: Unable to update focusIndex in MarginSettingParameter" << updateFocusQuery.lastError().text();
+            db.close();
             return;
         }
+        qDebug() << "Updated focusIndex for Phase A to:" << focusIndex;
+    }
 
-        QSqlQuery query(db);
-        query.prepare("SELECT * FROM MarginTable WHERE No <= :numOfMarginA ORDER BY No ASC");
-        query.bindValue(":numOfMarginA", numOfMarginA);
+    if (getCommand.contains("marginCountA") && phase == "A") {
+        qDebug() << "Fetching MarginA Data: " << numOfMarginA;
 
-        if (!query.exec()) {
-            qDebug() << "Query execution failed:" << query.lastError().text();
+        QSqlQuery fetchQuery(db);
+        fetchQuery.prepare("SELECT * FROM MarginTable WHERE No <= :numOfMarginA ORDER BY No ASC");
+        fetchQuery.bindValue(":numOfMarginA", numOfMarginA);
+
+        if (!fetchQuery.exec()) {
+            qDebug() << "Query execution failed:" << fetchQuery.lastError().text();
             db.close();
             return;
         }
 
-        while (query.next()) {
-            int no = query.value("No").toInt();
-            QString marginNo = query.value("Margin(No.)").toString();
-            int valueOfMargin = query.value("value of margin").toInt();
-            QString unit = query.value("unit").toString();
+        while (fetchQuery.next()) {
+            int no = fetchQuery.value("No").toInt();
+            QString marginNo = fetchQuery.value("Margin(No.)").toString();
+            int valueOfMargin = fetchQuery.value("value of margin").toInt();
+            QString unit = fetchQuery.value("unit").toString();
 
-            QString singleMarginData = QString("{\"objectName\":\"marginCountA\", "
+            QString singleMarginData = QString("{\"objectName\":\"marginlistCountA\", "
                                                "\"no\":%1, "
                                                "\"marginNo\":\"%2\", "
                                                "\"valueOfMargin\":%3, "
@@ -1853,15 +1928,409 @@ void Database::configParemeterMarginA(QString msg) {
                                            .arg(valueOfMargin)
                                            .arg(unit);
 
+
             qDebug() << "Sending single margin data:" << singleMarginData;
             emit listOfMarginA(singleMarginData);
         }
+    }
 
-        db.close();
+    db.close();
+    qDebug() << "Database closed successfully.";
+}
+
+void Database::configParemeterMarginB(QString msg) {
+    qDebug() << "configParemeterMarginB:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = command["objectName"].toString();
+    int numOfMarginB = command["marginB"].toInt();
+    QString phase = command["PHASE"].toString();
+
+    if (getCommand.contains("marginCountB")) {
+        qDebug() << "Number of margins to fetch:" << numOfMarginB;
+        if(phase == "B"){
+            if (!db.isOpen() && !db.open()) {
+                qDebug() << "Failed to open the database:" << db.lastError().text();
+                return;
+            }
+
+            QSqlQuery query(db);
+            query.prepare("SELECT * FROM MarginTableB WHERE No <= :numOfMarginB ORDER BY No ASC");
+            query.bindValue(":numOfMarginB", numOfMarginB);
+
+            if (!query.exec()) {
+                qDebug() << "Query execution failed:" << query.lastError().text();
+                db.close();
+                return;
+            }
+
+            while (query.next()) {
+                int no = query.value("No").toInt();
+                QString marginNo = query.value("Margin(No.)").toString();
+                int valueOfMargin = query.value("value of margin").toInt();
+                QString unit = query.value("unit").toString();
+
+                QString singleMarginData = QString("{\"objectName\":\"marginlistCountB\", "
+                                                   "\"no\":%1, "
+                                                   "\"marginNo\":\"%2\", "
+                                                   "\"valueOfMargin\":%3, "
+                                                   "\"unit\":\"%4\"}")
+                                               .arg(no)
+                                               .arg(marginNo)
+                                               .arg(valueOfMargin)
+                                               .arg(unit);
+
+                qDebug() << "Sending single margin data:" << singleMarginData;
+                emit listOfMarginB(singleMarginData);
+            }
+
+            db.close();
+        }
+    }
+}
+void Database::configParemeterMarginC(QString msg) {
+    qDebug() << "configParemeterMarginC:" << msg;
+
+    QJsonDocument d = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject command = d.object();
+    QString getCommand = command["objectName"].toString();
+    int numOfMarginC = command["marginC"].toInt();
+    QString phase = command["PHASE"].toString();
+
+    if (getCommand.contains("marginCountC")) {
+        qDebug() << "Number of margins to fetch:" << numOfMarginC;
+        if(phase == "C"){
+            if (!db.isOpen() && !db.open()) {
+                qDebug() << "Failed to open the database:" << db.lastError().text();
+                return;
+            }
+
+            QSqlQuery query(db);
+            query.prepare("SELECT * FROM MarginTableC WHERE No <= :numOfMarginC ORDER BY No ASC");
+            query.bindValue(":numOfMarginC", numOfMarginC);
+
+            if (!query.exec()) {
+                qDebug() << "Query execution failed:" << query.lastError().text();
+                db.close();
+                return;
+            }
+
+            while (query.next()) {
+                int no = query.value("No").toInt();
+                QString marginNo = query.value("Margin(No.)").toString();
+                int valueOfMargin = query.value("value of margin").toInt();
+                QString unit = query.value("unit").toString();
+
+                QString singleMarginData = QString("{\"objectName\":\"marginlistCountC\", "
+                                                   "\"no\":%1, "
+                                                   "\"marginNo\":\"%2\", "
+                                                   "\"valueOfMargin\":%3, "
+                                                   "\"unit\":\"%4\"}")
+                                               .arg(no)
+                                               .arg(marginNo)
+                                               .arg(valueOfMargin)
+                                               .arg(unit);
+
+                qDebug() << "Sending single margin data:" << singleMarginData;
+                emit listOfMarginC(singleMarginData);
+            }
+
+            db.close();
+        }
     }
 }
 
+void Database::updataListOfMarginA(QString msg) {
+    qDebug() << "updataListOfMarginA:" << msg;
 
+    if (!db.isOpen() && !db.open()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject obj = doc.object();
+
+    int marginA = obj.contains("marginA") ? obj["marginA"].toInt() : obj["rangeofmargin"].toInt();
+    int valueVoltageA = obj.contains("valueVoltageA") ? obj["valueVoltageA"].toInt() : obj["autoValueVoltage"].toInt();
+    int focusIndex = obj.contains("focusIndex") ? obj["focusIndex"].toInt() : -1;
+
+    qDebug() << "Processing MarginA:" << marginA << " ValueVoltageA:" << valueVoltageA
+             << " FocusIndex:" << focusIndex;
+
+    if (focusIndex > 0) {
+        // ✅ **Update a specific row**
+        int targetNo = focusIndex + 1;
+        QSqlQuery updateQuery(db);
+        updateQuery.prepare("UPDATE MarginTable SET `value of margin` = :valueVoltageA WHERE No = :targetNo");
+        updateQuery.bindValue(":valueVoltageA", valueVoltageA);
+        updateQuery.bindValue(":targetNo", targetNo);
+
+        if (!updateQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginTable at No:" << targetNo << updateQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Updated MarginTable at No:" << targetNo << " with ValueVoltageA:" << valueVoltageA;
+
+    } else if (focusIndex == 0) {
+        // ✅ **Update only first row (No = 1)**
+        QSqlQuery updateFirstQuery(db);
+        updateFirstQuery.prepare("UPDATE MarginTable SET `value of margin` = :valueVoltageA WHERE No = 1");
+        updateFirstQuery.bindValue(":valueVoltageA", valueVoltageA);
+
+        if (!updateFirstQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginTable at No 1" << updateFirstQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Updated **only** first row (No = 1) with ValueVoltageA:" << valueVoltageA;
+
+    } else if (focusIndex == -1) {
+        // ✅ **Auto Fill All (Update all rows up to marginA)**
+        QSqlQuery updateAllQuery(db);
+        updateAllQuery.prepare("UPDATE MarginTable SET `value of margin` = :valueVoltageA WHERE No <= :marginA");
+        updateAllQuery.bindValue(":valueVoltageA", valueVoltageA);
+        updateAllQuery.bindValue(":marginA", marginA);
+
+        if (!updateAllQuery.exec()) {
+            qDebug() << "Error: Unable to update all MarginTable rows" << updateAllQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Auto-filled first" << marginA << " rows with ValueVoltageA:" << valueVoltageA;
+    }
+
+    // ✅ **Retrieve updated rows**
+    QSqlQuery selectQuery(db);
+    selectQuery.prepare("SELECT No, `Margin(No.)`, `value of margin`, unit FROM MarginTable WHERE No <= :marginA");
+    selectQuery.bindValue(":marginA", marginA);
+
+    if (!selectQuery.exec()) {
+        qDebug() << "Error: Unable to retrieve MarginTable data" << selectQuery.lastError().text();
+        db.close();
+        return;
+    }
+
+    // ✅ **Pack results into JSON**
+    QJsonArray marginList;
+    while (selectQuery.next()) {
+        QJsonObject marginData;
+        marginData["No"] = selectQuery.value(0).toInt();
+        marginData["MarginName"] = selectQuery.value(1).toString();
+        marginData["Value"] = selectQuery.value(2).toInt();
+        marginData["Unit"] = selectQuery.value(3).toString();
+        marginList.append(marginData);
+    }
+
+    QJsonObject output;
+    output["objectName"] = "MarginTableUpdated";
+    output["Margins"] = marginList;
+
+    QJsonDocument jsonDoc(output);
+    QString jsonData = jsonDoc.toJson(QJsonDocument::Compact);
+
+    qDebug() << "Formatted JSON sendUpdatedMarginList:" << jsonData;
+//    emit sendUpdatedMarginList(jsonData);
+
+    // ✅ Close the database
+    db.close();
+    qDebug() << "Database closed successfully.";
+}
+
+
+void Database::updataListOfMarginB(QString msg) {
+    qDebug() << "updataListOfMarginB:" << msg;
+
+    if (!db.isOpen() && !db.open()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject obj = doc.object();
+
+    int marginB = obj.contains("marginB") ? obj["marginB"].toInt() : obj["rangeofmargin"].toInt();
+    int valueVoltageB = obj.contains("valueVoltageB") ? obj["valueVoltageB"].toInt() : obj["autoValueVoltage"].toInt();
+    int focusIndex = obj.contains("focusIndex") ? obj["focusIndex"].toInt() : -1;
+
+    qDebug() << "Processing marginB:" << marginB << " ValueVoltageA:" << valueVoltageB
+             << " FocusIndex:" << focusIndex;
+
+    if (focusIndex > 0) {
+        // ✅ **Update a specific row**
+        int targetNo = focusIndex + 1;
+        QSqlQuery updateQuery(db);
+        updateQuery.prepare("UPDATE MarginTableB SET `value of margin` = :valueVoltageB WHERE No = :targetNo");
+        updateQuery.bindValue(":valueVoltageB", valueVoltageB);
+        updateQuery.bindValue(":targetNo", targetNo);
+
+        if (!updateQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginTableB at No:" << targetNo << updateQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Updated MarginTable at No:" << targetNo << " with ValueVoltageA:" << valueVoltageB;
+
+    } else if (focusIndex == 0) {
+        // ✅ **Update only first row (No = 1)**
+        QSqlQuery updateFirstQuery(db);
+        updateFirstQuery.prepare("UPDATE MarginTableB SET `value of margin` = :valueVoltageB WHERE No = 1");
+        updateFirstQuery.bindValue(":valueVoltageB", valueVoltageB);
+
+        if (!updateFirstQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginTableB at No 1" << updateFirstQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Updated **only** first row (No = 1) with valueVoltageB:" << valueVoltageB;
+
+    } else if (focusIndex == -1) {
+        // ✅ **Auto Fill All (Update all rows up to marginA)**
+        QSqlQuery updateAllQuery(db);
+        updateAllQuery.prepare("UPDATE MarginTableB SET `value of margin` = :valueVoltageB WHERE No <= :marginB");
+        updateAllQuery.bindValue(":valueVoltageB", valueVoltageB);
+        updateAllQuery.bindValue(":marginB", marginB);
+
+        if (!updateAllQuery.exec()) {
+            qDebug() << "Error: Unable to update all MarginTableB rows" << updateAllQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Auto-filled first" << marginB << " rows with valueVoltageB:" << valueVoltageB;
+    }
+
+    // ✅ **Retrieve updated rows**
+    QSqlQuery selectQuery(db);
+    selectQuery.prepare("SELECT No, `Margin(No.)`, `value of margin`, unit FROM MarginTableB WHERE No <= :marginB");
+    selectQuery.bindValue(":marginB", marginB);
+
+    if (!selectQuery.exec()) {
+        qDebug() << "Error: Unable to retrieve MarginTableB data" << selectQuery.lastError().text();
+        db.close();
+        return;
+    }
+
+    QJsonArray marginList;
+    while (selectQuery.next()) {
+        QJsonObject marginData;
+        marginData["No"] = selectQuery.value(0).toInt();
+        marginData["MarginName"] = selectQuery.value(1).toString();
+        marginData["Value"] = selectQuery.value(2).toInt();
+        marginData["Unit"] = selectQuery.value(3).toString();
+        marginList.append(marginData);
+    }
+
+    QJsonObject output;
+    output["objectName"] = "MarginTableUpdated";
+    output["Margins"] = marginList;
+
+    QJsonDocument jsonDoc(output);
+    QString jsonData = jsonDoc.toJson(QJsonDocument::Compact);
+
+    qDebug() << "Formatted JSON sendUpdatedMarginList:" << jsonData;
+//    emit sendUpdatedMarginList(jsonData);
+
+    // ✅ Close the database
+    db.close();
+    qDebug() << "Database closed successfully.";
+}
+
+void Database::updataListOfMarginC(QString msg) {
+    qDebug() << "updataListOfMarginC:" << msg;
+
+    if (!db.isOpen() && !db.open()) {
+        qDebug() << "Database is not open. Attempting to open...";
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
+    QJsonObject obj = doc.object();
+
+    int marginC = obj.contains("marginC") ? obj["marginC"].toInt() : obj["rangeofmargin"].toInt();
+    int valueVoltageC = obj.contains("valueVoltageC") ? obj["valueVoltageC"].toInt() : obj["autoValueVoltage"].toInt();
+    int focusIndex = obj.contains("focusIndex") ? obj["focusIndex"].toInt() : -1;
+
+    qDebug() << "Processing marginC:" << marginC << " valueVoltageC:" << valueVoltageC
+             << " FocusIndex:" << focusIndex;
+
+    if (focusIndex > 0) {
+        // ✅ **Update a specific row**
+        int targetNo = focusIndex + 1;
+        QSqlQuery updateQuery(db);
+        updateQuery.prepare("UPDATE MarginTableC SET `value of margin` = :valueVoltageC WHERE No = :targetNo");
+        updateQuery.bindValue(":valueVoltageC", valueVoltageC);
+        updateQuery.bindValue(":targetNo", targetNo);
+
+        if (!updateQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginTableB at No:" << targetNo << updateQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Updated MarginTable at No:" << targetNo << " with ValueVoltageA:" << valueVoltageC;
+
+    } else if (focusIndex == 0) {
+        // ✅ **Update only first row (No = 1)**
+        QSqlQuery updateFirstQuery(db);
+        updateFirstQuery.prepare("UPDATE MarginTableC SET `value of margin` = :valueVoltageC WHERE No = 1");
+        updateFirstQuery.bindValue(":valueVoltageC", valueVoltageC);
+
+        if (!updateFirstQuery.exec()) {
+            qDebug() << "Error: Unable to update MarginTableC at No 1" << updateFirstQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Updated **only** first row (No = 1) with valueVoltageC:" << valueVoltageC;
+
+    } else if (focusIndex == -1) {
+        QSqlQuery updateAllQuery(db);
+        updateAllQuery.prepare("UPDATE MarginTableC SET `value of margin` = :valueVoltageC WHERE No <= :marginC");
+        updateAllQuery.bindValue(":valueVoltageC", valueVoltageC);
+        updateAllQuery.bindValue(":marginC", marginC);
+
+        if (!updateAllQuery.exec()) {
+            qDebug() << "Error: Unable to update all MarginTableC rows" << updateAllQuery.lastError().text();
+            db.close();
+            return;
+        }
+        qDebug() << "Auto-filled first" << marginC << " rows with valueVoltageC:" << valueVoltageC;
+    }
+
+    QSqlQuery selectQuery(db);
+    selectQuery.prepare("SELECT No, `Margin(No.)`, `value of margin`, unit FROM MarginTableC WHERE No <= :marginC");
+    selectQuery.bindValue(":marginC", marginC);
+
+    if (!selectQuery.exec()) {
+        qDebug() << "Error: Unable to retrieve MarginTableC data" << selectQuery.lastError().text();
+        db.close();
+        return;
+    }
+
+    QJsonArray marginList;
+    while (selectQuery.next()) {
+        QJsonObject marginData;
+        marginData["No"] = selectQuery.value(0).toInt();
+        marginData["MarginName"] = selectQuery.value(1).toString();
+        marginData["Value"] = selectQuery.value(2).toInt();
+        marginData["Unit"] = selectQuery.value(3).toString();
+        marginList.append(marginData);
+    }
+
+    QJsonObject output;
+    output["objectName"] = "MarginTableUpdated";
+    output["Margins"] = marginList;
+
+    QJsonDocument jsonDoc(output);
+    QString jsonData = jsonDoc.toJson(QJsonDocument::Compact);
+
+    qDebug() << "Formatted JSON sendUpdatedMarginList:" << jsonData;
+//    emit sendUpdatedMarginList(jsonData);
+
+    // ✅ Close the database
+    db.close();
+    qDebug() << "Database closed successfully.";
+}
 
 void Database::configParemeterThreshold(QString msg) {
     qDebug() << "configParameterThreshold:" << msg;

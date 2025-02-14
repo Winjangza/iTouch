@@ -12,6 +12,8 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     reconnectTimer = new QTimer();
     networks = new Network;
     Timer = new QTimer();
+    QTimer *timer = new QTimer(this);
+    TimerVerify = new QTimer();
     getSetting();
     connect(reconnectTimer,SIGNAL(timeout()),this,SLOT(reconnectTimerTimeout()));
     connect(Timer,SIGNAL(timeout()),this,SLOT(connectTimeOut()));
@@ -39,7 +41,13 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
 //    connect(this,SIGNAL(getEditDatafromMySQLA(QString)),mysql,SLOT(closeMySQL(QString)));
     connect(mysql,SIGNAL(updataEditDataA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(parameterMarginA(QString)),mysql,SLOT(configParemeterMarginA(QString)));
+    connect(this,SIGNAL(parameterMarginB(QString)),mysql,SLOT(configParemeterMarginB(QString)));
+    connect(this,SIGNAL(parameterMarginC(QString)),mysql,SLOT(configParemeterMarginC(QString)));
+
     connect(mysql,SIGNAL(listOfMarginA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(listOfMarginB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(listOfMarginC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+
 //    connect(this,SIGNAL(parameterThreshold(QString)),mysql,SLOT(configParemeterThreshold(QString)));
 //    connect(mysql,SIGNAL(updateThresholdA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 //    connect(mysql,SIGNAL(updateThresholdB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
@@ -81,6 +89,10 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(mysql,SIGNAL(sendMarginUpdate(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(mysql,SIGNAL(SetNetworkSNMP(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(updateDisplayInfoSetting(QString)),mysql,SLOT(updateSettingInfo(QString)));
+    connect(this,SIGNAL(updataListOfMarginA(QString)),mysql,SLOT(updataListOfMarginA(QString)));
+    connect(this,SIGNAL(updataListOfMarginB(QString)),mysql,SLOT(updataListOfMarginB(QString)));
+    connect(this,SIGNAL(updataListOfMarginC(QString)),mysql,SLOT(updataListOfMarginC(QString)));
+    connect(mysql,SIGNAL(sendUpdatedMarginList(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 
 //------------------------------show information on Gerneral and graph ----------------------------------//displaysetting
     connect(mysql,SIGNAL(SetNetworkSNMP(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
@@ -105,7 +117,7 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this, SIGNAL(updateRelay(QString)),client,SLOT(sendMessage(QString)));
 
 
-        serverAddress = "192.168.10.192";
+        serverAddress = "192.168.10.61";
         serverPort = 5520;
 //        qDebug() << "serverAddress:" << serverAddress << " serverPort:" << serverPort;
         client->createConnection(serverAddress,serverPort);
@@ -116,12 +128,14 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     }
 
     mysql->getEventandAlarm("getEventandAlarm");  //rawdataPlot
-    QTimer *timer = new QTimer(this);
+
     connect(timer, &QTimer::timeout, this, &mainwindows::updateDateTime);
     timer->start(1000); // Update every 1000 milliseconds (1 second)
     reconnectTimer->start(3000);
     Timer->start(100);
+
 }
+
 
 void mainwindows::reconnectTimerTimeout(){
     if (client->isConnected == false){
@@ -188,8 +202,9 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     QJsonObject command = d.object();
     QString getCommand =  QJsonValue(command["objectName"]).toString();
     QString getCommand2 =  QJsonValue(command["objectNames"]).toString();
+    QString getEventAndAlert =  QJsonValue(command["TrapsAlert"]).toString();
     QJsonDocument doc = QJsonDocument::fromJson(qmlJson.toUtf8());
-    qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object();
+    qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
 
     if(qmlJson == "testRawData"){
         rawdataPlot("testRawData");
@@ -417,39 +432,204 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         int marginA = QJsonValue(command["valueMarginA"]).toInt();
         int valueVoltageA = QJsonValue(command["valueVoltageA"]).toInt();
         int focusIndex = QJsonValue(command["focusIndex"]).toInt();
+        int listmarginA = QJsonValue(command["listMarginA"]).toInt();
         QString phase = QJsonValue(command["PHASE"]).toString();
-
+        qDebug() << "marginA:" << marginA << listmarginA << valueVoltageA << focusIndex << phase;
         if (getCommand.contains("marginCountA") && !getCommand.contains("valueMarginVoltageA")) {
-            thelistNumOfMargin = marginA;
-            qDebug() << "Updated thelistNumOfMargin to:" << thelistNumOfMargin;
+            thelistNumOfMarginA = marginA;
+            qDebug() << "Updated thelistNumOfMargin to:" << thelistNumOfMarginA;
         } else if (getCommand.contains("valueMarginVoltageA")) {
             qDebug() << "Received valueMarginVoltageA, skipping marginA update.";
         }
 
-        if (valueVoltageA != 0) {
+        if ((valueVoltageA != 0)&&(marginA != 0)){
             QString combinedData = QString("{"
                                             "\"objectName\":\"combinedDataPhaseA\","
                                             "\"marginA\":%1,"
                                             "\"valueVoltageA\":%2,"
                                             "\"focusIndex\":%3,"
                                             "\"PHASE\":\"%4\""
-                                            "}").arg(thelistNumOfMargin).arg(valueVoltageA).arg(focusIndex).arg(phase);
+                                            "}").arg(thelistNumOfMarginA).arg(valueVoltageA).arg(focusIndex).arg(phase);
 
             qDebug() << "Combined Data for Phase A:" << combinedData;
 
             RecalculateWithMargin(combinedData);
             emit UpdateMarginSettingParameter(combinedData);
-        } else {
+            emit updataListOfMarginA(combinedData);
+        }else if(marginA != 0){
+//            QString combinedData = QString("{"
+//                                            "\"objectName\":\"combinedDataPhaseA\","
+//                                            "\"marginA\":%1,"
+//                                            "\"PHASE\":\"%4\""
+//                                            "}").arg(thelistNumOfMarginA).arg(phase);
+
+//            qDebug() << "Margin for Phase A:" << combinedData;
+
+//            emit UpdateMarginSettingParameter(combinedData);
+        } else if(marginA == 0){
+            marginA = listmarginA;
+            QString combinedData = QString("{"
+                                            "\"objectName\":\"combinedDataPhaseA\","
+                                            "\"marginA\":%1,"
+                                            "\"valueVoltageA\":%2,"
+                                            "\"focusIndex\":%3,"
+                                            "\"PHASE\":\"%4\""
+                                            "}").arg(marginA).arg(valueVoltageA).arg(focusIndex).arg(phase);
+
+            qDebug() << "new value of marginA:" << combinedData << marginA << listmarginA;
+
+            RecalculateWithMargin(combinedData);
+            emit UpdateMarginSettingParameter(combinedData);
+            emit updataListOfMarginA(combinedData);
+        }else{
             qDebug() << "valueVoltageA is not greater than 0. Skipping RecalculateWithMargin.";
+
         }
             QString parameterA = QString("{"
                                       "\"objectName\":\"marginCountA\","
                                       "\"marginA\":%1,"
-                                      "\"phase\":\"%2\""
+                                      "\"PHASE\":\"%2\""
                                       "}").arg(marginA).arg(phase);
 
         qDebug() << "Debug marginCountA:" << marginA << phase;
         emit parameterMarginA(parameterA);
+    }else if (getCommand.contains("marginCountB") || getCommand.contains("valueMarginVoltageB")) {
+        int marginB = QJsonValue(command["valueMarginB"]).toInt();
+        int valueVoltageB = QJsonValue(command["valueVoltageB"]).toInt();
+        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
+        int listmarginB = QJsonValue(command["listMarginB"]).toInt();
+        QString phase = QJsonValue(command["PHASE"]).toString();
+
+        qDebug() << "marginB:" << marginB << listmarginB << valueVoltageB << focusIndex << phase;
+
+        if (getCommand.contains("marginCountB") && !getCommand.contains("valueMarginVoltageB")) {
+            thelistNumOfMarginB = marginB;
+            qDebug() << "Updated thelistNumOfMarginB to:" << thelistNumOfMarginB;
+        } else if (getCommand.contains("valueMarginVoltageB")) {
+            qDebug() << "Received valueMarginVoltageB, skipping marginB update.";
+        }
+
+        if ((valueVoltageB != 0) && (marginB != 0)) {
+            QString combinedData = QString("{"
+                                           "\"objectName\":\"combinedDataPhaseB\","
+                                           "\"marginB\":%1,"
+                                           "\"valueVoltageB\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}").arg(thelistNumOfMarginB).arg(valueVoltageB).arg(focusIndex).arg(phase);
+
+            qDebug() << "Combined Data for Phase B:" << combinedData;
+
+            RecalculateWithMargin(combinedData);
+            emit UpdateMarginSettingParameter(combinedData);
+            emit updataListOfMarginB(combinedData);
+        } else if (marginB != 0) {
+//            QString combinedData = QString("{"
+//                                           "\"objectName\":\"combinedDataPhaseB\","
+//                                           "\"marginB\":%1,"
+//                                           "\"PHASE\":\"%2\""
+//                                           "}").arg(thelistNumOfMarginB).arg(phase);
+
+//            qDebug() << "Combined Data for Phase B:" << combinedData;
+
+//            emit UpdateMarginSettingParameter(combinedData);
+        } else if (marginB == 0) {
+            marginB = listmarginB;
+            QString combinedData = QString("{"
+                                           "\"objectName\":\"combinedDataPhaseB\","
+                                           "\"marginB\":%1,"
+                                           "\"valueVoltageB\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}").arg(marginB).arg(valueVoltageB).arg(focusIndex).arg(phase);
+
+            qDebug() << "New value of marginB:" << combinedData << marginB << listmarginB;
+
+            RecalculateWithMargin(combinedData);
+            emit UpdateMarginSettingParameter(combinedData);
+            emit updataListOfMarginB(combinedData);
+        } else {
+            qDebug() << "valueVoltageB is not greater than 0. Skipping RecalculateWithMargin.";
+        }
+
+        QString parameterB = QString("{"
+                                     "\"objectName\":\"marginCountB\","
+                                     "\"marginB\":%1,"
+                                     "\"PHASE\":\"%2\""
+                                     "}").arg(marginB).arg(phase);
+
+        qDebug() << "Debug marginCountB:" << marginB << phase;
+        emit parameterMarginB(parameterB);
+    }
+
+    // ✅ **Phase C - Created Based on Phase A and B**
+    else if (getCommand.contains("marginCountC") || getCommand.contains("valueMarginVoltageC")) {
+        int marginC = QJsonValue(command["valueMarginC"]).toInt();
+        int valueVoltageC = QJsonValue(command["valueVoltageC"]).toInt();
+        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
+        int listmarginC = QJsonValue(command["listMarginC"]).toInt();
+        QString phase = QJsonValue(command["PHASE"]).toString();
+
+        qDebug() << "marginC:" << marginC << listmarginC << valueVoltageC << focusIndex << phase;
+
+        if (getCommand.contains("marginCountC") && !getCommand.contains("valueMarginVoltageC")) {
+            thelistNumOfMarginC = marginC;
+            qDebug() << "Updated thelistNumOfMarginC to:" << thelistNumOfMarginC;
+        } else if (getCommand.contains("valueMarginVoltageC")) {
+            qDebug() << "Received valueMarginVoltageC, skipping marginC update.";
+        }
+
+        if ((valueVoltageC != 0) && (marginC != 0)) {
+            QString combinedData = QString("{"
+                                           "\"objectName\":\"combinedDataPhaseC\","
+                                           "\"marginC\":%1,"
+                                           "\"valueVoltageC\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}").arg(thelistNumOfMarginC).arg(valueVoltageC).arg(focusIndex).arg(phase);
+
+            qDebug() << "Combined Data for Phase C:" << combinedData;
+
+            RecalculateWithMargin(combinedData);
+            emit UpdateMarginSettingParameter(combinedData);
+            emit updataListOfMarginC(combinedData);
+        }  else if (marginC != 0) {
+//            QString combinedData = QString("{"
+//                                           "\"objectName\":\"combinedDataPhaseC\","
+//                                           "\"marginC\":%1,"
+//                                           "\"PHASE\":\"%2\""
+//                                           "}").arg(thelistNumOfMarginB).arg(phase);
+
+//            qDebug() << "Combined Data for Phase C:" << combinedData;
+
+//            emit UpdateMarginSettingParameter(combinedData);
+        } else if (marginC == 0) {
+            marginC = listmarginC;
+            QString combinedData = QString("{"
+                                           "\"objectName\":\"combinedDataPhaseC\","
+                                           "\"marginC\":%1,"
+                                           "\"valueVoltageC\":%2,"
+                                           "\"focusIndex\":%3,"
+                                           "\"PHASE\":\"%4\""
+                                           "}").arg(marginC).arg(valueVoltageC).arg(focusIndex).arg(phase);
+
+            qDebug() << "New value of marginC:" << combinedData << marginC << listmarginC;
+
+            RecalculateWithMargin(combinedData);
+            emit UpdateMarginSettingParameter(combinedData);
+            emit updataListOfMarginC(combinedData);
+        } else {
+            qDebug() << "valueVoltageC is not greater than 0. Skipping RecalculateWithMargin.";
+        }
+
+        QString parameterC = QString("{"
+                                     "\"objectName\":\"marginCountC\","
+                                     "\"marginC\":%1,"
+                                     "\"PHASE\":\"%2\""
+                                     "}").arg(marginC).arg(phase);
+
+        qDebug() << "Debug marginCountC:" << marginC << phase;
+        emit parameterMarginC(parameterC);
     }else if (getCommand.contains("textPhaseA")) {
         int thresholdA = QJsonValue(command["thresholdA"]).toInt();
         QString phase = QJsonValue(command["PHASE"]).toString();
@@ -977,7 +1157,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         patterntest(patternNum);
     }else if(getCommand == "dataPlotingA"){
         qDebug() << "dataPlotingA:";
-        cppCommand(qmlJson);
+//        cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingB"){
 //        cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingC"){
@@ -1029,13 +1209,111 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         cppCommand(qmlJson);
     }else if(getCommand == "statusOperate"){
         cppCommand(qmlJson);
-    }else if(getCommand == "autoValue"){
+    }else if(getCommand == "autoSetValueMarginA"){
         qDebug()<< "AutoValue:" << qmlJson;
-
+        RecalculateWithMargin(qmlJson);
+        emit updataListOfMarginA(qmlJson);
+    }else if(getCommand == "autoSetValueMarginB"){
+        qDebug()<< "AutoValue:" << qmlJson;
+        RecalculateWithMargin(qmlJson);
+        emit updataListOfMarginB(qmlJson);
+    }else if(getCommand == "autoSetValueMarginC"){
+        qDebug()<< "AutoValue:" << qmlJson;
+        RecalculateWithMargin(qmlJson);
+        emit updataListOfMarginC(qmlJson);
     }else if(qmlJson == "updateValueMargin"){
         qDebug()<< "test_updateValueMargin:" << qmlJson;
         emit getMarginUpdate();
+    }else if(qmlJson == "MarginTableUpdated"){
+        cppCommand(qmlJson);
+    }else if(qmlJson == "marginlistCountA"){
+        cppCommand(qmlJson);
+    }else if(qmlJson == "marginlistCountB"){
+        cppCommand(qmlJson);
+    }else if(qmlJson == "marginlistCountC"){
+        cppCommand(qmlJson);
+    }else if(qmlJson == "updateParameterMargin"){
+        cppCommand(qmlJson);
+    }else if(getEventAndAlert == "PLC_DO_ERROR"){
+        qDebug()<< "getEventAndAlert PLC_DO_ERROR check cmd:" << qmlJson;
+        bool PLC_DO_ERROR = command.contains("PLC_DO_ERROR");
+        previousStates_DO = PLC_DO_ERROR;
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if(previousStates_DO == currentState){
+                qDebug()<< "There is a same state:" << currentState << previousStates_DO << PLC_DO_ERROR;
+            }else{
+                qDebug()<< "There is not a same state:" << currentState << previousStates_DO << PLC_DO_ERROR;
+                cppCommand(qmlJson);
+            }
+
+        }
+    }else if(getEventAndAlert == "PLC_DI_ERROR"){
+        qDebug()<< "getEventAndAlert PLC_DI_ERROR check cmd:" << qmlJson;
+        bool PLC_DI_ERROR = command.contains("PLC_DI_ERROR");
+
+    }else if(getEventAndAlert == "INTERNAL_PHASE_A_ERROR"){
+        qDebug()<< "getEventAndAlert INTERNAL_PHASE_A_ERROR check cmd:" << qmlJson;
+        bool INTERNAL_PHASE_A_ERROR = command.contains("INTERNAL_PHASE_A_ERROR");
+
+    }else if(getEventAndAlert == "INTERNAL_PHASE_B_ERROR"){
+        qDebug()<< "getEventAndAlert INTERNAL_PHASE_B_ERROR check cmd:" << qmlJson;
+        bool INTERNAL_PHASE_B_ERROR = command.contains("INTERNAL_PHASE_B_ERROR");
+
+    }else if(getEventAndAlert == "INTERNAL_PHASE_C_ERROR"){
+        qDebug()<< "getEventAndAlert INTERNAL_PHASE_C_ERROR check cmd:" << qmlJson;
+        bool INTERNAL_PHASE_C_ERROR = command.contains("INTERNAL_PHASE_C_ERROR");
+
+    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_A_ERROR"){
+        qDebug()<< "getEventAndAlert MODULE_HI_SPEED_PHASE_A_ERROR check cmd:" << qmlJson;
+        bool MODULE_HI_SPEED_PHASE_A_ERROR = command.contains("MODULE_HI_SPEED_PHASE_A_ERROR");
+
+    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_B_ERROR"){
+        qDebug()<< "getEventAndAlert MODULE_HI_SPEED_PHASE_B_ERROR check cmd:" << qmlJson;
+        bool MODULE_HI_SPEED_PHASE_B_ERROR = command.contains("MODULE_HI_SPEED_PHASE_B_ERROR");
+
+    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_C_ERROR"){
+        qDebug()<< "getEventAndAlert MODULE_HI_SPEED_PHASE_C_ERROR check cmd:" << qmlJson;
+        bool MODULE_HI_SPEED_PHASE_C_ERROR = command.contains("MODULE_HI_SPEED_PHASE_C_ERROR");
+
+    }else if(getEventAndAlert == "GPS_MODULE_FAIL"){
+        qDebug()<< "getEventAndAlert GPS_MODULE_FAIL check cmd:" << qmlJson;
+        bool GPS_MODULE_FAIL = command.contains("GPS_MODULE_FAIL");
+
+    }else if(getEventAndAlert == "SYSTEM_INITIAL"){
+        qDebug()<< "getEventAndAlert SYSTEM_INITIAL check cmd:" << qmlJson;
+        bool SYSTEM_INITIAL = command.contains("SYSTEM_INITIAL");
+
+    }else if(getEventAndAlert == "COMMUNICATION_ERROR"){
+        qDebug()<< "getEventAndAlert COMMUNICATION_ERROR check cmd:" << qmlJson;
+        bool COMMUNICATION_ERROR = command.contains("COMMUNICATION_ERROR");
+
+    }else if(getEventAndAlert == "RELAY_START_EVENT"){
+        qDebug()<< "getEventAndAlert RELAY_START_EVENT check cmd:" << qmlJson;
+        bool RELAY_START_EVENT = command.contains("RELAY_START_EVENT");
+
+    }else if(getEventAndAlert == "SURGE_START_EVENT"){
+        qDebug()<< "getEventAndAlert SURGE_START_EVENT check cmd:" << qmlJson;
+        bool SURGE_START_EVENT = command.contains("SURGE_START_EVENT");
+
+    }else if(getEventAndAlert == "PERIODIC_TEST_EVENT"){
+        qDebug()<< "getEventAndAlert PERIODIC_TEST_EVENT check cmd:" << qmlJson;
+        bool PERIODIC_TEST_EVENT = command.contains("PERIODIC_TEST_EVENT");
+
+    }else if(getEventAndAlert == "MANUAL_TEST_EVENT"){
+        qDebug()<< "getEventAndAlert MANUAL_TEST_EVENT check cmd:" << qmlJson;
+        bool MANUAL_TEST_EVENT = command.contains("MANUAL_TEST_EVENT");
+
+    }else if(getEventAndAlert == "LFL_FAIL"){
+        qDebug()<< "getEventAndAlert LFL_FAIL check cmd:" << qmlJson;
+        bool LFL_FAIL = command.contains("LFL_FAIL");
+
+    }else if(getEventAndAlert == "LEL_OPERATE"){
+        qDebug()<< "getEventAndAlert LEL_OPERATE check cmd:" << qmlJson;
+        bool LEL_OPERATE = command.contains("LEL_OPERATE");
+
     }
+
 }
 
 
@@ -2447,129 +2725,202 @@ void mainwindows::patterntest(int msg) {
 void mainwindows::RecalculateWithMargin(QString msg) {
     qDebug() << "RecalculateWithMargin called with data:" << msg;
 
-    // **แปลง JSON String เป็น QJsonObject**
     QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
     QJsonObject obj = doc.object();
+    QJsonObject command = doc.object();
+    QString getCommand =  QJsonValue(command["objectName"]).toString();
+    if(getCommand.contains("combinedDataPhaseA")){
+        int marginA = obj["marginA"].toInt();
+        int valueVoltageA = obj["valueVoltageA"].toInt();
+        int focusIndex = obj["focusIndex"].toInt();
+        QString phase = obj["PHASE"].toString();
+        qDebug() << "Processing MarginA:" << marginA << " ValueVoltageA:" << valueVoltageA
+                 << " focusIndex:" << focusIndex << " Phase:" << phase;
 
-    // **ดึงค่าจาก JSON**
-    int marginA = obj["marginA"].toInt();
-    int valueVoltageA = obj["valueVoltageA"].toInt();
-    int focusIndex = obj["focusIndex"].toInt();
-    QString phase = obj["PHASE"].toString();
-    qDebug() << "Processing MarginA:" << marginA << " ValueVoltageA:" << valueVoltageA
-             << " focusIndex:" << focusIndex << " Phase:" << phase;
-
-    // **Step 1: ค้นหาไฟล์ CSV ล่าสุด**
-    QDir directory("/home/pi/patternData/");
-    if (!directory.exists()) {
-        qDebug() << "Directory does not exist!";
-        return;
-    }
-
-    QStringList filters;
-    filters << "patternA_*.csv"; // กรองเฉพาะไฟล์ patternA
-    directory.setNameFilters(filters);
-    directory.setSorting(QDir::Time | QDir::Reversed); // เรียงจากใหม่ไปเก่า
-    QFileInfoList fileList = directory.entryInfoList(QDir::Files);
-
-    if (fileList.isEmpty()) {
-        qDebug() << "No CSV files found in directory.";
-        return;
-    }
-
-    QString latestFile = fileList.first().absoluteFilePath();
-    qDebug() << "Opening latest CSV file:" << latestFile;
-
-    // **Step 2: เปิดไฟล์ CSV และอ่านข้อมูล**
-    QFile file(latestFile);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Unable to open file:" << latestFile;
-        return;
-    }
-
-    QTextStream in(&file);
-    QVector<double> distanceArray;
-    QVector<double> voltageArray;
-    static QVector<double> segmentAdjustments; // **เก็บค่าการปรับแรงดันของแต่ละช่วง**
-
-    bool firstLine = true;
-
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (firstLine) { firstLine = false; continue; } // ข้าม Header
-
-        QStringList values = line.split(",");
-        if (values.size() == 2) {
-            double distance = values[0].toDouble();
-            double voltage = values[1].toDouble();
-            distanceArray.append(distance);
-            voltageArray.append(voltage);
-        }
-    }
-    file.close();
-
-    qDebug() << "CSV Data Loaded Successfully! Total data points:" << distanceArray.size();
-
-    // **Step 3: คำนวณช่วงของ margin**
-    if (distanceArray.isEmpty()) {
-        qDebug() << "No data available for processing!";
-        return;
-    }
-
-    double maxDistance = distanceArray.last(); // ใช้ค่าระยะทางสุดท้าย
-    int totalSegments = marginA; // จำนวนช่วง
-    double segmentSize = maxDistance / totalSegments; // ขนาดของแต่ละช่วง
-
-    qDebug() << "Max Distance:" << maxDistance << " Total Segments:" << totalSegments
-             << " Segment Size:" << segmentSize;
-
-    // ตรวจสอบว่า segmentAdjustments มีขนาดเท่ากับ totalSegments หรือไม่
-    if (segmentAdjustments.size() != totalSegments) {
-        segmentAdjustments.fill(0, totalSegments); // ตั้งค่าเริ่มต้นให้เป็น 0
-    }
-
-    // **Step 4: ปรับค่าแรงดันไฟฟ้าตาม focusIndex**
-    for (int i = 0; i < distanceArray.size(); ++i) {
-        int segmentIndex = static_cast<int>(distanceArray[i] / segmentSize);
-
-        // กำหนดให้ค่าระยะทางสุดท้ายอยู่ในช่วงสุดท้าย
-        if (segmentIndex >= totalSegments) {
-            segmentIndex = totalSegments - 1;
+        QDir directory("/home/pi/patternData/");
+        if (!directory.exists()) {
+            qDebug() << "Directory does not exist!";
+            return;
         }
 
-        // บวกค่า adjustment ที่บันทึกไว้ใน segmentAdjustments
-        voltageArray[i] += segmentAdjustments[segmentIndex];
+        QStringList filters;
+        filters << "patternA_*.csv";
+        directory.setNameFilters(filters);
+        directory.setSorting(QDir::Time | QDir::Reversed); // เรียงจากใหม่ไปเก่า
+        QFileInfoList fileList = directory.entryInfoList(QDir::Files);
 
-        // ถ้าช่วงนี้เป็น focusIndex ให้เพิ่มค่า valueVoltageA และบันทึกใน segmentAdjustments
-        if (segmentIndex == focusIndex) {
-            voltageArray[i] += valueVoltageA;
+        if (fileList.isEmpty()) {
+            qDebug() << "No CSV files found in directory.";
+            return;
         }
+
+        QString latestFile = fileList.first().absoluteFilePath();
+        qDebug() << "Opening latest CSV file:" << latestFile;
+
+        QFile file(latestFile);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Unable to open file:" << latestFile;
+            return;
+        }
+
+        QTextStream in(&file);
+        QVector<double> distanceArray;
+        QVector<double> voltageArray;
+        static QVector<double> segmentAdjustments;
+
+        bool firstLine = true;
+
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (firstLine) { firstLine = false; continue; }
+
+            QStringList values = line.split(",");
+            if (values.size() == 2) {
+                double distance = values[0].toDouble();
+                double voltage = values[1].toDouble();
+                distanceArray.append(distance);
+                voltageArray.append(voltage);
+            }
+        }
+        file.close();
+
+        qDebug() << "CSV Data Loaded Successfully! Total data points:" << distanceArray.size();
+
+        if (distanceArray.isEmpty()) {
+            qDebug() << "No data available for processing!";
+            return;
+        }
+
+        double maxDistance = distanceArray.last();
+        int totalSegments = marginA; // จำนวนช่วง
+        double segmentSize = maxDistance / totalSegments;
+
+        qDebug() << "Max Distance:" << maxDistance << " Total Segments:" << totalSegments
+                 << " Segment Size:" << segmentSize;
+
+        if (segmentAdjustments.size() != totalSegments) {
+            segmentAdjustments.fill(0, totalSegments);
+        }
+
+        for (int i = 0; i < distanceArray.size(); ++i) {
+            int segmentIndex = static_cast<int>(distanceArray[i] / segmentSize);
+
+            if (segmentIndex >= totalSegments) {
+                segmentIndex = totalSegments - 1;
+            }
+
+            voltageArray[i] += segmentAdjustments[segmentIndex];
+
+            if (segmentIndex == focusIndex) {
+                voltageArray[i] += valueVoltageA;
+            }
+        }
+
+        segmentAdjustments[focusIndex] += valueVoltageA;
+
+        QJsonObject mainObject;
+        QJsonArray dist, volt;
+
+        for (int i = 0; i < distanceArray.size(); ++i) {
+            dist.push_back(distanceArray[i]);
+            volt.push_back(voltageArray[i]);
+        }
+
+        mainObject.insert("objectName", "patternA");
+        mainObject.insert("distance", dist);
+        mainObject.insert("voltage", volt);
+
+        QJsonDocument jsonDoc(mainObject);
+        QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+
+        rawdataArrayA = std::move(raw_data);
+        emit plotingDataPhaseA(rawdataArrayA);
+
+        qDebug() << "Updated data sent for plotting!";
+    }else if (getCommand.contains("autoSetValueMargin")) {
+        int marginA = obj["rangeofmargin"].toInt();
+        int valueVoltageA = obj["autoValueVoltage"].toInt();
+        QString phase = obj["PHASE"].toString();
+
+        qDebug() << "Processing Auto Value Margin. Range:" << marginA
+                 << " AutoValueVoltage:" << valueVoltageA << " Phase:" << phase;
+
+        QDir directory("/home/pi/patternData/");
+        if (!directory.exists()) {
+            qDebug() << "Directory does not exist!";
+            return;
+        }
+
+        QStringList filters;
+        filters << "patternA_*.csv";
+        directory.setNameFilters(filters);
+        directory.setSorting(QDir::Time | QDir::Reversed);
+        QFileInfoList fileList = directory.entryInfoList(QDir::Files);
+
+        if (fileList.isEmpty()) {
+            qDebug() << "No CSV files found in directory.";
+            return;
+        }
+
+        QString latestFile = fileList.first().absoluteFilePath();
+        qDebug() << "Opening latest CSV file:" << latestFile;
+
+        QFile file(latestFile);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Unable to open file:" << latestFile;
+            return;
+        }
+
+        QTextStream in(&file);
+        QVector<double> distanceArray;
+        QVector<double> voltageArray;
+
+        bool firstLine = true;
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (firstLine) { firstLine = false; continue; }
+
+            QStringList values = line.split(",");
+            if (values.size() == 2) {
+                double distance = values[0].toDouble();
+                double voltage = values[1].toDouble();
+                distanceArray.append(distance);
+                voltageArray.append(voltage);
+            }
+        }
+        file.close();
+
+        qDebug() << "CSV Data Loaded Successfully! Total data points:" << distanceArray.size();
+        if (distanceArray.isEmpty()) {
+            qDebug() << "No data available for processing!";
+            return;
+        }
+
+        for (int i = 0; i < voltageArray.size(); ++i) {
+            voltageArray[i] += valueVoltageA; // 🔹 Apply voltage increase to ALL values
+        }
+
+        QJsonObject mainObject;
+        QJsonArray dist, volt;
+
+        for (int i = 0; i < distanceArray.size(); ++i) {
+            dist.push_back(distanceArray[i]);
+            volt.push_back(voltageArray[i]);
+        }
+
+        mainObject.insert("objectName", "patternA");
+        mainObject.insert("distance", dist);
+        mainObject.insert("voltage", volt);
+
+        QJsonDocument jsonDoc(mainObject);
+        QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
+
+        rawdataArrayA = std::move(raw_data);
+        emit plotingDataPhaseA(rawdataArrayA);
+
+        qDebug() << "Updated data sent for plotting!";
     }
 
-    // **บันทึกการปรับค่าใน focusIndex**
-    segmentAdjustments[focusIndex] += valueVoltageA;
-
-    // **Step 5: ส่งค่าที่อัปเดตกลับไป**
-    QJsonObject mainObject;
-    QJsonArray dist, volt;
-
-    for (int i = 0; i < distanceArray.size(); ++i) {
-        dist.push_back(distanceArray[i]);  // ส่งค่าระยะทางเดิมกลับไป
-        volt.push_back(voltageArray[i]);  // ส่งค่า voltage ที่แก้ไขแล้วกลับไป
-    }
-
-    mainObject.insert("objectName", "patternA");
-    mainObject.insert("distance", dist);
-    mainObject.insert("voltage", volt);
-
-    QJsonDocument jsonDoc(mainObject);
-    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-
-    // **Step 6: ส่งข้อมูลไป Plot**
-    rawdataArrayA = std::move(raw_data);
-    emit plotingDataPhaseA(rawdataArrayA);
-
-    qDebug() << "Updated data sent for plotting!";
 }
 
 void mainwindows::getSetting()

@@ -65,6 +65,8 @@ signals:
      void deletedMySQLC(QString msg);
      void getEditDatafromMySQLA(QString msg);
      void parameterMarginA(QString msg);
+     void parameterMarginB(QString msg);
+     void parameterMarginC(QString msg);
      void parameterThreshold(QString msg);
      void getDataThreshold();
      void settingGeneral();
@@ -91,6 +93,11 @@ signals:
      void UpdateMarginSettingParameter(QString);
      void getMarginUpdate();
      void updateDisplayInfoSetting(QString);
+     void updataListOfMarginA(QString);
+     void updataListOfMarginB(QString);
+     void updataListOfMarginC(QString);
+
+
 public:
     explicit mainwindows(QObject *parent = nullptr);
     static mainwindows *instance();
@@ -140,6 +147,8 @@ private:
     int serverPort;
     QTimer *reconnectTimer;
     QTimer *Timer;
+    QTimer *TimerVerify;
+
     double sagFactor = 0.0;       // SAG factor
     double samplingRate = 0.0; // Sampling rate (meters per sample)
     double distanceToStart = 0.0; // ระยะตั้งต้น (เมตร)
@@ -180,7 +189,11 @@ private:
     QString cppManual;
     QString cppPattern;
     double pointsPerWave;
-    int thelistNumOfMargin;
+    int thelistNumOfMarginA;
+    int thelistNumOfMarginB;
+    int thelistNumOfMarginC;
+
+
     struct Network{
         // network
         QString dhcpmethod;
@@ -226,6 +239,22 @@ private:
     bool hasSubstation = false;
     bool hasDirection = false;
     bool hasLineNo = false;
+
+
+    bool previousStates_DO;
+    bool previousStates_DI;
+    bool previousStates_PHASE_A_ERROR;
+    bool previousStates_PHASE_B_ERROR;
+    bool previousStates_PHASE_C_ERROR;
+    bool previousStates_GPS_MODULE;
+    bool previousStates_SYSTEM_INITIAL;
+    bool previousStates_COMMUNICATION_ERROR;
+    bool previousStates_RELAY_START_EVENT;
+    bool previousStates_SURGE_START_EVENT;
+    bool previousStates_PERIODIC_TEST_EVENT;
+    bool previousStates_MANUAL_TEST_EVENT;
+    bool previousStates_LFL_FAIL;
+    bool previousStates_LEL_OPERATE;
 };
 
 #endif // MAINWINDOWS_H
