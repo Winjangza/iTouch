@@ -730,7 +730,6 @@ Window {
         //                         });
     }
 
-
     function setpropertyIDTableA(checkIDtable) {
         console.log("setpropertyCheckTable:", checkIDtable);
 

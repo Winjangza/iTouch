@@ -21,6 +21,8 @@ Item {
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
 
+
+
     property string selectedFilename: ""
     property string selectedEventDatetime: ""
 

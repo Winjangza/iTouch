@@ -132,7 +132,7 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this,&mainwindows::sortdatePattern,mysql,&Database::sortByDate);
     connect(this,&mainwindows::searchByName,mysql,&Database::searchByName);
     connect(this,&mainwindows::searchByDate,mysql,&Database::searchByDate);
-    connect(this,SIGNAL(sendMessage(QString)),client,SLOT(sendMessage(QString)));
+    // connect(this,SIGNAL(sendMessage(QString)),client,SLOT(sendMessage(QString)));
 
         serverAddress = "192.168.10.51";
         serverPort = 5520;
@@ -221,7 +221,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     QString getCommand2 =  QJsonValue(command["objectNames"]).toString();
     QString getEventAndAlert =  QJsonValue(command["TrapsAlert"]).toString();
     QJsonDocument doc = QJsonDocument::fromJson(qmlJson.toUtf8());
-    qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
+    // qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
 
     if(qmlJson == "testRawData"){
         rawdataPlot("testRawData");
@@ -238,6 +238,10 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         cppCommand(selectMaster);
         emit updateUser(selectMaster);
     }
+    else if(getCommand == "PatternData"){
+        // qDebug() << "patternA:";
+        cppCommand(qmlJson);
+    }
     else if (getCommand == "SearchName"){
         // bool Sort = QJsonValue(command["Sort"]).toBool();
         QString Name = QJsonValue(command["text"]).toString();
@@ -248,7 +252,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                   "\"text\":\"%2\""
                                   "}").arg(categories).arg(Name);
         emit sendMessage(massage);
-        //        qDebug()<<"iiiiixxxxxNAME"<<Name<<categories;
+               qDebug()<<"iiiiixxxxxNAME"<<Name<<categories;
         //        emit searchByName(Name,categories);
 
     }
@@ -262,7 +266,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                   "\"text\":\"%2\""
                                   "}").arg(categories).arg(Date);
         emit sendMessage(massage);
-        //        qDebug()<<"iiiiixxxxxDate"<<Date<<categories;
+               qDebug()<<"iiiiixxxxxDate"<<Date<<categories;
         //        emit searchByDate(Date,categories);
     }
     else if (getCommand == "sortnamePattern"){
@@ -277,7 +281,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                   "}").arg(Sort ? "true" : "false").arg(categories);
 
         emit sendMessage(message);
-        // qDebug()<<"iiiii"<<massage;
+        qDebug()<<"iiiii"<<message;
         //        emit sortnamePattern(Sort,categories);
     }
     else if (getCommand == "sortdatePattern"){
@@ -308,7 +312,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                         "\"event_datetime\":\"%3\","
                                         "\"filename\":\"%4\""
                                         "}").arg(category).arg(state).arg(event_time).arg(filename);
-        // qDebug() << "testl"<< buttonPattern;
+        qDebug() << "testl"<< buttonPattern;
         emit ButtonPattern(buttonPattern);
 
     }
