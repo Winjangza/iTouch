@@ -97,6 +97,14 @@ signals:
      void updataListOfMarginB(QString);
      void updataListOfMarginC(QString);
 
+     ////////////////////pattern datastorage//////////////////////////
+     void getdatapatternDataDb();
+     void sortnamePattern(bool Sort, const QString &categoryName);
+     void sortdatePattern(bool Sort, const QString &categoryDate);
+     void searchByName(const QString &name, const QString &categoryName);
+     void searchByDate(const QString &date, const QString &categoryDate);
+     void ButtonPattern(QString);
+     // void sendMessage(QString);
 
 public:
     explicit mainwindows(QObject *parent = nullptr);

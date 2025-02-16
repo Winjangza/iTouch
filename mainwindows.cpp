@@ -117,7 +117,24 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this, SIGNAL(updateRelay(QString)),client,SLOT(sendMessage(QString)));
 
 
-        serverAddress = "192.168.10.61";
+    //------------------------------Send command to client----------------------------------//
+    connect(this, SIGNAL(rawdataPlot(QString)),client, SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(clearPatternGraph(QString)),client, SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(clearDisplay(QString)),client, SLOT(sendMessage(QString)));
+    connect(mysql,SIGNAL(SetNetworkSNMP(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(settingdisplay(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(parameterThreshold(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(ButtonPattern(QString)),client,SLOT(sendMessage(QString)));
+
+    //----------------------------get pattern datastorag from DB ---------------------------//
+    connect(this,&mainwindows::getdatapatternDataDb,mysql,&Database::getdatapatternDataDb);
+    connect(this,&mainwindows::sortnamePattern,mysql,&Database::sortByName);
+    connect(this,&mainwindows::sortdatePattern,mysql,&Database::sortByDate);
+    connect(this,&mainwindows::searchByName,mysql,&Database::searchByName);
+    connect(this,&mainwindows::searchByDate,mysql,&Database::searchByDate);
+    connect(this,SIGNAL(sendMessage(QString)),client,SLOT(sendMessage(QString)));
+
+        serverAddress = "192.168.10.51";
         serverPort = 5520;
 //        qDebug() << "serverAddress:" << serverAddress << " serverPort:" << serverPort;
         client->createConnection(serverAddress,serverPort);
@@ -220,7 +237,82 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 //        qDebug() << "cppSubmitTextFiled UserM:" << selectMaster << userStatus << userType;
         cppCommand(selectMaster);
         emit updateUser(selectMaster);
-    }else if(getCommand.contains("UserSelectS")){
+    }
+    else if (getCommand == "SearchName"){
+        // bool Sort = QJsonValue(command["Sort"]).toBool();
+        QString Name = QJsonValue(command["text"]).toString();
+        QString categories = QJsonValue(command["categories"]).toString();
+        QString massage = QString("{"
+                                  "\"objectName\":\"SearchName\","
+                                  "\"categories\":\"%1\","
+                                  "\"text\":\"%2\""
+                                  "}").arg(categories).arg(Name);
+        emit sendMessage(massage);
+        //        qDebug()<<"iiiiixxxxxNAME"<<Name<<categories;
+        //        emit searchByName(Name,categories);
+
+    }
+    else if (getCommand == "SearchDate"){
+        // qDebug()<<"iiiiixxxxx";
+        QString Date = QJsonValue(command["text"]).toString();
+        QString categories = QJsonValue(command["categories"]).toString();
+        QString massage = QString("{"
+                                  "\"objectName\":\"SearchDate\","
+                                  "\"categories\":\"%1\","
+                                  "\"text\":\"%2\""
+                                  "}").arg(categories).arg(Date);
+        emit sendMessage(massage);
+        //        qDebug()<<"iiiiixxxxxDate"<<Date<<categories;
+        //        emit searchByDate(Date,categories);
+    }
+    else if (getCommand == "sortnamePattern"){
+
+        bool Sort = QJsonValue(command["Sort"]).toBool();
+        QString categories = QJsonValue(command["categories"]).toString();
+
+        QString message = QString("{"
+                                  "\"objectName\":\"sortnamePattern\","
+                                  "\"Sort\":%1,"
+                                  "\"categories\":\"%2\""
+                                  "}").arg(Sort ? "true" : "false").arg(categories);
+
+        emit sendMessage(message);
+        // qDebug()<<"iiiii"<<massage;
+        //        emit sortnamePattern(Sort,categories);
+    }
+    else if (getCommand == "sortdatePattern"){
+        bool Sort = QJsonValue(command["Sort"]).toBool();
+        QString categories = QJsonValue(command["categories"]).toString();
+
+        QString message = QString("{"
+                                  "\"objectName\":\"sortdatePattern\","
+                                  "\"Sort\":%1,"
+                                  "\"categories\":\"%2\""
+                                  "}").arg(Sort ? "true" : "false").arg(categories);
+
+        emit sendMessage(message);
+
+        // qDebug()<<"sortdatePattern"<<massage;
+        //        emit sortdatePattern(Sort,categories);
+    }
+    else if (getCommand == "ButtonPattern"){
+        QString state = QJsonValue(command["Onclicked"]).toString();
+        QString category = QJsonValue(command["category"]).toString();
+        QString event_time = QJsonValue(command["event_datetime"]).toString();
+        QString filename = QJsonValue(command["filename"]).toString();
+        qDebug()<<"ButtonPattern"<<state<<event_time<<filename;
+        QString buttonPattern = QString("{"
+                                        "\"objectName\":\"ButtonPattern\","
+                                        "\"category\":\"%1\","
+                                        "\"Onclicked\":\"%2\","
+                                        "\"event_datetime\":\"%3\","
+                                        "\"filename\":\"%4\""
+                                        "}").arg(category).arg(state).arg(event_time).arg(filename);
+        // qDebug() << "testl"<< buttonPattern;
+        emit ButtonPattern(buttonPattern);
+
+    }
+    else if(getCommand.contains("UserSelectS")){
         QString userType = QJsonValue(command["userType"]).toString();
         bool userStatus = QJsonValue(command["userStatusSlave"]).toBool();
         QString selectSlave = QString("{"

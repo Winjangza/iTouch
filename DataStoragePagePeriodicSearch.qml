@@ -7,123 +7,218 @@ import QtQuick.Controls 1.4
 import QtQuick.VirtualKeyboard 2.15
 import QtQuick.VirtualKeyboard.Styles 2.15
 import QtQuick.VirtualKeyboard.Settings 2.15
-
+import QtQuick.Controls 2.13
 Item {
     width: 530
     height: 460
+    // property alias patternModel: patternListView.model
 
+    signal rowSelected(string filename, string event_datetime)
+    signal clearTableRequested()
     Rectangle {
         id: rectangle
         color: "#f2f2f2"
         border.color: "#ffffff"
         border.width: 2
         anchors.fill: parent
-        anchors.rightMargin: 0
-        anchors.bottomMargin: 0
         anchors.leftMargin: 0
+        anchors.rightMargin: 0
         anchors.topMargin: 0
+        anchors.bottomMargin: 0
 
         RowLayout {
-            x: 8
             y: 8
-            width: 514
             height: 35
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 8
+            anchors.rightMargin: 8
 
             TextField {
                 id: namesearch
                 Layout.fillWidth: true
-                placeholderText: qsTr("Text Field")
+                placeholderText: qsTr("Name search")
             }
 
             ToolButton {
                 id: toolButtonNameSearch
-                text: qsTr("Tool Button")
-                Layout.preferredHeight: 22
-                Layout.preferredWidth: 62
+                Layout.preferredHeight: 32
+                Layout.preferredWidth: 40
+                contentItem: Image {
+                    source: "images/search.png"
+                    width: 24
+                    height: 24
+                    fillMode: Image.PreserveAspectFit
+                }
+                background: Rectangle {
+                    color: "#E0E0E0"
+                    radius: 8
+                }
+                onClicked: {
+                    console.log("Searching for name:", namesearch.text);
+                    var nameFile = namesearch.text.trim();
+
+                    if (nameFile.length > 0) {
+                        var NameSearch = JSON.stringify({
+                                                            "objectName": "SearchName",
+                                                            "categories":"Periodic",
+                                                            "text": nameFile
+                                                        });
+
+                        console.log("Sending JSON:", NameSearch);
+                        qmlCommand(NameSearch);
+                        clearDataPeriodic();
+                    } else {
+                        console.log("Empty search text! No request sent.");
+                    }
+                }
             }
 
             TextField {
                 id: dataSearch
                 Layout.fillWidth: true
-                placeholderText: qsTr("Text Field")
+                placeholderText: qsTr("Date search")
             }
 
             ToolButton {
-                id: toolButtondataSearech
-                text: qsTr("Tool Button")
-                Layout.preferredHeight: 22
-                Layout.preferredWidth: 62
+                id: toolButtonDateSearch
+                Layout.preferredHeight: 32
+                Layout.preferredWidth: 40
+                contentItem: Image {
+                    source: "images/search.png"
+                    width: 24
+                    height: 24
+                    fillMode: Image.PreserveAspectFit
+                }
+                background: Rectangle {
+                    color: "#E0E0E0"
+                    radius: 8
+                }
+                onClicked: {
+                    console.log("Searching for data:", dataSearch.text);
+                    var nameFile = dataSearch.text.trim();
+
+                    if (nameFile.length > 0) {
+                        var NameSearch = JSON.stringify({
+                                                            "objectName":"SearchDate",
+                                                            "categories":"Periodic",
+                                                            "text": nameFile
+                                                        });
+
+                        console.log("Sending JSON:", NameSearch);
+                        qmlCommand(NameSearch);
+                        clearDataPeriodic();
+                    } else {
+                        console.log("Empty search text! No request sent.");
+                    }
+
+                }
             }
         }
-
         Rectangle {
             id: rectangle1
             color: "#d9d9d9"
             border.color: "#ffffff"
             border.width: 2
             anchors.fill: parent
+            anchors.rightMargin: 0
             anchors.bottomMargin: 0
             anchors.topMargin: 49
 
-            Rectangle {
-                id: rectangle2
-                color: "#d9d9d9"
-                radius: 5
-                border.color: "#ffffff"
+            ColumnLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 8
                 anchors.rightMargin: 8
                 anchors.topMargin: 8
-                anchors.bottomMargin: 373
+                anchors.bottomMargin: 8
 
-                ToolButton {
-                    id: sortName
-                    text: qsTr("Tool Button")
-                    anchors.fill: parent
-                    anchors.leftMargin: 8
-                    anchors.topMargin: 1
-                    anchors.bottomMargin: 0
-                    anchors.rightMargin: 459
+                RowLayout {
+                    // anchors.left: parent.left
+                    // anchors.right: parent.right
+
+                    ToolButton {
+                        id: filenameButton
+                        property bool isAscending: false
+                        text: isAscending ? "▲ FILENAME" : "▼ FILENAME"
+                        font.pixelSize: 18
+                        Layout.leftMargin: 2
+                        Layout.fillWidth: false
+                        background: Rectangle { color: "transparent" }
+                        onClicked: {
+                            isAscending = !isAscending;
+                            console.log("Sorting by FILENAME:", isAscending ? "Ascending" : "Descending");
+                            // sortPatternData("filename", isAscending);
+                            // var getDatePeriodic =  '{"objectName":"sortdatePattern", "Sort":'+isAscending+' , "categories ":"Pattern"}';
+                            // qmlCommand(getDatePeriodic);
+                            var getNamePeriodic = '{"objectName":"sortnamePattern", "Sort":'+isAscending+' , "categories":"Periodic"}';
+                            qmlCommand(getNamePeriodic);
+                            clearDataPeriodic();
+                        }
+                    }
+
+                    ToolButton {
+                        id: eventDateButton
+                        property bool isAscending: false
+                        text: isAscending ? "▲ EVENT DATE" : "▼ EVENT DATE"
+                        font.pixelSize: 18
+                        Layout.leftMargin: 100
+                        Layout.preferredWidth: -1
+                        Layout.fillHeight: false
+                        Layout.fillWidth: false
+                        flat: true
+                        highlighted: false
+                        background: Rectangle { color: "transparent" }
+                        onClicked: {
+                            isAscending = !isAscending;
+                            console.log("Sorting by EVENT DATE:", isAscending ? "Ascending" : "Descending");
+                            // sortPatternData("event_datetime", isAscending);
+                            var getDatePeriodic =  '{"objectName":"sortdatePattern", "Sort":'+isAscending+' , "categories":"Periodic"}';
+                            qmlCommand(getDatePeriodic);
+                            clearDataPeriodic();
+                        }
+                    }
                 }
 
-                ToolButton {
-                    id: sortDate
-                    text: qsTr("Tool Button")
-                    anchors.fill: parent
-                    anchors.leftMargin: 309
-                    anchors.rightMargin: 158
-                    anchors.bottomMargin: 0
-                    anchors.topMargin: 0
-                }
+                TableView {
+                    id: recordDatabase
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    model: periodicDataStorage
+                    headerVisible: false
 
-                Text {
-                    id: nameofdata
-                    text: qsTr("NAME")
-                    anchors.fill: parent
-                    font.pixelSize: 12
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    anchors.bottomMargin: 0
-                    anchors.topMargin: 1
-                    anchors.leftMargin: 61
-                    anchors.rightMargin: 382
-                }
+                    TableViewColumn {
+                        role: "filename"
+                        width: 230
 
-                Text {
-                    id: dateofdata
-                    text: "Date"
-                    anchors.fill: parent
-                    font.pixelSize: 12
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    anchors.bottomMargin: 0
-                    anchors.topMargin: 0
-                    anchors.rightMargin: 90
-                    anchors.leftMargin: 362
-                }
+                    }
 
+                    TableViewColumn {
+                        role: "event_datetime"
+                        width: 300
+                    }
+
+                    onClicked: {
+                        var selectedFilename = periodicDataStorage.get(row).filename;
+                        var selectedEventDatetime = periodicDataStorage.get(row).event_datetime;
+
+                        console.log("Selected Row:", row,);
+                        console.log("Filename:", periodicDataStorage.get(row).filename);
+                        console.log("Event Date:", periodicDataStorage.get(row).event_datetime);
+                        rowSelected(selectedFilename, selectedEventDatetime);
+
+                    }
+                }
             }
         }
+    }
+    function clearDataPeriodic() {
+        periodicDataStorage.clear();
+        console.log("Table cleared!");
+    }
+    onClearTableRequested: {
+        clearDataPeriodic();
     }
 }
 
@@ -132,3 +227,4 @@ Designer {
     D{i:0;formeditorZoom:1.5}
 }
 ##^##*/
+// headerVisible: false

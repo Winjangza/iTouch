@@ -261,6 +261,27 @@ Window {
         property bool statusEventandAlram
     }
 
+    ListModel {
+        id: patternDataStorage
+        property string  event_datetime: ""
+        property string  filename: ""
+    }
+    ListModel {
+        id : periodicDataStorage
+        property string  event_datetime: ""
+        property string  filename: ""
+    }
+    ListModel {
+        id : relayDataStorage
+        property  string  event_datatime: ""
+        property  string  filename: ""
+    }
+    ListModel {
+        id : surgeDataStorage
+        property  string event_dtaatime : ""
+        property  string filename: ""
+    }
+
 
 
     //         property string globalPhaseA: ""
@@ -337,6 +358,19 @@ Window {
             mainBarMasterSelect = userTypeMaster;
             usertypeSelect = JsonObject.userStatusMaster
         }
+        else if  (objectName === "PatternData"){
+            console.log("PatternDataQML:", message);
+            // const { filename, event_datetime } = JsonObject;
+            // var category = JsonObject.category_name;
+            // console.log("📌 Adding to patternDataStorage:",category_name, filename, event_datetime);
+            // patternDataStorage.append({
+            //     "filename": filename,
+            //     "event_datetime": event_datetime
+            // });
+
+            // appendPattern(message)
+            appendDatStorage(message)
+            }
         else if (objectName === "UserSelectS") {
             mainBarSlaveSelect = userTypeSlave;
             usertypeSelect = !JsonObject.userStatusSlave
@@ -649,6 +683,51 @@ Window {
             timeEventAlarm = JsonObject.time;
             console.log("TrapsAlert LEL_OPERATE:", message,alarm_lfl_operate,timeEventAlarm);
         }
+    }
+
+
+    function appendDatStorage(message){
+        console.log("debug_pattern_SQL");
+        var JsonObject = JSON.parse(message);
+        var filename = JsonObject.filename;
+        var event_datetime = JsonObject.event_datetime;
+        var category_name = JsonObject.category_name;
+        if (category_name === "Pattern"){
+            console.log("datastorage Pattern");
+            patternDataStorage.append({
+                                    "filename": filename,
+                                    "event_datetime": event_datetime
+                                    });
+        }
+        else if (category_name === "Periodic" ){
+            console.log("datastorage Periodic");
+            periodicDataStorage.append({
+                                        "filename": filename,
+                                        "event_datetime": event_datetime
+                                    });
+
+        }
+        else if (category_name === "Relay"){
+            console.log("datastorage Relay");
+            relayDataStorage.append({
+                                    "filename": filename,
+                                    "event_datetime": event_datetime
+                                    });
+        }
+        else if (category_name === "Surge"){
+            console.log("datastorage Surge");
+            surgeDataStorage.append({
+                                    "filename": filename,
+                                    "event_datetime": event_datetime
+                                    });
+        }
+
+        // console.log("datastorage JsonObject:", filename,event_datetime);
+
+        // patternDataStorage.append({
+        //                         "filename": filename,
+        //                         "event_datetime": event_datetime
+        //                         });
     }
 
 

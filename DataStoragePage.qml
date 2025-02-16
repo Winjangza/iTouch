@@ -10,9 +10,9 @@ Item {
     height: 600
     TabView {
         anchors.fill: parent
-        anchors.bottomMargin: 19
-        anchors.rightMargin: 44
-        anchors.leftMargin: 40
+        anchors.bottomMargin: 0
+        anchors.rightMargin: 0
+        anchors.leftMargin: 0
         anchors.topMargin: 59
         Tab{
             title: "PATTERN"
