@@ -124,7 +124,28 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this,SIGNAL(updataListOfMarginC(QString)),client,SLOT(sendMessage(QString)));
 
 
+<<<<<<< HEAD
         serverAddress = "192.168.10.52";
+=======
+    //------------------------------Send command to client----------------------------------//
+    connect(this, SIGNAL(rawdataPlot(QString)),client, SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(clearPatternGraph(QString)),client, SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(clearDisplay(QString)),client, SLOT(sendMessage(QString)));
+    connect(mysql,SIGNAL(SetNetworkSNMP(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(settingdisplay(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(parameterThreshold(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(ButtonPattern(QString)),client,SLOT(sendMessage(QString)));
+
+    //----------------------------get pattern datastorag from DB ---------------------------//
+    connect(this,&mainwindows::getdatapatternDataDb,mysql,&Database::getdatapatternDataDb);
+    connect(this,&mainwindows::sortnamePattern,mysql,&Database::sortByName);
+    connect(this,&mainwindows::sortdatePattern,mysql,&Database::sortByDate);
+    connect(this,&mainwindows::searchByName,mysql,&Database::searchByName);
+    connect(this,&mainwindows::searchByDate,mysql,&Database::searchByDate);
+    // connect(this,SIGNAL(sendMessage(QString)),client,SLOT(sendMessage(QString)));
+
+        serverAddress = "192.168.10.51";
+>>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
         serverPort = 5520;
 //        qDebug() << "serverAddress:" << serverAddress << " serverPort:" << serverPort;
         client->createConnection(serverAddress,serverPort);
@@ -211,7 +232,11 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     QString getCommand2 =  QJsonValue(command["objectNames"]).toString();
     QString getEventAndAlert =  QJsonValue(command["TrapsAlert"]).toString();
     QJsonDocument doc = QJsonDocument::fromJson(qmlJson.toUtf8());
+<<<<<<< HEAD
     qDebug() << "cppSubmitTextFiled:" << qmlJson;
+=======
+    // qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
+>>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
 
     if(qmlJson == "testRawData"){
         rawdataPlot("testRawData");
@@ -227,7 +252,86 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 //        qDebug() << "cppSubmitTextFiled UserM:" << selectMaster << userStatus << userType;
         cppCommand(selectMaster);
         emit updateUser(selectMaster);
-    }else if(getCommand.contains("UserSelectS")){
+    }
+    else if(getCommand == "PatternData"){
+        // qDebug() << "patternA:";
+        cppCommand(qmlJson);
+    }
+    else if (getCommand == "SearchName"){
+        // bool Sort = QJsonValue(command["Sort"]).toBool();
+        QString Name = QJsonValue(command["text"]).toString();
+        QString categories = QJsonValue(command["categories"]).toString();
+        QString massage = QString("{"
+                                  "\"objectName\":\"SearchName\","
+                                  "\"categories\":\"%1\","
+                                  "\"text\":\"%2\""
+                                  "}").arg(categories).arg(Name);
+        emit sendMessage(massage);
+               qDebug()<<"iiiiixxxxxNAME"<<Name<<categories;
+        //        emit searchByName(Name,categories);
+
+    }
+    else if (getCommand == "SearchDate"){
+        // qDebug()<<"iiiiixxxxx";
+        QString Date = QJsonValue(command["text"]).toString();
+        QString categories = QJsonValue(command["categories"]).toString();
+        QString massage = QString("{"
+                                  "\"objectName\":\"SearchDate\","
+                                  "\"categories\":\"%1\","
+                                  "\"text\":\"%2\""
+                                  "}").arg(categories).arg(Date);
+        emit sendMessage(massage);
+               qDebug()<<"iiiiixxxxxDate"<<Date<<categories;
+        //        emit searchByDate(Date,categories);
+    }
+    else if (getCommand == "sortnamePattern"){
+
+        bool Sort = QJsonValue(command["Sort"]).toBool();
+        QString categories = QJsonValue(command["categories"]).toString();
+
+        QString message = QString("{"
+                                  "\"objectName\":\"sortnamePattern\","
+                                  "\"Sort\":%1,"
+                                  "\"categories\":\"%2\""
+                                  "}").arg(Sort ? "true" : "false").arg(categories);
+
+        emit sendMessage(message);
+        qDebug()<<"iiiii"<<message;
+        //        emit sortnamePattern(Sort,categories);
+    }
+    else if (getCommand == "sortdatePattern"){
+        bool Sort = QJsonValue(command["Sort"]).toBool();
+        QString categories = QJsonValue(command["categories"]).toString();
+
+        QString message = QString("{"
+                                  "\"objectName\":\"sortdatePattern\","
+                                  "\"Sort\":%1,"
+                                  "\"categories\":\"%2\""
+                                  "}").arg(Sort ? "true" : "false").arg(categories);
+
+        emit sendMessage(message);
+
+        // qDebug()<<"sortdatePattern"<<massage;
+        //        emit sortdatePattern(Sort,categories);
+    }
+    else if (getCommand == "ButtonPattern"){
+        QString state = QJsonValue(command["Onclicked"]).toString();
+        QString category = QJsonValue(command["category"]).toString();
+        QString event_time = QJsonValue(command["event_datetime"]).toString();
+        QString filename = QJsonValue(command["filename"]).toString();
+        qDebug()<<"ButtonPattern"<<state<<event_time<<filename;
+        QString buttonPattern = QString("{"
+                                        "\"objectName\":\"ButtonPattern\","
+                                        "\"category\":\"%1\","
+                                        "\"Onclicked\":\"%2\","
+                                        "\"event_datetime\":\"%3\","
+                                        "\"filename\":\"%4\""
+                                        "}").arg(category).arg(state).arg(event_time).arg(filename);
+        qDebug() << "testl"<< buttonPattern;
+        emit ButtonPattern(buttonPattern);
+
+    }
+    else if(getCommand.contains("UserSelectS")){
         QString userType = QJsonValue(command["userType"]).toString();
         bool userStatus = QJsonValue(command["userStatusSlave"]).toBool();
         QString selectSlave = QString("{"
@@ -1179,6 +1283,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingA"){
         qDebug() << "dataPlotingA:";
+<<<<<<< HEAD
         cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingB"){
         qDebug() << "dataPlotingB:";
@@ -1186,14 +1291,25 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "dataPlotingC"){
         qDebug() << "dataPlotingC:";
         cppCommand(qmlJson);
+=======
+       cppCommand(qmlJson);
+    }else if(getCommand == "dataPlotingB"){
+        qDebug() << "dataPlotingB:";
+
+       cppCommand(qmlJson);
+    }else if(getCommand == "dataPlotingC"){
+        qDebug() << "dataPlotingC:";
+
+       cppCommand(qmlJson);
+>>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
     }else if(getCommand == "patternA"){
         qDebug() << "patternA:";
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "patternB"){
 //        qDebug() << "patternB:";
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "patternC"){
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "spinBoxDisplay"){
         int levelofligth = command["displayLight"].toInt();
         qDebug() << "levelofligth:" << levelofligth;

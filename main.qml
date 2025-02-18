@@ -267,6 +267,32 @@ Window {
         property bool statusEventandAlram
     }
 
+<<<<<<< HEAD
+=======
+    ListModel {
+        id: patternDataStorage
+        property string  event_datetime: ""
+        property string  filename: ""
+    }
+    ListModel {
+        id : periodicDataStorage
+        property string  event_datetime: ""
+        property string  filename: ""
+    }
+    ListModel {
+        id : relayDataStorage
+        property  string  event_datatime: ""
+        property  string  filename: ""
+    }
+    ListModel {
+        id : surgeDataStorage
+        property  string event_dtaatime : ""
+        property  string filename: ""
+    }
+
+
+
+>>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
     //         property string globalPhaseA: ""
     //         property bool globalStatusA: false
     //         property int globalTempNumA: 0
@@ -341,6 +367,19 @@ Window {
             mainBarMasterSelect = userTypeMaster;
             usertypeSelect = JsonObject.userStatusMaster
         }
+        else if  (objectName === "PatternData"){
+            console.log("PatternDataQML:", message);
+            // const { filename, event_datetime } = JsonObject;
+            // var category = JsonObject.category_name;
+            // console.log("📌 Adding to patternDataStorage:",category_name, filename, event_datetime);
+            // patternDataStorage.append({
+            //     "filename": filename,
+            //     "event_datetime": event_datetime
+            // });
+
+            // appendPattern(message)
+            appendDatStorage(message)
+            }
         else if (objectName === "UserSelectS") {
             mainBarSlaveSelect = userTypeSlave;
             usertypeSelect = !JsonObject.userStatusSlave
@@ -472,15 +511,23 @@ Window {
             arrRawB = JsonObject.dataPlotingB || [];
             distanceRawB = JsonObject.distance;
             voltageRawB = JsonObject.voltage;
+<<<<<<< HEAD
             console.log("Debug_RawdataB:", message , arrRawB, distanceRawB, voltageRawB);
             onPlotdataBChanged();
+=======
+            console.log("Debug_RawdataA_dataPlotingB:", message , arrRawB, distanceRawB, voltageRawB);
+>>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
         } else if (objectName === 'dataPlotingC') {
             console.log("RawdataC:", message);
             arrRawC = JsonObject.dataPlotingC || [];
             distanceRawC = JsonObject.distance;
             voltageRawC = JsonObject.voltage;
+<<<<<<< HEAD
             console.log("Debug_RawdataC:", message , arrRawC, distanceRawC, voltageRawC);
             onPlotdataCChanged();
+=======
+            console.log("Debug_RawdataA_dataPlotingC:", message , arrRawC, distanceRawC, voltageRawC);
+>>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
         }else if (objectName === 'patternA') {
             console.log("patthernA_check_debug:", message);
             var arrA = JsonObject.data || [];
@@ -651,6 +698,50 @@ Window {
         }
     }
 
+
+    function appendDatStorage(message){
+        console.log("debug_pattern_SQL");
+        var JsonObject = JSON.parse(message);
+        var filename = JsonObject.filename;
+        var event_datetime = JsonObject.event_datetime;
+        var category_name = JsonObject.category_name;
+        if (category_name === "Manual"){ //Pattern
+            console.log("datastorage Pattern");
+            patternDataStorage.append({
+                                    "filename": filename,
+                                    "event_datetime": event_datetime
+                                    });
+        }
+        else if (category_name === "Periodic" ){
+            console.log("datastorage Periodic");
+            periodicDataStorage.append({
+                                        "filename": filename,
+                                        "event_datetime": event_datetime
+                                    });
+
+        }
+        else if (category_name === "Relay"){
+            console.log("datastorage Relay");
+            relayDataStorage.append({
+                                    "filename": filename,
+                                    "event_datetime": event_datetime
+                                    });
+        }
+        else if (category_name === "Surge"){
+            console.log("datastorage Surge");
+            surgeDataStorage.append({
+                                    "filename": filename,
+                                    "event_datetime": event_datetime
+                                    });
+        }
+
+        // console.log("datastorage JsonObject:", filename,event_datetime);
+
+        // patternDataStorage.append({
+        //                         "filename": filename,
+        //                         "event_datetime": event_datetime
+        //                         });
+    }
 
     function setpropertyIDTableA(checkIDtable) {
         console.log("setpropertyCheckTable:", checkIDtable);
