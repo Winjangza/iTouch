@@ -36,7 +36,7 @@
 #define PATH_DOWNLOAD "/home/pi/update_firmware"
 #define USERS "pi"
 #define PASSWORD "11111"
-#define IP_ADDRESS "192.168.10.191"
+#define IP_ADDRESS "192.168.10.52"
 #define FILES "/opt/OpenPLC/bin/OpenPLC"
 #define FILESETTINGMASTER "/home/pi/.config/monitor/master.ini"
 #define FILESETTINGSLAVE "/home/pi/.config/monitor/slave.ini"
@@ -96,6 +96,7 @@ signals:
      void updataListOfMarginA(QString);
      void updataListOfMarginB(QString);
      void updataListOfMarginC(QString);
+     void SettingAndUpdateMargin(QString);
 
 
 public:
@@ -240,21 +241,35 @@ private:
     bool hasDirection = false;
     bool hasLineNo = false;
 
+    bool isFirstEvent_DO = true;
+    bool isFirstEvent_DI = true;
+    bool isFirstEvent_PHASE_A_ERROR = true;
+    bool isFirstEvent_PHASE_B_ERROR = true;
+    bool isFirstEvent_PHASE_C_ERROR = true;
+    bool isFirstEvent_GPS_MODULE = true;
+    bool isFirstEvent_SYSTEM_INITIAL = true;
+    bool isFirstEvent_COMMUNICATION_ERROR = true;
+    bool isFirstEvent_RELAY_START_EVENT = true;
+    bool isFirstEvent_SURGE_START_EVENT = true;
+    bool isFirstEvent_PERIODIC_TEST_EVENT = true;
+    bool isFirstEvent_MANUAL_TEST_EVENT = true;
+    bool isFirstEvent_LFL_FAIL = true;
+    bool isFirstEvent_LEL_OPERATE = true;
 
-    bool previousStates_DO;
-    bool previousStates_DI;
-    bool previousStates_PHASE_A_ERROR;
-    bool previousStates_PHASE_B_ERROR;
-    bool previousStates_PHASE_C_ERROR;
-    bool previousStates_GPS_MODULE;
-    bool previousStates_SYSTEM_INITIAL;
-    bool previousStates_COMMUNICATION_ERROR;
-    bool previousStates_RELAY_START_EVENT;
-    bool previousStates_SURGE_START_EVENT;
-    bool previousStates_PERIODIC_TEST_EVENT;
-    bool previousStates_MANUAL_TEST_EVENT;
-    bool previousStates_LFL_FAIL;
-    bool previousStates_LEL_OPERATE;
+    bool previousStates_DO = false;
+    bool previousStates_DI = false;
+    bool previousStates_PHASE_A_ERROR = false;
+    bool previousStates_PHASE_B_ERROR = false;
+    bool previousStates_PHASE_C_ERROR = false;
+    bool previousStates_GPS_MODULE = false;
+    bool previousStates_SYSTEM_INITIAL = false;
+    bool previousStates_COMMUNICATION_ERROR = false;
+    bool previousStates_RELAY_START_EVENT = false;
+    bool previousStates_SURGE_START_EVENT = false;
+    bool previousStates_PERIODIC_TEST_EVENT = false;
+    bool previousStates_MANUAL_TEST_EVENT = false;
+    bool previousStates_LFL_FAIL = false;
+    bool previousStates_LEL_OPERATE = false;
 };
 
 #endif // MAINWINDOWS_H

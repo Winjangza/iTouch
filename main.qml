@@ -9,8 +9,8 @@ import QtWebSockets 1.0
 Window {
     id: window
     visible: true
-    width: 800
-    height: 480
+    width: 1024
+    height: 600
     signal getScreenshot()
     property string serverAddress: "127.0.0.1"
     property var socketPort: 1234
@@ -186,7 +186,12 @@ Window {
     property bool alarm_relay_start_event
     property bool alarm_surage_start_event
     property string timeEventAlarm: ""
-
+    signal sendEventToTable(string date, string time, string message, string priority)
+    property var eventListeners:[];
+    property var fullEventData:[];
+    property double realDistanceA: 0.0
+    property double realDistanceB: 0.0
+    property double realDistanceC: 0.0
     ListModel {
         id: testGraph
         property var nameX: plotDataAX
@@ -251,17 +256,16 @@ Window {
     ListModel {
         id: eventAlarmLog
         property string datetimeEventandAlram: ""
-        property string logDetail: ""
+        property string logDetailHistory: ""
         property bool statusEventandAlram
     }
+
     ListModel {
         id: eventAlarmHistoryLog
         property string datetimeEventandAlram: ""
-        property string logDetail: ""
+        property string logDetailHistory: ""
         property bool statusEventandAlram
     }
-
-
 
     //         property string globalPhaseA: ""
     //         property bool globalStatusA: false
@@ -326,7 +330,7 @@ Window {
         var objectName = JsonObject.objectName;
         var TrapsAlert = JsonObject.TrapsAlert;
         var menuID = JsonObject.objectName;
-        console.log("receviceSocket:", message ,JsonObject,objectName,TrapsAlert,menuID,JSON.parse(message),JsonObject.objectName);
+//        console.log("receviceSocket:", message ,JsonObject,objectName,TrapsAlert,menuID,JSON.parse(message),JsonObject.objectName);
 
         if(message === true){
             statusSystem = message
@@ -463,20 +467,23 @@ Window {
             distanceRawA = JsonObject.distance;
             voltageRawA = JsonObject.voltage;
             console.log("Debug_RawdataA_dataPlotingA:", message , arrRawA, distanceRawA, voltageRawA);
+            onPlotdataAChanged();
         } else if (objectName === 'dataPlotingB') {
             arrRawB = JsonObject.dataPlotingB || [];
             distanceRawB = JsonObject.distance;
             voltageRawB = JsonObject.voltage;
             console.log("Debug_RawdataB:", message , arrRawB, distanceRawB, voltageRawB);
+            onPlotdataBChanged();
         } else if (objectName === 'dataPlotingC') {
             console.log("RawdataC:", message);
             arrRawC = JsonObject.dataPlotingC || [];
             distanceRawC = JsonObject.distance;
             voltageRawC = JsonObject.voltage;
             console.log("Debug_RawdataC:", message , arrRawC, distanceRawC, voltageRawC);
+            onPlotdataCChanged();
         }else if (objectName === 'patternA') {
             console.log("patthernA_check_debug:", message);
-            var arrA = JsonObject.data || [];           
+            var arrA = JsonObject.data || [];
             distancePatternA = JsonObject.distance;
             voltagePatternA= JsonObject.voltage;
         }else if (objectName === 'patternB') {
@@ -564,90 +571,83 @@ Window {
             console.log("update MarginTableUpdated:", message);
 
         }else if ((TrapsAlert === 'PLC_DO_ERROR')) {
-            alarm_plc_do_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            tableEventAndAlarm(message);
-            console.log("TrapsAlert PLC_DO_ERROR:", message,alarm_plc_do_error,timeEventAlarm);
-
+            addEvent(message);
+//            console.log("TrapsAlert PLC_DO_ERROR:", message,alarm_plc_do_error,timeEventAlarm);
         }else if ((TrapsAlert === 'PLC_DI_ERROR')) {
-            alarm_plc_di_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert PLC_DI_ERROR:", message,alarm_plc_di_error,timeEventAlarm);
-
+            addEvent(message);
+//            console.log("TrapsAlert PLC_DI_ERROR:", message,alarm_plc_di_error,timeEventAlarm);
         }else if ((TrapsAlert === 'INTERNAL_PHASE_A_ERROR')) {
-            alarm_internal_phase_A_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert INTERNAL_PHASE_A_ERROR:", message,alarm_internal_phase_A_error,timeEventAlarm);
-
+            addEvent(message);
+//            console.log("TrapsAlert INTERNAL_PHASE_A_ERROR:", message,alarm_internal_phase_A_error,timeEventAlarm);
         }else if ((TrapsAlert === 'INTERNAL_PHASE_B_ERROR')) {
-            alarm_internal_phase_B_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert INTERNAL_PHASE_B_ERROR:", message,alarm_internal_phase_B_error,timeEventAlarm);
-
+            addEvent(message);
+//            console.log("TrapsAlert INTERNAL_PHASE_B_ERROR:", message,alarm_internal_phase_B_error,timeEventAlarm);
         }else if ((TrapsAlert === 'INTERNAL_PHASE_C_ERROR')) {
-            alarm_internal_phase_C_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert INTERNAL_PHASE_C_ERROR:", message,alarm_internal_phase_C_error,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert INTERNAL_PHASE_C_ERROR:", message,alarm_internal_phase_C_error,timeEventAlarm);
 
         }else if ((TrapsAlert === 'MODULE_HI_SPEED_PHASE_A_ERROR')) {
-            alarm_module_hi_speed_phase_A_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert MODULE_HI_SPEED_PHASE_A_ERROR:", message,alarm_module_hi_speed_phase_A_error,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert MODULE_HI_SPEED_PHASE_A_ERROR:", message,alarm_module_hi_speed_phase_A_error,timeEventAlarm);
 
         }else if ((TrapsAlert === 'MODULE_HI_SPEED_PHASE_B_ERROR')) {
-            alarm_module_hi_speed_phase_B_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert MODULE_HI_SPEED_PHASE_B_ERROR:", message,alarm_module_hi_speed_phase_B_error,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert MODULE_HI_SPEED_PHASE_B_ERROR:", message,alarm_module_hi_speed_phase_B_error,timeEventAlarm);
 
         }else if ((TrapsAlert === 'MODULE_HI_SPEED_PHASE_C_ERROR')) {
-            alarm_module_hi_speed_phase_C_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert MODULE_HI_SPEED_PHASE_C_ERROR:", message,alarm_module_hi_speed_phase_C_error,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert MODULE_HI_SPEED_PHASE_C_ERROR:", message,alarm_module_hi_speed_phase_C_error,timeEventAlarm);
 
         }else if ((TrapsAlert === 'GPS_MODULE_FAIL')) {
-            alarm_gps_module_fail = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert GPS_MODULE_FAIL:", message,alarm_gps_module_fail,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert GPS_MODULE_FAIL:", message,alarm_gps_module_fail,timeEventAlarm);
 
         }else if ((TrapsAlert === 'SYSTEM_INITIAL')) {
-            alarm_system_initial = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert SYSTEM_INITIAL:", message,alarm_system_initial,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert SYSTEM_INITIAL:", message,alarm_system_initial,timeEventAlarm);
 
         }else if ((TrapsAlert === 'COMMUNICATION_ERROR')) {
-            alarm_communication_error = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert COMMUNICATION_ERROR:", message,alarm_communication_error,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert COMMUNICATION_ERROR:", message,alarm_communication_error,timeEventAlarm);
 
         }else if ((TrapsAlert === 'RELAY_START_EVENT')) {
-            alarm_relay_start_event = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert RELAY_START_EVENT:", message,alarm_relay_start_event,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert RELAY_START_EVENT:", message,alarm_relay_start_event,timeEventAlarm);
 
         }else if ((TrapsAlert === 'SURGE_START_EVENT')) {
-            alarm_surage_start_event = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert SURGE_START_EVENT:", message,alarm_surage_start_event,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert SURGE_START_EVENT:", message,alarm_surage_start_event,timeEventAlarm);
 
         }else if ((TrapsAlert === 'PERIODIC_TEST_EVENT')) {
-            alarm_periodic_test_event = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert PERIODIC_TEST_EVENT:", message,alarm_periodic_test_event,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert PERIODIC_TEST_EVENT:", message,alarm_periodic_test_event,timeEventAlarm);
 
         }else if ((TrapsAlert === 'MANUAL_TEST_EVENT')) {
-            alarm_manual_test_event = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert MANUAL_TEST_EVENT:", message,alarm_manual_test_event,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert MANUAL_TEST_EVENT:", message,alarm_manual_test_event,timeEventAlarm);
 
         }else if ((TrapsAlert === 'LFL_FAIL')) {
-            alarm_lfl_fail = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert LFL_FAIL:", message,alarm_lfl_fail,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert LFL_FAIL:", message,alarm_lfl_fail,timeEventAlarm);
 
         }else if ((TrapsAlert === 'LEL_OPERATE')) {
-            alarm_lfl_operate = JsonObject.state;
-            timeEventAlarm = JsonObject.time;
-            console.log("TrapsAlert LEL_OPERATE:", message,alarm_lfl_operate,timeEventAlarm);
+            addEvent(message);
+//            console.log("TrapsAlert LEL_OPERATE:", message,alarm_lfl_operate,timeEventAlarm);
+        }else if ((objectName === 'CLEAR_ALARM')) {
+//            console.log("CLEAR_ALARM:", message);
+        }else if ((objectName === 'realDistanceA')) {
+            console.log("realDistanceA:", message);
+            realDistanceA = JsonObject.valueDistanceA;
+            realDistanceA = realDistanceA/1000;
+        }else if ((objectName === 'realDistanceB')) {
+            console.log("realDistanceB:", message);
+            realDistanceB = JsonObject.valueDistanceB;
+            realDistanceB = realDistanceB/1000;
+        }else if ((objectName === 'realDistanceC')) {
+            console.log("realDistanceC:", message);
+            realDistanceC = JsonObject.valueDistanceC;
+            realDistanceC = realDistanceC/1000;
+
         }
     }
 
@@ -790,22 +790,237 @@ Window {
         }
     }
 
-    function tableEventAndAlarm(jsonString) {
-        var jsonData = JSON.parse(jsonString);
+    function addEvent(message) {
+        try {
+            var JsonObject = JSON.parse(message);
+//            console.log("[addEvent] Received:", JsonObject);
 
-        var newEvent = {
-            date: jsonData.date || "N/A",
-            time: jsonData.time || "N/A",
-            message: jsonData.TrapsAlert,
-            priority: jsonData.priority || "N"
-        };
+            if (!JsonObject.TrapsAlert || !JsonObject.time) {
+//                console.warn("[addEvent] Missing required fields:", JsonObject);
+                return;
+            }
 
-        console.log("Adding Event to ListModel:", JSON.stringify(newEvent));
-        eventAlarmLog.append(newEvent);
-            if (eventAlarmLog.count > 50) {
-            eventAlarmLog.remove(0);
+            var fullTime = JsonObject.time;
+            var datePart = fullTime.split(" ")[0] || "N/A";
+            var timePart = fullTime.split(" ")[1] || "N/A";
+
+            var newEvent = {
+                datetEventandAlram: datePart,
+                timeEventandAlram: timePart,
+                logDetail: JsonObject.TrapsAlert,
+                statusEventandAlram: JsonObject.state ? "ACTIVE" : "DEACTIVE"
+            };
+
+            eventAlarmLog.insert(0, newEvent);
+            eventAlarmHistoryLog.insert(0, newEvent);
+//            console.log(`[addEvent] Inserted Event: ${JSON.stringify(newEvent)}`);
+
+        } catch (error) {
+//            console.error("[addEvent] JSON Parse Error:", error);
         }
     }
+
+
+//    function addEvent(message) {
+//        try {
+//            var JsonObject = JSON.parse(message);
+//            console.log("[addEvent] Received:", JsonObject);
+
+//            if (!JsonObject.TrapsAlert || !JsonObject.time) {
+//                console.warn("[addEvent] Missing required fields.");
+//                return;
+//            }
+
+//            var fullTime = JsonObject.time;
+//            var datePart = fullTime.split(" ")[0] || "N/A";
+//            var timePart = fullTime.split(" ")[1] || "N/A";
+
+//            var newEvent = {
+//                datetEventandAlram: datePart,
+//                timeEventandAlram: timePart,
+//                logDetail: JsonObject.TrapsAlert,
+//                statusEventandAlram: JsonObject.state ? "ACTIVE" : "DEACTIVE"
+//            };
+
+//            eventAlarmLog.insert(0, newEvent); // ✅ Insert at the top
+//            eventAlarmHistoryLog.insert(0, newEvent);
+//            console.log(`[addEvent] Appended: ${JSON.stringify(newEvent)}`);
+//        } catch (error) {
+//            console.error("[addEvent] JSON Parse Error:", error);
+//        }
+//    }
+
+
+//    function processIncomingMessage(message) {
+//        try {
+//            var JsonObject = JSON.parse(message);
+//            if (JsonObject.objectName === "CLEAR_ALARM") {
+//                clearAlarmLog();
+//            } else {
+//                addEvent(message);
+//            }
+//        } catch (error) {
+//            console.error("JSON Parse Error:", error);
+//        }
+//    }
+//    function fliterRelayStart(checkfliter) {
+//        console.error("fliterRelayStart:", checkfliter);
+//        if (checkfliter) {
+//            fullEventData = [];
+//            for (var i = 0; i < eventAlarmLog.count; i++) {
+//                var item = eventAlarmLog.get(i);
+//                if (item.logDetail === "RELAY_START_EVENT") {
+//                    fullEventData.push(item);
+//                }
+//            }
+//            eventAlarmLog.clear();
+//            fullEventData.forEach(function(item) {
+//                eventAlarmLog.append(item);
+//            });
+//        } else {
+//            fullEventData.forEach(function(item) {
+//                eventAlarmLog.append(item);
+//            });
+//        }
+//    }
+    function clearAlarmLog() {
+        if (eventAlarmLog.count > 0 || fullEventData.length > 0) {
+            console.log(`[clearAlarmLog] Found ${eventAlarmLog.count} items and ${fullEventData.length} cached items. Clearing...`);
+            eventAlarmLog.clear();
+            fullEventData = Array.from([]);  // Ensures no lingering references
+            console.log("✅ Event Alarm Log and cached data cleared!", fullEventData);
+        } else {
+            console.log("⚠️ No items to clear.");
+        }
+    }
+    function fliterRelayStart(checkfliter) {
+        console.error("fliterRelayStart:", checkfliter);
+        if (fullEventData.length === 0) {
+            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
+            return;
+        }
+        if (checkfliter) {
+            fullEventData = [];
+            for (var i = 0; i < eventAlarmLog.count; i++) {
+                var item = eventAlarmLog.get(i);
+                if (item.logDetail === "RELAY_START_EVENT") {
+                    fullEventData.push(item);
+                }
+            }
+            eventAlarmLog.clear();
+            for (var j = 0; j < fullEventData.length; j++) {
+                eventAlarmLog.append(fullEventData[j]);
+            }
+        } else {
+            eventAlarmLog.clear();
+            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
+                var item = eventAlarmHistoryLog.get(k);
+                eventAlarmLog.append(item);
+            }
+        }
+    }
+
+//    function fliterRelayStart(checkfliter) {
+//        console.error("fliterRelayStart:", checkfliter);
+//        if (checkfliter) {
+//            fullEventData = [];
+//            for (var i = 0; i < eventAlarmLog.count; i++) {
+//                var item = eventAlarmLog.get(i);
+//                if (item.logDetail === "RELAY_START_EVENT") {
+//                    fullEventData.push(item);
+//                }
+//            }
+//            eventAlarmLog.clear();
+//            for (var j = 0; j < fullEventData.length; j++) {
+//                eventAlarmLog.append(fullEventData[j]);
+//            }
+//        } else {
+//            eventAlarmLog.clear();
+//            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
+//                var item = eventAlarmHistoryLog.get(k);
+//                eventAlarmLog.append(item);
+//            }
+//        }
+//    }
+    function fliterPeriodicStart(checkfliter) {
+        console.error("fliterRelayStart:", checkfliter);
+        if (fullEventData.length === 0) {
+            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
+            return;
+        }
+        if (checkfliter) {
+            fullEventData = [];
+            for (var i = 0; i < eventAlarmLog.count; i++) {
+                var item = eventAlarmLog.get(i);
+                if (item.logDetail === "PERIODIC_TEST_EVENT") {
+                    fullEventData.push(item);
+                }
+            }
+            eventAlarmLog.clear();
+            for (var j = 0; j < fullEventData.length; j++) {
+                eventAlarmLog.append(fullEventData[j]);
+            }
+        } else {
+            eventAlarmLog.clear();
+            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
+                var item = eventAlarmHistoryLog.get(k);
+                eventAlarmLog.append(item);
+            }
+        }
+    }
+    function fliterManualStart(checkfliter) {
+        console.error("fliterRelayStart:", checkfliter);
+        if (fullEventData.length === 0) {
+            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
+            return;
+        }
+        if (checkfliter) {
+            fullEventData = [];
+            for (var i = 0; i < eventAlarmLog.count; i++) {
+                var item = eventAlarmLog.get(i);
+                if (item.logDetail === "MANUAL_TEST_EVENT") {
+                    fullEventData.push(item);
+                }
+            }
+            eventAlarmLog.clear();
+            for (var j = 0; j < fullEventData.length; j++) {
+                eventAlarmLog.append(fullEventData[j]);
+            }
+        } else {
+            eventAlarmLog.clear();
+            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
+                var item = eventAlarmHistoryLog.get(k);
+                eventAlarmLog.append(item);
+            }
+        }
+    }
+    function fliterSurageStart(checkfliter) {
+        console.error("fliterRelayStart:", checkfliter);
+        if (fullEventData.length === 0) {
+            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
+            return;
+        }
+        if (checkfliter) {
+            fullEventData = [];
+            for (var i = 0; i < eventAlarmLog.count; i++) {
+                var item = eventAlarmLog.get(i);
+                if (item.logDetail === "SURGE_START_EVENT") {
+                    fullEventData.push(item);
+                }
+            }
+            eventAlarmLog.clear();
+            for (var j = 0; j < fullEventData.length; j++) {
+                eventAlarmLog.append(fullEventData[j]);
+            }
+        } else {
+            eventAlarmLog.clear();
+            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
+                var item = eventAlarmHistoryLog.get(k);
+                eventAlarmLog.append(item);
+            }
+        }
+    }
+
 
 
     // function refreshTableData(message) {
@@ -1158,7 +1373,6 @@ Window {
             newlistMarginC.remove(newlistMarginC.count - 1);
         }
 
-        // ✅ Check and update existing entries
         var found = false;
         for (var i = 0; i < newlistMarginC.count; i++) {
             if (newlistMarginC.get(i).list_marginC === JsonObject.marginNo) {
@@ -1174,7 +1388,6 @@ Window {
             }
         }
 
-        // ✅ Append if not found
         if (!found && newlistMarginC.count < listMarginCount) {
             newlistMarginC.append({
                 "voltageIndex": newlistMarginC.count,
@@ -1184,6 +1397,18 @@ Window {
             });
             console.log("Added new entry:", JsonObject.marginNo);
         }
+    }
+    function clearAlarmLogIncrementally() {
+        console.log("[clearAlarmLogIncrementally] Starting incremental clear...");
+
+        let itemCount = eventAlarmLog.count;
+
+        // ลบจากท้ายขึ้นไป
+        for (let i = itemCount - 1; i >= 0; i--) {
+            eventAlarmLog.remove(i);
+        }
+
+        console.log("[clearAlarmLogIncrementally] Log cleared successfully!");
     }
 
 //    function appendNewMarginlistA(message) {

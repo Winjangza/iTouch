@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
+    QQuickWindow::setSceneGraphBackend("software");
 
     QQmlApplicationEngine engine;
     ImageProvider *imageProvider = new ImageProvider();

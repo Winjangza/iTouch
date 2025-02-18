@@ -13,7 +13,9 @@ Item {
     property bool isGreenButC: false // สถานะเริ่มต้น detailwireInformation
     property var voltageDataA: dataPointA
     property string detailwire: detailwireInformation
-
+    property double realDistanceA_Measure: realDistanceA
+    property double realDistanceB_Measure: realDistanceB
+    property double realDistanceC_Measure: realDistanceC
     Rectangle {
         id: mainDataInfo
         x: 0
@@ -429,6 +431,7 @@ Item {
             }
 
             ColumnLayout {
+                width: 70
                 Layout.preferredHeight: 156
                 Layout.preferredWidth: 69
 
@@ -446,8 +449,8 @@ Item {
                         y: 0
                         width: 70
                         height: 30
-                        text: globalDistance
-                        font.pixelSize: 12
+                        text: realDistanceA_Measure.toFixed(2)
+                        font.pixelSize: 13
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         anchors.rightMargin: 0
@@ -468,8 +471,8 @@ Item {
                         y: 0
                         width: 70
                         height: 30
-                        text: qsTr("Text")
-                        font.pixelSize: 12
+                        text: realDistanceB_Measure.toFixed(2)
+                        font.pixelSize: 13
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -489,8 +492,8 @@ Item {
                         y: 0
                         width: 70
                         height: 30
-                        text: qsTr("Text")
-                        font.pixelSize: 12
+                        text: realDistanceC_Measure.toFixed(2)
+                        font.pixelSize: 13
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -780,6 +783,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:2}D{i:70}
+    D{i:0;formeditorZoom:2}
 }
 ##^##*/

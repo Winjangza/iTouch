@@ -164,7 +164,66 @@ Item {
             console.log("Error in onPlotdatapatternCChanged:", e);
         }
     }
+//    //     สำหรับ RawDataA
+//        function onPlotdataAChanged() {
+//            try {
+//                if (plotdataA && distanceA && plotdataA.length === distanceA.length) {
+//                    seriesRawA.clear();
+//                    console.log("pointerY:", pointerY);
+//                    for (var i = 0; i < plotdataA.length; i++) {
+//                        if (isFinite(plotdataA[i]) && isFinite(distanceA[i])) {
+//                            seriesRawA.append(distanceA[i], plotdataA[i]);
+//                        }
+//                    }
+//                    adjustAxes(distanceA, [plotdataA]);
+//                    axisY.min = 0;
+//                } else {
+//                    console.log("Data mismatch for plotdataA. Lengths:", plotdataA.length, distanceA.length);
+//                }
+//            } catch (e) {
+//                console.log("Error in onPlotdataAChanged:", e);
+//            }
+//        }
 
+//    //     สำหรับ RawDataB
+//        function onPlotdataBChanged() {
+//            try {
+//                if (plotdataB && distanceB && plotdataB.length === distanceB.length) {
+//                    seriesRawB.clear();
+//                    for (var i = 0; i < plotdataB.length; i++) {
+//                        if (isFinite(plotdataB[i]) && isFinite(distanceB[i])) {
+//                            seriesRawB.append(distanceB[i], plotdataB[i]);
+//                        }
+//                    }
+//                    adjustAxes(distanceB, [plotdataB]);
+//                    axisY.min = 0;
+//                } else {
+//                    console.log("Data mismatch for plotdataB. Lengths:", plotdataB.length, distanceB.length);
+//                }
+//            } catch (e) {
+//                console.log("Error in onPlotdataBChanged:", e);
+//            }
+//        }
+
+//    // สำหรับ RawDataC
+//        function onPlotdataCChanged() {
+//            try {
+//                if (plotdataC && distanceC && plotdataC.length === distanceC.length) {
+//                    seriesRawC.clear();
+//                    for (var i = 0; i < plotdataC.length; i++) {
+//                        if (isFinite(plotdataC[i]) && isFinite(distanceC[i])) {
+//                            seriesRawC.append(distanceC[i], plotdataC[i]);
+//                        }
+//                    }
+//                    adjustAxes(distanceC, [plotdataC]);
+//                    axisY.min = 0;
+//                } else {
+//                    console.log("Data mismatch for plotdataC. Lengths:", plotdataC.length, distanceC.length);
+//                }
+//            } catch (e) {
+//                console.log("Error in onPlotdataCChanged:", e);
+//            }
+//        }
 
     // ฟังก์ชันสำหรับปรับแกน
     function adjustAxes(distances, plotdataArrays) {
@@ -271,12 +330,12 @@ Item {
             tickCount: 10
             titleText: "<font color='#ffffff'>Distance (Km)</font>"
             titleFont.bold: true
-            titleFont.pixelSize: 12
+            titleFont.pixelSize: 16
             labelsVisible: true
             gridVisible: false
             color: "#ffffff"
             labelsColor: "#ffffff"
-            labelsFont.pixelSize: 10
+            labelsFont.pixelSize: 14
         }
 
         ValueAxis {
@@ -285,12 +344,12 @@ Item {
             max: 4096
             titleText: "<font color='#ffffff'>Voltage (mV)</font>"
             titleFont.bold: true
-            titleFont.pixelSize: 12
+            titleFont.pixelSize: 16
             labelsVisible: true
             gridVisible: false
             color: "#ffffff"
             labelsColor: "#ffffff"
-            labelsFont.pixelSize: 10
+            labelsFont.pixelSize: 14
         }
 
         // Phase A

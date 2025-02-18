@@ -17,83 +17,83 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     getSetting();
     connect(reconnectTimer,SIGNAL(timeout()),this,SLOT(reconnectTimerTimeout()));
     connect(Timer,SIGNAL(timeout()),this,SLOT(connectTimeOut()));
-    connect(mysql, SIGNAL(eventmsg(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
-    connect(this, SIGNAL(updateUser(QString)), mysql, SLOT(userMode(QString)));
 //    connect(this, SIGNAL(updateRelay(QString)), mysql, SLOT(storeStatusAux(QString)));
+//    connect(this,SIGNAL(getEditDatafromMySQLA(QString)),mysql,SLOT(closeMySQL(QString)));
+
+//    connect(mysql,SIGNAL(listOfMarginA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(listOfMarginB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(listOfMarginC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(this,SIGNAL(parameterThreshold(QString)),mysql,SLOT(configParemeterThreshold(QString)));
+//    connect(mysql,SIGNAL(updateThresholdA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(updateThresholdB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(updateThresholdC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(this,SIGNAL(updateTimer(QString)),mysql,SLOT(getUpdatePeriodic(QString)));
+//    connect(this,SIGNAL(updateWeekly(QString)),mysql,SLOT(getUpdateWeekly(QString)));
+//    connect(this, SIGNAL(rawdataPlot(QString)), mysql, SLOT(getRawData(QString)));
+//    connect(mysql,SIGNAL(packageRawData(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(this, SIGNAL(changeDistanceRange(QString)), mysql, SLOT(getChangeDistance(QString)));
+//    connect(this,SIGNAL(clearDisplay(QString)),mysql,SLOT(cleanDataInGraph(QString)));
+//    connect(this,SIGNAL(clearDisplay(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));  //SetNetworkSNMP    
+//    connect(this,SIGNAL(settingdisplay(QString)),mysql,SLOT(SettingDisplay(QString)));
+//    connect(this,SIGNAL(settingdisplay(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(this,SIGNAL(getsettingdisplay()),mysql,SLOT(GetSettingDisplay()));
+//    connect(mysql,SIGNAL(settingDisplayInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(mysql,SIGNAL(settingDisplayInfo(QString)),this,SLOT(calculate(QString)));
+//    connect(mysql,SIGNAL(updateThresholdA(QString)),this,SLOT(calculate(QString)));
+//    connect(this,SIGNAL(getMarginUpdate()),mysql,SLOT(updateMargin()));
+    connect(this, SIGNAL(updateUser(QString)), mysql, SLOT(userMode(QString)));
     connect(this, SIGNAL(getDistanceandDetailA(QString)), mysql, SLOT(DistanceandDetailPhaseA(QString)));
     connect(this, SIGNAL(getDistanceandDetailB(QString)), mysql, SLOT(DistanceandDetailPhaseB(QString)));
     connect(this, SIGNAL(getDistanceandDetailC(QString)), mysql, SLOT(DistanceandDetailPhaseC(QString)));
     connect(this, SIGNAL(getTablePhaseA(QString)), mysql, SLOT(getMySqlPhaseA(QString)));
     connect(this, SIGNAL(getTablePhaseB(QString)), mysql, SLOT(getMySqlPhaseB(QString)));
     connect(this, SIGNAL(getTablePhaseC(QString)), mysql, SLOT(getMySqlPhaseC(QString)));
-    connect(mysql, SIGNAL(cmdmsg(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
-    connect(mysql, SIGNAL(updateTableDisplay(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
     connect(this, SIGNAL(deletedMySQLA(QString)), mysql, SLOT(deletedDataMySQLPhaseA(QString)));
     connect(this, SIGNAL(deletedMySQLB(QString)), mysql, SLOT(deletedDataMySQLPhaseB(QString)));
     connect(this, SIGNAL(deletedMySQLC(QString)), mysql, SLOT(deletedDataMySQLPhaseC(QString)));
-    connect(mysql,SIGNAL(deletedmydatabase(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this, SIGNAL(updateTablePhaseA(QString)), mysql, SLOT(updateTablePhaseA(QString)));
     connect(this, SIGNAL(updateTablePhaseB(QString)), mysql, SLOT(updateTablePhaseB(QString)));
     connect(this, SIGNAL(updateTablePhaseC(QString)), mysql, SLOT(updateTablePhaseC(QString)));
-    connect(mysql,SIGNAL(updatedataTableA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(mysql,SIGNAL(updatedataTableB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(mysql,SIGNAL(updatedataTableC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(this,SIGNAL(getEditDatafromMySQLA(QString)),mysql,SLOT(closeMySQL(QString)));
-    connect(mysql,SIGNAL(updataEditDataA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(this,SIGNAL(parameterMarginA(QString)),mysql,SLOT(configParemeterMarginA(QString)));
-    connect(this,SIGNAL(parameterMarginB(QString)),mysql,SLOT(configParemeterMarginB(QString)));
-    connect(this,SIGNAL(parameterMarginC(QString)),mysql,SLOT(configParemeterMarginC(QString)));
-
-    connect(mysql,SIGNAL(listOfMarginA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(mysql,SIGNAL(listOfMarginB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(mysql,SIGNAL(listOfMarginC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-
-//    connect(this,SIGNAL(parameterThreshold(QString)),mysql,SLOT(configParemeterThreshold(QString)));
-//    connect(mysql,SIGNAL(updateThresholdA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(mysql,SIGNAL(updateThresholdB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(mysql,SIGNAL(updateThresholdC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(this,SIGNAL(settingNetWorkandSNMP(QString)),mysql,SLOT(SettingNetworkSNMP(QString)));
+    connect(this, SIGNAL(sendToSocket(QString)), client, SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(taggingpoint(QString)),mysql,SLOT(taggingpoint(QString)));
+    connect(this, SIGNAL(cursorDistance(QString)), mysql, SLOT(getPositionDistance(QString)));
+    connect(this, SIGNAL(moveCursor(QString)), mysql, SLOT(controlCursor(QString)));
+    connect(this, SIGNAL(changeDistanceRange(QString)), mysql, SLOT(getChangeDistance(QString)));
     connect(this,SIGNAL(getDataThreshold()),mysql,SLOT(getThreshold()));
     connect(this,SIGNAL(settingGeneral()),mysql,SLOT(getSettingInfo()));
     connect(this,SIGNAL(preiodicSetting()),mysql,SLOT(getpreiodicInfo()));
-    connect(mysql,SIGNAL(UpdatepreiodicInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(this,SIGNAL(updateTimer(QString)),mysql,SLOT(getUpdatePeriodic(QString)));
-//    connect(this,SIGNAL(updateWeekly(QString)),mysql,SLOT(getUpdateWeekly(QString)));
-//    connect(this, SIGNAL(rawdataPlot(QString)), mysql, SLOT(getRawData(QString)));
-//    connect(mysql,SIGNAL(packageRawData(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(this, SIGNAL(cursorDistance(QString)), mysql, SLOT(getPositionDistance(QString)));
-    connect(mysql,SIGNAL(cursorPosition(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(this, SIGNAL(moveCursor(QString)), mysql, SLOT(controlCursor(QString)));
-    connect(mysql,SIGNAL(positionCursorChange(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(this, SIGNAL(changeDistanceRange(QString)), mysql, SLOT(getChangeDistance(QString)));
-    connect(mysql,SIGNAL(updatanewdistance(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(this, SIGNAL(changeDistanceRange(QString)), mysql, SLOT(getChangeDistance(QString)));
-    connect(this, SIGNAL(sendToSocket(QString)), client, SLOT(sendMessage(QString)));
-    connect(this,SIGNAL(taggingpoint(QString)),mysql,SLOT(taggingpoint(QString)));
-    connect(mysql,SIGNAL(showtaggingpoint(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(this,SIGNAL(clearDisplay(QString)),mysql,SLOT(cleanDataInGraph(QString)));
-//    connect(this,SIGNAL(clearDisplay(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));  //SetNetworkSNMP
-    connect(this,SIGNAL(settingNetWorkandSNMP(QString)),mysql,SLOT(SettingNetworkSNMP(QString)));
-//    connect(this,SIGNAL(settingdisplay(QString)),mysql,SLOT(SettingDisplay(QString)));
-    connect(mysql,SIGNAL(updateDisplaySetting(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(plotingDataPhaseA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(plotingDataPhaseB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(this,SIGNAL(plotingDataPhaseC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(this,SIGNAL(settingdisplay(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(this,SIGNAL(getsettingdisplay()),mysql,SLOT(GetSettingDisplay()));
-//    connect(mysql,SIGNAL(settingDisplayInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-//    connect(mysql,SIGNAL(settingDisplayInfo(QString)),this,SLOT(calculate(QString)));
-//    connect(mysql,SIGNAL(updateThresholdA(QString)),this,SLOT(calculate(QString)));
     connect(this,SIGNAL(settingdisplay(QString)),this,SLOT(calculate(QString)));
-    connect(this,SIGNAL(UpdateMarginSettingParameter(QString)),mysql,SLOT(UpdateMarginSettingParameter(QString)));
-    connect(this,SIGNAL(getMarginUpdate()),mysql,SLOT(updateMargin()));
+    connect(this,SIGNAL(updateDisplayInfoSetting(QString)),mysql,SLOT(updateSettingInfo(QString)));
+
+//    connect(this,SIGNAL(parameterMarginA(QString)),mysql,SLOT(configParemeterMarginA(QString)));
+//    connect(this,SIGNAL(parameterMarginB(QString)),mysql,SLOT(configParemeterMarginB(QString)));
+//    connect(this,SIGNAL(parameterMarginC(QString)),mysql,SLOT(configParemeterMarginC(QString)));
+//    connect(this,SIGNAL(UpdateMarginSettingParameter(QString)),mysql,SLOT(UpdateMarginSettingParameter(QString)));
+//    connect(this,SIGNAL(updataListOfMarginA(QString)),mysql,SLOT(updataListOfMarginA(QString)));
+//    connect(this,SIGNAL(updataListOfMarginB(QString)),mysql,SLOT(updataListOfMarginB(QString)));
+//    connect(this,SIGNAL(updataListOfMarginC(QString)),mysql,SLOT(updataListOfMarginC(QString)));
+
+    connect(mysql,SIGNAL(sendUpdatedMarginList(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(UpdatepreiodicInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(mysql,SIGNAL(sendMarginUpdate(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(mysql,SIGNAL(SetNetworkSNMP(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-    connect(this,SIGNAL(updateDisplayInfoSetting(QString)),mysql,SLOT(updateSettingInfo(QString)));
-    connect(this,SIGNAL(updataListOfMarginA(QString)),mysql,SLOT(updataListOfMarginA(QString)));
-    connect(this,SIGNAL(updataListOfMarginB(QString)),mysql,SLOT(updataListOfMarginB(QString)));
-    connect(this,SIGNAL(updataListOfMarginC(QString)),mysql,SLOT(updataListOfMarginC(QString)));
-    connect(mysql,SIGNAL(sendUpdatedMarginList(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
-
+    connect(mysql,SIGNAL(updateDisplaySetting(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(cursorPosition(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(showtaggingpoint(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updatanewdistance(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(positionCursorChange(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql, SIGNAL(cmdmsg(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
+    connect(mysql, SIGNAL(updateTableDisplay(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
+    connect(mysql, SIGNAL(eventmsg(QString)), SocketServer, SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(deletedmydatabase(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updatedataTableA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updatedataTableB(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updatedataTableC(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(mysql,SIGNAL(updataEditDataA(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 //------------------------------show information on Gerneral and graph ----------------------------------//displaysetting
     connect(mysql,SIGNAL(SetNetworkSNMP(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
     connect(mysql,SIGNAL(UpdateSettingInfo(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
@@ -102,7 +102,7 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
 //------------------------------client command to Display----------------------------------//displaysetting
     connect(client,SIGNAL(newCommandProcess(QString)),this,SLOT(ServerCommand(QString)));
     connect(client,SIGNAL(newCommandProcess(QString)),this,SLOT(cppSubmitTextFiled(QString)));
-//    connect(client,SIGNAL(newCommandProcess(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+    connect(client,SIGNAL(newCommandProcess(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 
 //------------------------------Send command to client----------------------------------//
     connect(this, SIGNAL(rawdataPlot(QString)),client, SLOT(sendMessage(QString)));
@@ -115,9 +115,16 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this,SIGNAL(updateWeekly(QString)),client,SLOT(sendMessage(QString)));
     connect(this,SIGNAL(updateTimer(QString)),client,SLOT(sendMessage(QString)));
     connect(this, SIGNAL(updateRelay(QString)),client,SLOT(sendMessage(QString)));
+    connect(this, SIGNAL(SettingAndUpdateMargin(QString)),client,SLOT(sendMessage(QString)));
+    connect(this, SIGNAL(parameterMarginA(QString)),client,SLOT(sendMessage(QString)));
+    connect(this, SIGNAL(parameterMarginB(QString)),client,SLOT(sendMessage(QString)));
+    connect(this, SIGNAL(parameterMarginC(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(updataListOfMarginA(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(updataListOfMarginB(QString)),client,SLOT(sendMessage(QString)));
+    connect(this,SIGNAL(updataListOfMarginC(QString)),client,SLOT(sendMessage(QString)));
 
 
-        serverAddress = "192.168.10.61";
+        serverAddress = "192.168.10.52";
         serverPort = 5520;
 //        qDebug() << "serverAddress:" << serverAddress << " serverPort:" << serverPort;
         client->createConnection(serverAddress,serverPort);
@@ -204,7 +211,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     QString getCommand2 =  QJsonValue(command["objectNames"]).toString();
     QString getEventAndAlert =  QJsonValue(command["TrapsAlert"]).toString();
     QJsonDocument doc = QJsonDocument::fromJson(qmlJson.toUtf8());
-    qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
+    qDebug() << "cppSubmitTextFiled:" << qmlJson;
 
     if(qmlJson == "testRawData"){
         rawdataPlot("testRawData");
@@ -429,207 +436,220 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         qDebug() << "Debug editDataPhaseA:" << EditDatalist << phase << checkedStates;
         emit getEditDatafromMySQLA(EditDatalist);
     }else if (getCommand.contains("marginCountA") || getCommand.contains("valueMarginVoltageA")) {
-        int marginA = QJsonValue(command["valueMarginA"]).toInt();
-        int valueVoltageA = QJsonValue(command["valueVoltageA"]).toInt();
-        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
-        int listmarginA = QJsonValue(command["listMarginA"]).toInt();
-        QString phase = QJsonValue(command["PHASE"]).toString();
-        qDebug() << "marginA:" << marginA << listmarginA << valueVoltageA << focusIndex << phase;
-        if (getCommand.contains("marginCountA") && !getCommand.contains("valueMarginVoltageA")) {
-            thelistNumOfMarginA = marginA;
-            qDebug() << "Updated thelistNumOfMargin to:" << thelistNumOfMarginA;
-        } else if (getCommand.contains("valueMarginVoltageA")) {
-            qDebug() << "Received valueMarginVoltageA, skipping marginA update.";
-        }
+        SettingAndUpdateMargin(qmlJson);
+//        int marginA = QJsonValue(command["valueMarginA"]).toInt();
+//        int valueVoltageA = QJsonValue(command["valueVoltageA"]).toInt();
+//        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
+//        int listmarginA = QJsonValue(command["listMarginA"]).toInt();
+//        QString phase = QJsonValue(command["PHASE"]).toString();
+//        qDebug() << "marginA:" << marginA << listmarginA << valueVoltageA << focusIndex << phase;
+//        if (getCommand.contains("marginCountA") && !getCommand.contains("valueMarginVoltageA")) {
+//            thelistNumOfMarginA = marginA;
+//            qDebug() << "Updated thelistNumOfMargin to:" << thelistNumOfMarginA;
+//        } else if (getCommand.contains("valueMarginVoltageA")) {
+//            qDebug() << "Received valueMarginVoltageA, skipping marginA update.";
+//        }
 
-        if ((valueVoltageA != 0)&&(marginA != 0)){
-            QString combinedData = QString("{"
-                                            "\"objectName\":\"combinedDataPhaseA\","
-                                            "\"marginA\":%1,"
-                                            "\"valueVoltageA\":%2,"
-                                            "\"focusIndex\":%3,"
-                                            "\"PHASE\":\"%4\""
-                                            "}").arg(thelistNumOfMarginA).arg(valueVoltageA).arg(focusIndex).arg(phase);
-
-            qDebug() << "Combined Data for Phase A:" << combinedData;
-
-            RecalculateWithMargin(combinedData);
-            emit UpdateMarginSettingParameter(combinedData);
-            emit updataListOfMarginA(combinedData);
-        }else if(marginA != 0){
+//        if ((valueVoltageA != 0)&&(marginA != 0)){
 //            QString combinedData = QString("{"
 //                                            "\"objectName\":\"combinedDataPhaseA\","
 //                                            "\"marginA\":%1,"
+//                                            "\"valueVoltageA\":%2,"
+//                                            "\"focusIndex\":%3,"
 //                                            "\"PHASE\":\"%4\""
-//                                            "}").arg(thelistNumOfMarginA).arg(phase);
+//                                            "}").arg(thelistNumOfMarginA).arg(valueVoltageA).arg(focusIndex).arg(phase);
 
-//            qDebug() << "Margin for Phase A:" << combinedData;
+//            qDebug() << "Combined Data for Phase A:" << combinedData;
 
-//            emit UpdateMarginSettingParameter(combinedData);
-        } else if(marginA == 0){
-            marginA = listmarginA;
-            QString combinedData = QString("{"
-                                            "\"objectName\":\"combinedDataPhaseA\","
-                                            "\"marginA\":%1,"
-                                            "\"valueVoltageA\":%2,"
-                                            "\"focusIndex\":%3,"
-                                            "\"PHASE\":\"%4\""
-                                            "}").arg(marginA).arg(valueVoltageA).arg(focusIndex).arg(phase);
+////            RecalculateWithMargin(combinedData);
+////            emit UpdateMarginSettingParameter(combinedData);
+////            emit updataListOfMarginA(combinedData);
+//        }else if(marginA != 0){
+////            QString combinedData = QString("{"
+////                                            "\"objectName\":\"combinedDataPhaseA\","
+////                                            "\"marginA\":%1,"
+////                                            "\"PHASE\":\"%4\""
+////                                            "}").arg(thelistNumOfMarginA).arg(phase);
 
-            qDebug() << "new value of marginA:" << combinedData << marginA << listmarginA;
+////            qDebug() << "Margin for Phase A:" << combinedData;
 
-            RecalculateWithMargin(combinedData);
-            emit UpdateMarginSettingParameter(combinedData);
-            emit updataListOfMarginA(combinedData);
-        }else{
-            qDebug() << "valueVoltageA is not greater than 0. Skipping RecalculateWithMargin.";
+////            emit UpdateMarginSettingParameter(combinedData);
+//        } else if(marginA == 0){
+//            marginA = listmarginA;
+//            QString combinedData = QString("{"
+//                                            "\"objectName\":\"combinedDataPhaseA\","
+//                                            "\"marginA\":%1,"
+//                                            "\"valueVoltageA\":%2,"
+//                                            "\"focusIndex\":%3,"
+//                                            "\"PHASE\":\"%4\""
+//                                            "}").arg(marginA).arg(valueVoltageA).arg(focusIndex).arg(phase);
 
-        }
-            QString parameterA = QString("{"
-                                      "\"objectName\":\"marginCountA\","
-                                      "\"marginA\":%1,"
-                                      "\"PHASE\":\"%2\""
-                                      "}").arg(marginA).arg(phase);
+//            qDebug() << "new value of marginA:" << combinedData << marginA << listmarginA;
 
-        qDebug() << "Debug marginCountA:" << marginA << phase;
-        emit parameterMarginA(parameterA);
+////            RecalculateWithMargin(combinedData);
+////            emit UpdateMarginSettingParameter(combinedData);
+////            emit updataListOfMarginA(combinedData);
+//            SettingAndUpdateMargin(combinedData);
+
+//        }else{
+//            qDebug() << "valueVoltageA is not greater than 0. Skipping RecalculateWithMargin.";
+
+//        }
+//            QString parameterA = QString("{"
+//                                      "\"objectName\":\"marginCountA\","
+//                                      "\"marginA\":%1,"
+//                                      "\"PHASE\":\"%2\""
+//                                      "}").arg(marginA).arg(phase);
+
+//        qDebug() << "Debug marginCountA:" << marginA << phase;
+//        emit parameterMarginA(parameterA);
     }else if (getCommand.contains("marginCountB") || getCommand.contains("valueMarginVoltageB")) {
-        int marginB = QJsonValue(command["valueMarginB"]).toInt();
-        int valueVoltageB = QJsonValue(command["valueVoltageB"]).toInt();
-        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
-        int listmarginB = QJsonValue(command["listMarginB"]).toInt();
-        QString phase = QJsonValue(command["PHASE"]).toString();
+        SettingAndUpdateMargin(qmlJson);
 
-        qDebug() << "marginB:" << marginB << listmarginB << valueVoltageB << focusIndex << phase;
+//        int marginB = QJsonValue(command["valueMarginB"]).toInt();
+//        int valueVoltageB = QJsonValue(command["valueVoltageB"]).toInt();
+//        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
+//        int listmarginB = QJsonValue(command["listMarginB"]).toInt();
+//        QString phase = QJsonValue(command["PHASE"]).toString();
 
-        if (getCommand.contains("marginCountB") && !getCommand.contains("valueMarginVoltageB")) {
-            thelistNumOfMarginB = marginB;
-            qDebug() << "Updated thelistNumOfMarginB to:" << thelistNumOfMarginB;
-        } else if (getCommand.contains("valueMarginVoltageB")) {
-            qDebug() << "Received valueMarginVoltageB, skipping marginB update.";
-        }
+//        qDebug() << "marginB:" << marginB << listmarginB << valueVoltageB << focusIndex << phase;
 
-        if ((valueVoltageB != 0) && (marginB != 0)) {
-            QString combinedData = QString("{"
-                                           "\"objectName\":\"combinedDataPhaseB\","
-                                           "\"marginB\":%1,"
-                                           "\"valueVoltageB\":%2,"
-                                           "\"focusIndex\":%3,"
-                                           "\"PHASE\":\"%4\""
-                                           "}").arg(thelistNumOfMarginB).arg(valueVoltageB).arg(focusIndex).arg(phase);
+//        if (getCommand.contains("marginCountB") && !getCommand.contains("valueMarginVoltageB")) {
+//            thelistNumOfMarginB = marginB;
+//            qDebug() << "Updated thelistNumOfMarginB to:" << thelistNumOfMarginB;
+//        } else if (getCommand.contains("valueMarginVoltageB")) {
+//            qDebug() << "Received valueMarginVoltageB, skipping marginB update.";
+//        }
 
-            qDebug() << "Combined Data for Phase B:" << combinedData;
-
-            RecalculateWithMargin(combinedData);
-            emit UpdateMarginSettingParameter(combinedData);
-            emit updataListOfMarginB(combinedData);
-        } else if (marginB != 0) {
+//        if ((valueVoltageB != 0) && (marginB != 0)) {
 //            QString combinedData = QString("{"
 //                                           "\"objectName\":\"combinedDataPhaseB\","
 //                                           "\"marginB\":%1,"
-//                                           "\"PHASE\":\"%2\""
-//                                           "}").arg(thelistNumOfMarginB).arg(phase);
+//                                           "\"valueVoltageB\":%2,"
+//                                           "\"focusIndex\":%3,"
+//                                           "\"PHASE\":\"%4\""
+//                                           "}").arg(thelistNumOfMarginB).arg(valueVoltageB).arg(focusIndex).arg(phase);
 
 //            qDebug() << "Combined Data for Phase B:" << combinedData;
 
-//            emit UpdateMarginSettingParameter(combinedData);
-        } else if (marginB == 0) {
-            marginB = listmarginB;
-            QString combinedData = QString("{"
-                                           "\"objectName\":\"combinedDataPhaseB\","
-                                           "\"marginB\":%1,"
-                                           "\"valueVoltageB\":%2,"
-                                           "\"focusIndex\":%3,"
-                                           "\"PHASE\":\"%4\""
-                                           "}").arg(marginB).arg(valueVoltageB).arg(focusIndex).arg(phase);
+////            RecalculateWithMargin(combinedData);
+////            emit UpdateMarginSettingParameter(combinedData);
+////            emit updataListOfMarginB(combinedData);
+//            SettingAndUpdateMargin(combinedData);
 
-            qDebug() << "New value of marginB:" << combinedData << marginB << listmarginB;
+//        } else if (marginB != 0) {
+////            QString combinedData = QString("{"
+////                                           "\"objectName\":\"combinedDataPhaseB\","
+////                                           "\"marginB\":%1,"
+////                                           "\"PHASE\":\"%2\""
+////                                           "}").arg(thelistNumOfMarginB).arg(phase);
 
-            RecalculateWithMargin(combinedData);
-            emit UpdateMarginSettingParameter(combinedData);
-            emit updataListOfMarginB(combinedData);
-        } else {
-            qDebug() << "valueVoltageB is not greater than 0. Skipping RecalculateWithMargin.";
-        }
+////            qDebug() << "Combined Data for Phase B:" << combinedData;
 
-        QString parameterB = QString("{"
-                                     "\"objectName\":\"marginCountB\","
-                                     "\"marginB\":%1,"
-                                     "\"PHASE\":\"%2\""
-                                     "}").arg(marginB).arg(phase);
+////            emit UpdateMarginSettingParameter(combinedData);
+//        } else if (marginB == 0) {
+//            marginB = listmarginB;
+//            QString combinedData = QString("{"
+//                                           "\"objectName\":\"combinedDataPhaseB\","
+//                                           "\"marginB\":%1,"
+//                                           "\"valueVoltageB\":%2,"
+//                                           "\"focusIndex\":%3,"
+//                                           "\"PHASE\":\"%4\""
+//                                           "}").arg(marginB).arg(valueVoltageB).arg(focusIndex).arg(phase);
 
-        qDebug() << "Debug marginCountB:" << marginB << phase;
-        emit parameterMarginB(parameterB);
-    }
+//            qDebug() << "New value of marginB:" << combinedData << marginB << listmarginB;
 
-    // ✅ **Phase C - Created Based on Phase A and B**
-    else if (getCommand.contains("marginCountC") || getCommand.contains("valueMarginVoltageC")) {
-        int marginC = QJsonValue(command["valueMarginC"]).toInt();
-        int valueVoltageC = QJsonValue(command["valueVoltageC"]).toInt();
-        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
-        int listmarginC = QJsonValue(command["listMarginC"]).toInt();
-        QString phase = QJsonValue(command["PHASE"]).toString();
+////            RecalculateWithMargin(combinedData);
+////            emit UpdateMarginSettingParameter(combinedData);
+////            emit updataListOfMarginB(combinedData);
+//            SettingAndUpdateMargin(combinedData);
 
-        qDebug() << "marginC:" << marginC << listmarginC << valueVoltageC << focusIndex << phase;
+//        } else {
+//            qDebug() << "valueVoltageB is not greater than 0. Skipping RecalculateWithMargin.";
+//        }
 
-        if (getCommand.contains("marginCountC") && !getCommand.contains("valueMarginVoltageC")) {
-            thelistNumOfMarginC = marginC;
-            qDebug() << "Updated thelistNumOfMarginC to:" << thelistNumOfMarginC;
-        } else if (getCommand.contains("valueMarginVoltageC")) {
-            qDebug() << "Received valueMarginVoltageC, skipping marginC update.";
-        }
+//        QString parameterB = QString("{"
+//                                     "\"objectName\":\"marginCountB\","
+//                                     "\"marginB\":%1,"
+//                                     "\"PHASE\":\"%2\""
+//                                     "}").arg(marginB).arg(phase);
 
-        if ((valueVoltageC != 0) && (marginC != 0)) {
-            QString combinedData = QString("{"
-                                           "\"objectName\":\"combinedDataPhaseC\","
-                                           "\"marginC\":%1,"
-                                           "\"valueVoltageC\":%2,"
-                                           "\"focusIndex\":%3,"
-                                           "\"PHASE\":\"%4\""
-                                           "}").arg(thelistNumOfMarginC).arg(valueVoltageC).arg(focusIndex).arg(phase);
+//        qDebug() << "Debug marginCountB:" << marginB << phase;
+//        emit parameterMarginB(parameterB);
 
-            qDebug() << "Combined Data for Phase C:" << combinedData;
+    } else if (getCommand.contains("marginCountC") || getCommand.contains("valueMarginVoltageC")) {
+        SettingAndUpdateMargin(qmlJson);
 
-            RecalculateWithMargin(combinedData);
-            emit UpdateMarginSettingParameter(combinedData);
-            emit updataListOfMarginC(combinedData);
-        }  else if (marginC != 0) {
+//        int marginC = QJsonValue(command["valueMarginC"]).toInt();
+//        int valueVoltageC = QJsonValue(command["valueVoltageC"]).toInt();
+//        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
+//        int listmarginC = QJsonValue(command["listMarginC"]).toInt();
+//        QString phase = QJsonValue(command["PHASE"]).toString();
+
+//        qDebug() << "marginC:" << marginC << listmarginC << valueVoltageC << focusIndex << phase;
+
+//        if (getCommand.contains("marginCountC") && !getCommand.contains("valueMarginVoltageC")) {
+//            thelistNumOfMarginC = marginC;
+//            qDebug() << "Updated thelistNumOfMarginC to:" << thelistNumOfMarginC;
+//        } else if (getCommand.contains("valueMarginVoltageC")) {
+//            qDebug() << "Received valueMarginVoltageC, skipping marginC update.";
+//        }
+
+//        if ((valueVoltageC != 0) && (marginC != 0)) {
 //            QString combinedData = QString("{"
 //                                           "\"objectName\":\"combinedDataPhaseC\","
 //                                           "\"marginC\":%1,"
-//                                           "\"PHASE\":\"%2\""
-//                                           "}").arg(thelistNumOfMarginB).arg(phase);
+//                                           "\"valueVoltageC\":%2,"
+//                                           "\"focusIndex\":%3,"
+//                                           "\"PHASE\":\"%4\""
+//                                           "}").arg(thelistNumOfMarginC).arg(valueVoltageC).arg(focusIndex).arg(phase);
 
 //            qDebug() << "Combined Data for Phase C:" << combinedData;
 
-//            emit UpdateMarginSettingParameter(combinedData);
-        } else if (marginC == 0) {
-            marginC = listmarginC;
-            QString combinedData = QString("{"
-                                           "\"objectName\":\"combinedDataPhaseC\","
-                                           "\"marginC\":%1,"
-                                           "\"valueVoltageC\":%2,"
-                                           "\"focusIndex\":%3,"
-                                           "\"PHASE\":\"%4\""
-                                           "}").arg(marginC).arg(valueVoltageC).arg(focusIndex).arg(phase);
+////            RecalculateWithMargin(combinedData);
+////            emit UpdateMarginSettingParameter(combinedData);
+////            emit updataListOfMarginC(combinedData);
+//            SettingAndUpdateMargin(combinedData);
 
-            qDebug() << "New value of marginC:" << combinedData << marginC << listmarginC;
+//        }  else if (marginC != 0) {
+////            QString combinedData = QString("{"
+////                                           "\"objectName\":\"combinedDataPhaseC\","
+////                                           "\"marginC\":%1,"
+////                                           "\"PHASE\":\"%2\""
+////                                           "}").arg(thelistNumOfMarginB).arg(phase);
 
-            RecalculateWithMargin(combinedData);
-            emit UpdateMarginSettingParameter(combinedData);
-            emit updataListOfMarginC(combinedData);
-        } else {
-            qDebug() << "valueVoltageC is not greater than 0. Skipping RecalculateWithMargin.";
-        }
+////            qDebug() << "Combined Data for Phase C:" << combinedData;
 
-        QString parameterC = QString("{"
-                                     "\"objectName\":\"marginCountC\","
-                                     "\"marginC\":%1,"
-                                     "\"PHASE\":\"%2\""
-                                     "}").arg(marginC).arg(phase);
+////            emit UpdateMarginSettingParameter(combinedData);
+//        } else if (marginC == 0) {
+//            marginC = listmarginC;
+//            QString combinedData = QString("{"
+//                                           "\"objectName\":\"combinedDataPhaseC\","
+//                                           "\"marginC\":%1,"
+//                                           "\"valueVoltageC\":%2,"
+//                                           "\"focusIndex\":%3,"
+//                                           "\"PHASE\":\"%4\""
+//                                           "}").arg(marginC).arg(valueVoltageC).arg(focusIndex).arg(phase);
 
-        qDebug() << "Debug marginCountC:" << marginC << phase;
-        emit parameterMarginC(parameterC);
+//            qDebug() << "New value of marginC:" << combinedData << marginC << listmarginC;
+
+////            RecalculateWithMargin(combinedData);
+////            emit UpdateMarginSettingParameter(combinedData);
+////            emit updataListOfMarginC(combinedData);
+//            SettingAndUpdateMargin(combinedData);
+
+//        } else {
+//            qDebug() << "valueVoltageC is not greater than 0. Skipping RecalculateWithMargin.";
+//        }
+
+//        QString parameterC = QString("{"
+//                                     "\"objectName\":\"marginCountC\","
+//                                     "\"marginC\":%1,"
+//                                     "\"PHASE\":\"%2\""
+//                                     "}").arg(marginC).arg(phase);
+
+//        qDebug() << "Debug marginCountC:" << marginC << phase;
+//        emit parameterMarginC(parameterC);
     }else if (getCommand.contains("textPhaseA")) {
         int thresholdA = QJsonValue(command["thresholdA"]).toInt();
         QString phase = QJsonValue(command["PHASE"]).toString();
@@ -889,7 +909,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
                                      .arg(GateWsys);
 
         qDebug() << "settingNetwork:" << settingNetwork;
-         emit settingNetWorkandSNMP(settingNetwork);
+//         emit settingNetWorkandSNMP(settingNetwork);
     }else if (getCommand == "editSetSNMPServerIP") {
         QString snmpIP = command.value("editsSNMPServer").toString();
         qDebug() << "snmpIP:" << snmpIP;
@@ -1154,14 +1174,18 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "PatternTest"){
         int patternNum = command["patternNum"].toInt();
         cppPattern = "PatternTest";
-        patterntest(patternNum);
+        patterntest(patternNum);        
+    }else if(getCommand == "CLEAR_ALARM"){
+        cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingA"){
         qDebug() << "dataPlotingA:";
-//        cppCommand(qmlJson);
+        cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingB"){
-//        cppCommand(qmlJson);
+        qDebug() << "dataPlotingB:";
+        cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingC"){
-//        cppCommand(qmlJson);
+        qDebug() << "dataPlotingC:";
+        cppCommand(qmlJson);
     }else if(getCommand == "patternA"){
         qDebug() << "patternA:";
 //        cppCommand(qmlJson);
@@ -1210,108 +1234,433 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "statusOperate"){
         cppCommand(qmlJson);
     }else if(getCommand == "autoSetValueMarginA"){
-        qDebug()<< "AutoValue:" << qmlJson;
-        RecalculateWithMargin(qmlJson);
+        qDebug()<< "AutoValueA:" << qmlJson;
         emit updataListOfMarginA(qmlJson);
     }else if(getCommand == "autoSetValueMarginB"){
-        qDebug()<< "AutoValue:" << qmlJson;
-        RecalculateWithMargin(qmlJson);
+        qDebug()<< "AutoValueB:" << qmlJson;
         emit updataListOfMarginB(qmlJson);
     }else if(getCommand == "autoSetValueMarginC"){
-        qDebug()<< "AutoValue:" << qmlJson;
-        RecalculateWithMargin(qmlJson);
+        qDebug()<< "AutoValueC:" << qmlJson;
         emit updataListOfMarginC(qmlJson);
-    }else if(qmlJson == "updateValueMargin"){
+    }else if(getCommand == "updateValueMargin"){
         qDebug()<< "test_updateValueMargin:" << qmlJson;
         emit getMarginUpdate();
-    }else if(qmlJson == "MarginTableUpdated"){
+    }else if(getCommand == "MarginTableUpdated"){
+        qDebug()<< "MarginTableUpdated:" << qmlJson;
         cppCommand(qmlJson);
-    }else if(qmlJson == "marginlistCountA"){
+    }else if(getCommand == "marginlistCountA"){
+        qDebug()<< "marginlistCountA:" << qmlJson;
         cppCommand(qmlJson);
-    }else if(qmlJson == "marginlistCountB"){
+    }else if(getCommand == "marginlistCountB"){
+        qDebug()<< "marginlistCountB:" << qmlJson;
         cppCommand(qmlJson);
-    }else if(qmlJson == "marginlistCountC"){
+    }else if(getCommand == "marginlistCountC"){
+        qDebug()<< "marginlistCountC:" << qmlJson;
         cppCommand(qmlJson);
-    }else if(qmlJson == "updateParameterMargin"){
+    }else if(getCommand == "updateParameterMargin"){
+        qDebug()<< "updateParameterMargin:" << qmlJson;
         cppCommand(qmlJson);
-    }else if(getEventAndAlert == "PLC_DO_ERROR"){
-        qDebug()<< "getEventAndAlert PLC_DO_ERROR check cmd:" << qmlJson;
-        bool PLC_DO_ERROR = command.contains("PLC_DO_ERROR");
-        previousStates_DO = PLC_DO_ERROR;
+    }else if(getEventAndAlert == "PLC_DO_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
         if (command.contains("state") && command["state"].isBool()) {
             bool currentState = command["state"].toBool();
-            if(previousStates_DO == currentState){
-                qDebug()<< "There is a same state:" << currentState << previousStates_DO << PLC_DO_ERROR;
-            }else{
-                qDebug()<< "There is not a same state:" << currentState << previousStates_DO << PLC_DO_ERROR;
+            if (isFirstEvent_DO) {
+                qDebug() << "First event - Sending command...";
                 cppCommand(qmlJson);
+                previousStates_DO = currentState;
+                isFirstEvent_DO = false;
+                return;
+            }
+            if (currentState != previousStates_DO) {
+                qDebug() << "State changed - Sending command...";
+                cppCommand(qmlJson);
+                previousStates_DO = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "PLC_DI_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_DI) {
+                qDebug() << "First event - Sending command...";
+                cppCommand(qmlJson);
+                previousStates_DI = currentState;
+                isFirstEvent_DI = false;
+                return;
             }
 
+            if (currentState != previousStates_DI) {
+                qDebug() << "State changed - Sending command...";
+                cppCommand(qmlJson);
+                previousStates_DI = currentState;
+            } else {
+            }
+        } else {
+            qDebug() << "Missing or invalid 'state' field.";
         }
-    }else if(getEventAndAlert == "PLC_DI_ERROR"){
-        qDebug()<< "getEventAndAlert PLC_DI_ERROR check cmd:" << qmlJson;
-        bool PLC_DI_ERROR = command.contains("PLC_DI_ERROR");
+    }else if(getEventAndAlert == "INTERNAL_PHASE_A_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_A_ERROR) {
+                qDebug() << "First event - Sending command...";
+                cppCommand(qmlJson);
+                previousStates_PHASE_A_ERROR = currentState;
+                isFirstEvent_PHASE_A_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_PHASE_A_ERROR) {
+                qDebug() << "State changed - Sending command...";
+                cppCommand(qmlJson);
+                previousStates_PHASE_A_ERROR = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "INTERNAL_PHASE_B_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_B_ERROR) {
+                qDebug() << "First event - Sending command...";
+                cppCommand(qmlJson);
+                previousStates_PHASE_B_ERROR = currentState;
+                isFirstEvent_PHASE_B_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_PHASE_B_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_B_ERROR = currentState;
+            } else {
+            }
+        } else {
+            qDebug() << "Missing or invalid 'state' field.";
+        }
+    }else if(getEventAndAlert == "INTERNAL_PHASE_C_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_C_ERROR = currentState;
+                isFirstEvent_PHASE_C_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_C_ERROR = currentState;
+            } else {
+                qDebug() << "State unchanged - Ignoring.";
+            }
+        } else {
+            qDebug() << "Missing or invalid 'state' field.";
+        }
+    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_A_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_A_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_A_ERROR = currentState;
+                isFirstEvent_PHASE_A_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_PHASE_A_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_A_ERROR = currentState;
+            } else {
+            }
+        } else {
+            qDebug() << "Missing or invalid 'state' field.";
+        }
+    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_B_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_B_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_B_ERROR = currentState;
+                isFirstEvent_PHASE_B_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_PHASE_B_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_B_ERROR = currentState;
+            } else {
+                qDebug() << "State unchanged - Ignoring.";
+            }
+        } else {
+            qDebug() << "Missing or invalid 'state' field.";
+        }
+    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_C_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_C_ERROR = currentState;
+                isFirstEvent_PHASE_C_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_PHASE_C_ERROR = currentState;
+            } else {
+                qDebug() << "State unchanged - Ignoring.";
+            }
+        } else {
+            qDebug() << "Missing or invalid 'state' field.";
+        }
+    }else if(getEventAndAlert == "GPS_MODULE_FAIL") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_GPS_MODULE = currentState;
+                isFirstEvent_GPS_MODULE = false;
+                return;
+            }
+            if (currentState != previousStates_GPS_MODULE) {
+                cppCommand(qmlJson);
+                previousStates_GPS_MODULE = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "SYSTEM_INITIAL") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_SYSTEM_INITIAL = currentState;
+                isFirstEvent_SYSTEM_INITIAL = false;
+                return;
+            }
+            if (currentState != previousStates_SYSTEM_INITIAL) {
+                cppCommand(qmlJson);
+                previousStates_SYSTEM_INITIAL = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "COMMUNICATION_ERROR") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PHASE_C_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_COMMUNICATION_ERROR = currentState;
+                isFirstEvent_COMMUNICATION_ERROR = false;
+                return;
+            }
+            if (currentState != previousStates_COMMUNICATION_ERROR) {
+                cppCommand(qmlJson);
+                previousStates_COMMUNICATION_ERROR = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "RELAY_START_EVENT") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_RELAY_START_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_RELAY_START_EVENT = currentState;
+                isFirstEvent_RELAY_START_EVENT = false;
+                return;
+            }
+            if (currentState != previousStates_RELAY_START_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_RELAY_START_EVENT = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "SURGE_START_EVENT") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_SURGE_START_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_SURGE_START_EVENT = currentState;
+                isFirstEvent_SURGE_START_EVENT = false;
+                return;
+            }
+            if (currentState != previousStates_SURGE_START_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_SURGE_START_EVENT = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "PERIODIC_TEST_EVENT") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_PERIODIC_TEST_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_PERIODIC_TEST_EVENT = currentState;
+                isFirstEvent_PERIODIC_TEST_EVENT = false;
+                return;
+            }
+            if (currentState != previousStates_PERIODIC_TEST_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_PERIODIC_TEST_EVENT = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "MANUAL_TEST_EVENT") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
 
-    }else if(getEventAndAlert == "INTERNAL_PHASE_A_ERROR"){
-        qDebug()<< "getEventAndAlert INTERNAL_PHASE_A_ERROR check cmd:" << qmlJson;
-        bool INTERNAL_PHASE_A_ERROR = command.contains("INTERNAL_PHASE_A_ERROR");
+            if (isFirstEvent_MANUAL_TEST_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_MANUAL_TEST_EVENT = currentState;
+                isFirstEvent_MANUAL_TEST_EVENT = false;
+                return;
+            }
 
-    }else if(getEventAndAlert == "INTERNAL_PHASE_B_ERROR"){
-        qDebug()<< "getEventAndAlert INTERNAL_PHASE_B_ERROR check cmd:" << qmlJson;
-        bool INTERNAL_PHASE_B_ERROR = command.contains("INTERNAL_PHASE_B_ERROR");
-
-    }else if(getEventAndAlert == "INTERNAL_PHASE_C_ERROR"){
-        qDebug()<< "getEventAndAlert INTERNAL_PHASE_C_ERROR check cmd:" << qmlJson;
-        bool INTERNAL_PHASE_C_ERROR = command.contains("INTERNAL_PHASE_C_ERROR");
-
-    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_A_ERROR"){
-        qDebug()<< "getEventAndAlert MODULE_HI_SPEED_PHASE_A_ERROR check cmd:" << qmlJson;
-        bool MODULE_HI_SPEED_PHASE_A_ERROR = command.contains("MODULE_HI_SPEED_PHASE_A_ERROR");
-
-    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_B_ERROR"){
-        qDebug()<< "getEventAndAlert MODULE_HI_SPEED_PHASE_B_ERROR check cmd:" << qmlJson;
-        bool MODULE_HI_SPEED_PHASE_B_ERROR = command.contains("MODULE_HI_SPEED_PHASE_B_ERROR");
-
-    }else if(getEventAndAlert == "MODULE_HI_SPEED_PHASE_C_ERROR"){
-        qDebug()<< "getEventAndAlert MODULE_HI_SPEED_PHASE_C_ERROR check cmd:" << qmlJson;
-        bool MODULE_HI_SPEED_PHASE_C_ERROR = command.contains("MODULE_HI_SPEED_PHASE_C_ERROR");
-
-    }else if(getEventAndAlert == "GPS_MODULE_FAIL"){
-        qDebug()<< "getEventAndAlert GPS_MODULE_FAIL check cmd:" << qmlJson;
-        bool GPS_MODULE_FAIL = command.contains("GPS_MODULE_FAIL");
-
-    }else if(getEventAndAlert == "SYSTEM_INITIAL"){
-        qDebug()<< "getEventAndAlert SYSTEM_INITIAL check cmd:" << qmlJson;
-        bool SYSTEM_INITIAL = command.contains("SYSTEM_INITIAL");
-
-    }else if(getEventAndAlert == "COMMUNICATION_ERROR"){
-        qDebug()<< "getEventAndAlert COMMUNICATION_ERROR check cmd:" << qmlJson;
-        bool COMMUNICATION_ERROR = command.contains("COMMUNICATION_ERROR");
-
-    }else if(getEventAndAlert == "RELAY_START_EVENT"){
-        qDebug()<< "getEventAndAlert RELAY_START_EVENT check cmd:" << qmlJson;
-        bool RELAY_START_EVENT = command.contains("RELAY_START_EVENT");
-
-    }else if(getEventAndAlert == "SURGE_START_EVENT"){
-        qDebug()<< "getEventAndAlert SURGE_START_EVENT check cmd:" << qmlJson;
-        bool SURGE_START_EVENT = command.contains("SURGE_START_EVENT");
-
-    }else if(getEventAndAlert == "PERIODIC_TEST_EVENT"){
-        qDebug()<< "getEventAndAlert PERIODIC_TEST_EVENT check cmd:" << qmlJson;
-        bool PERIODIC_TEST_EVENT = command.contains("PERIODIC_TEST_EVENT");
-
-    }else if(getEventAndAlert == "MANUAL_TEST_EVENT"){
-        qDebug()<< "getEventAndAlert MANUAL_TEST_EVENT check cmd:" << qmlJson;
-        bool MANUAL_TEST_EVENT = command.contains("MANUAL_TEST_EVENT");
-
-    }else if(getEventAndAlert == "LFL_FAIL"){
-        qDebug()<< "getEventAndAlert LFL_FAIL check cmd:" << qmlJson;
-        bool LFL_FAIL = command.contains("LFL_FAIL");
-
-    }else if(getEventAndAlert == "LEL_OPERATE"){
-        qDebug()<< "getEventAndAlert LEL_OPERATE check cmd:" << qmlJson;
-        bool LEL_OPERATE = command.contains("LEL_OPERATE");
-
+            if (currentState != previousStates_MANUAL_TEST_EVENT) {
+                cppCommand(qmlJson);
+                previousStates_MANUAL_TEST_EVENT = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "LFL_FAIL") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_LFL_FAIL) {
+                cppCommand(qmlJson);
+                previousStates_LFL_FAIL = currentState;
+                isFirstEvent_LFL_FAIL = false;
+                return;
+            }
+            if (currentState != previousStates_LFL_FAIL) {
+                cppCommand(qmlJson);
+                previousStates_LFL_FAIL = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getEventAndAlert == "LEL_OPERATE") {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(qmlJson.toUtf8());
+        if (!jsonDoc.isObject()) {
+            qDebug() << "Invalid JSON format.";
+            return;
+        }
+        QJsonObject command = jsonDoc.object();
+        if (command.contains("state") && command["state"].isBool()) {
+            bool currentState = command["state"].toBool();
+            if (isFirstEvent_LEL_OPERATE) {
+                cppCommand(qmlJson);
+                previousStates_LEL_OPERATE = currentState;
+                isFirstEvent_LEL_OPERATE = false;
+                return;
+            }
+            if (currentState != previousStates_LEL_OPERATE) {
+                cppCommand(qmlJson);
+                previousStates_LEL_OPERATE = currentState;
+            } else {
+            }
+        } else {
+        }
+    }else if(getCommand == "realDistanceA") {
+        qDebug() << "Check Data realDistanceA:" << qmlJson;
+        cppCommand(qmlJson);
+    }else if(getCommand == "realDistanceB") {
+        qDebug() << "Check Data realDistanceB:" << qmlJson;
+        cppCommand(qmlJson);
+    }else if(getCommand == "realDistanceC") {
+        qDebug() << "Check Data realDistanceC:" << qmlJson;
+        cppCommand(qmlJson);
     }
 
 }
@@ -1448,15 +1797,19 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
     const uint8_t* endPtr = ptr + data.size();
 
     while (ptr + 2 <= endPtr) {
-        uint16_t signedValue = static_cast<uint16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
-        float normalizedValue = static_cast<float>(signedValue) / 32768.0f;  // Convert to mV
+        uint16_t rawValue = static_cast<uint16_t>((static_cast<uint8_t>(ptr[1]) << 8) | static_cast<uint8_t>(ptr[0]));
+        float normalizedValue = static_cast<float>(rawValue) / 32768.0f;
+
+        // **Apply the condition: set to zero if negative or equals 0xE000**
+        if (rawValue == 0xE000 || normalizedValue < 0) {
+            normalizedValue = 0.0f;
+        }
+
         normalizedValues.push_back(normalizedValue);
         ptr += 2;
     }
 
-//    qDebug() << "Total samples read: " << normalizedValues.size();
-
-    const float threshold = thresholdInitA / 32768.0f;  // Convert to mV
+    const float threshold = thresholdInitA / 32768.0f;
     auto startIt = std::find_if(normalizedValues.begin(), normalizedValues.end(), [threshold](float val) {
         return val >= threshold;
     });
@@ -1466,43 +1819,32 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
         return;
     }
     int startIndex = std::distance(normalizedValues.begin(), startIt);
-//    qDebug() << "Starting index found at position:" << startIndex;
 
-    int resampling = samplingRateInit / (60 * sagFactorInit); // Resampling rate
-//    qDebug() << "Resampling rate:" << resampling;
-
+    int resampling = samplingRateInit / (60 * sagFactorInit);
     float totalDistance = (distanceToShowInit - distanceToStartInit) * 1000;
     int fullpoint = static_cast<int>(totalDistance / (60 * sagFactorInit));
-    int trueDistancepoint = fullpoint / resampling; // Points after resampling
+    int trueDistancepoint = fullpoint / resampling;
 
-//    qDebug() << "Full points:" << fullpoint;
-//    qDebug() << "True distance points after resampling:" << trueDistancepoint;
-
-    float pointInterval = totalDistance / trueDistancepoint; // Distance interval per point
-//    qDebug() << "Point interval (m):" << pointInterval;
+    float pointInterval = totalDistance / trueDistancepoint;
 
     std::vector<std::pair<float, float>> result;
-    float currentDistance = distanceToStartInit * 1000; // Start in meters
+    float currentDistance = distanceToStartInit * 1000;
 
     for (int i = 0; i < trueDistancepoint; ++i) {
         float currentValue = (i * resampling + startIndex < normalizedValues.size())
-                             ? normalizedValues[i * resampling + startIndex] * 4096/2  // Multiply by 4096 here
+                             ? normalizedValues[i * resampling + startIndex] * 4096 / 2
                              : 0.0f;
         result.emplace_back(currentDistance, currentValue);
         currentDistance += pointInterval;
     }
 
     qDebug() << "Final Total Points:" << result.size();
-    for (const auto& [distance, voltage] : result) {
-//        qDebug() << "X:" << distance / 1000.0 << " km, Y:" << voltage << " mV";
-    }
 
-    // JSON Output for Plotting
     QJsonObject mainObject;
     QJsonArray dist, volt;
     for (const auto& [distance, voltage] : result) {
-        dist.push_back(distance / 1000);  // Convert m to km
-        volt.push_back(voltage);  // Already multiplied by 4096
+        dist.push_back(distance / 1000);
+        volt.push_back(voltage);
     }
 
     mainObject.insert("objectName", "dataPlotingA");
@@ -1511,12 +1853,12 @@ void mainwindows::plotGraphA(double sagFactorInit, double samplingRateInit, doub
 
     QJsonDocument jsonDoc(mainObject);
     QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-//    qDebug() << "Generated JSON:" << raw_data;
 
     rawdataArrayA = raw_data;
     reSamplingNormalizationA(result);
 
 }
+
 void mainwindows::plotGraphB(double sagFactorInit, double samplingRateInit, double distanceToStartInit,
                             double distanceToShowInit, double fulldistance, double thresholdInitB) {
     qDebug() << "Debug plotGraph:" << sagFactorInit << samplingRateInit << distanceToStartInit
@@ -1775,43 +2117,6 @@ void mainwindows::reSamplingNormalizationA(const std::vector<std::pair<float, fl
     }
 
     qDebug() << "Smoothing completed. Total points for the curve:" << smoothCurve.size();
-//    // Step 4: Prepare JSON Output
-//    QJsonObject mainObject;
-//    QJsonArray dist, volt;
-
-//    double minVoltage = 0.0; // บังคับให้แกน Y เริ่มจาก 0
-//    double maxVoltage = 0.0;
-
-//    for (const auto& point : smoothCurve) {
-//        dist.push_back(point.first / 1000.0);  // Convert m to km
-//        volt.push_back(point.second);         // Voltage in mV
-
-//        // คำนวณค่าแรงดันไฟฟ้าสูงสุด
-//        if (point.second > maxVoltage) {
-//            maxVoltage = point.second;
-//        }
-//    }
-
-//    mainObject.insert("objectName", "dataPlotingA");
-//    mainObject.insert("distance", dist);
-//    mainObject.insert("voltage", volt);
-
-//    // กำหนดค่าแกน Y (เริ่มจาก 0 ถึงค่าแรงดันไฟฟ้าสูงสุด)
-//    mainObject.insert("minVoltage", minVoltage);  // แกน Y เริ่มจาก 0
-//    mainObject.insert("maxVoltage", maxVoltage); // แกน Y สูงสุดตามค่าที่คำนวณได้
-
-//    // สร้าง JSON และตรวจสอบว่ามีค่าที่ต้องการ
-//    QJsonDocument jsonDoc(mainObject);
-//    QString raw_data = jsonDoc.toJson(QJsonDocument::Compact);
-
-//    // Debug เพื่อยืนยัน JSON ที่จะถูกส่ง
-//    qDebug() << "Generated JSON:" << raw_data;
-
-//    // Emit the signal for the curve
-//    rawdataArrayA = std::move(raw_data);
-//    emit plotingDataPhaseA(rawdataArrayA);
-
-//    qDebug() << "Updated data sent for plotting with minVoltage:" << minVoltage << " maxVoltage:" << maxVoltage << rawdataArrayA;
 
     // Step 4: Prepare JSON Output
     QJsonObject mainObject;
@@ -2897,7 +3202,7 @@ void mainwindows::RecalculateWithMargin(QString msg) {
         }
 
         for (int i = 0; i < voltageArray.size(); ++i) {
-            voltageArray[i] += valueVoltageA; // 🔹 Apply voltage increase to ALL values
+            voltageArray[i] += valueVoltageA; // Apply voltage increase to ALL values
         }
 
         QJsonObject mainObject;

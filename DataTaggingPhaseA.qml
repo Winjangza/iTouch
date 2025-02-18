@@ -199,7 +199,6 @@ Item {
                 var dataTagging = '{"objectName":"getDistanceDetailA","Distance": ' + distanceValue + ',"Detail": "' + detailValue + '", "PHASE": "A"}';
                 console.log("getDistanceDetail:", dataTagging);
                 qmlCommand(dataTagging);
-
             }
         }
 

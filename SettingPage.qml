@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.15
 import QtWebSockets 1.0
 import QtQuick.Extras 1.4
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 
 Item {
     visible: true
@@ -56,6 +57,24 @@ Item {
                 anchors.fill: parent
             }
 
+        }
+        style: TabViewStyle {
+            tab: Rectangle {
+                implicitWidth: 252
+                implicitHeight: 65
+                color: styleData.selected ? "white" : "#d3d3d3"
+                border.color: "black"
+                radius: 5
+                Text {
+                    text: styleData.title
+                    anchors.centerIn: parent
+//                    font.bold: true
+                    font.pixelSize: 20
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: styleData.selected ? "black" : "#555"
+                }
+            }
         }
     }
 
@@ -126,3 +145,9 @@ Item {
 //}
 
 
+
+/*##^##
+Designer {
+    D{i:0;formeditorZoom:1.33}
+}
+##^##*/

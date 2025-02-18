@@ -73,11 +73,10 @@ Item {
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
-
                     onClicked: {
                         console.log("Pattern Test Clicked. Sending DAC Level:", patternLevel);
                         var pattern = `{"objectName":"PatternTest", "patternNum": ${patternLevel}}`;
-                        qmlCommand(pattern); // ส่งค่า buffer ไปกับ PatternTest
+                        qmlCommand(pattern);
                     }
                 }
             }
@@ -123,24 +122,22 @@ Item {
                     smooth: true
 
                     Text {
-                        id: text1
-                        x: 0
-                        y: 0
-                        width: 71
-                        height: 50
-                        anchors.fill: parent
                         text: qsTr("CLEAR \n ALARM")
+                        anchors.centerIn: parent
                         font.pixelSize: 12
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
                 onClicked: {
-                    console.log("CLEAR ALARM")
-                    var pattern = '{"objectName":"ClearAlarm"}';
-                    qmlCommand(pattern);
+                    console.log("CLEAR ALARM button clicked");
+                    clearAlarmLog();
+//                    clearAlarmEventLog();
+//                    var pattern = '{"objectName":"CLEAR_ALARM"}';
+//                    qmlCommand(pattern);
                 }
             }
+
 
             ToolButton {
                 id: cleardisplay
@@ -219,7 +216,7 @@ Item {
             x: 128
             y: 27
             width: 233
-            height: 84
+            height: 94
 
             RowLayout {
 
@@ -355,7 +352,8 @@ Item {
                 Layout.preferredWidth: 280
 
                 // ตัวแปรเก็บค่า DAC Level
-                property int patternLevel: 1  // ค่าเริ่มต้น
+                property int patternLevel: 1
+                height: 30  // ค่าเริ่มต้น
 
                 Slider {
                     id: sliderDACLevels
@@ -384,11 +382,11 @@ Item {
                     y: 16
                     anchors.fill: parent
                     anchors.bottomMargin: 0
-                    anchors.topMargin: 0
-                    anchors.rightMargin: 0
+                    anchors.topMargin: -8
+                    anchors.rightMargin: -7
                     anchors.leftMargin: 131
                     value: patternLevel // ใช้ค่า buffer
-                    to: 30
+                    to: 20
                     from: 1
                     layer.textureMirroring: ShaderEffectSource.MirrorVertically
                     rotation: 0
@@ -409,6 +407,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.75}
+    D{i:0;formeditorZoom:10}
 }
 ##^##*/
