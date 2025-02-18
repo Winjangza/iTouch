@@ -501,13 +501,13 @@ Window {
             arrRawB = JsonObject.dataPlotingB || [];
             distanceRawB = JsonObject.distance;
             voltageRawB = JsonObject.voltage;
-            console.log("Debug_RawdataB:", message , arrRawB, distanceRawB, voltageRawB);
+            console.log("Debug_RawdataA_dataPlotingB:", message , arrRawB, distanceRawB, voltageRawB);
         } else if (objectName === 'dataPlotingC') {
             console.log("RawdataC:", message);
             arrRawC = JsonObject.dataPlotingC || [];
             distanceRawC = JsonObject.distance;
             voltageRawC = JsonObject.voltage;
-            console.log("Debug_RawdataC:", message , arrRawC, distanceRawC, voltageRawC);
+            console.log("Debug_RawdataA_dataPlotingC:", message , arrRawC, distanceRawC, voltageRawC);
         }else if (objectName === 'patternA') {
             console.log("patthernA_check_debug:", message);
             var arrA = JsonObject.data || [];           
@@ -692,7 +692,7 @@ Window {
         var filename = JsonObject.filename;
         var event_datetime = JsonObject.event_datetime;
         var category_name = JsonObject.category_name;
-        if (category_name === "Pattern"){
+        if (category_name === "Manual"){ //Pattern
             console.log("datastorage Pattern");
             patternDataStorage.append({
                                     "filename": filename,

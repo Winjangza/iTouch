@@ -127,7 +127,7 @@ Item {
                         if (selectedFilename !== "" && selectedEventDatetime !== "") {
                             var ButtonpatternData = JSON.stringify({
                                 objectName: "ButtonPattern",
-                                category : "Pattern",
+                                category : "Manual",
                                 Onclicked: toolButtonNew.text,
                                 filename: selectedFilename,
                                 event_datetime: selectedEventDatetime
@@ -177,7 +177,7 @@ Item {
                         if (selectedFilename !== "" && selectedEventDatetime !== "") {
                             var ButtonpatternData = JSON.stringify({
                                 objectName: "ButtonPattern",
-                                category : "Pattern",
+                                category : "Manual",
                                 Onclicked: toolButtonOpen.text,
                                 filename: selectedFilename,
                                 event_datetime: selectedEventDatetime
@@ -216,7 +216,7 @@ Item {
                         if (selectedFilename !== "" && selectedEventDatetime !== "") {
                             var ButtonpatternData = JSON.stringify({
                                 objectName: "ButtonPattern",
-                                category : "Pattern",
+                                category : "Manual",
                                 Onclicked: toolButtonSave.text,
                                 filename: selectedFilename,
                                 event_datetime: selectedEventDatetime
@@ -255,7 +255,7 @@ Item {
                         if (selectedFilename !== "" && selectedEventDatetime !== "") {
                             var ButtonpatternData = JSON.stringify({
                                 objectName: "ButtonPattern",
-                                category : "Pattern",
+                                category : "Manual",
                                 Onclicked: toolButtonDelete.text,
                                 filename: selectedFilename,
                                 event_datetime: selectedEventDatetime

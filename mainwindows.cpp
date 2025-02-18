@@ -1253,19 +1253,23 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         patterntest(patternNum);
     }else if(getCommand == "dataPlotingA"){
         qDebug() << "dataPlotingA:";
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingB"){
-//        cppCommand(qmlJson);
+        qDebug() << "dataPlotingB:";
+
+       cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingC"){
-//        cppCommand(qmlJson);
+        qDebug() << "dataPlotingC:";
+
+       cppCommand(qmlJson);
     }else if(getCommand == "patternA"){
         qDebug() << "patternA:";
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "patternB"){
 //        qDebug() << "patternB:";
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "patternC"){
-//        cppCommand(qmlJson);
+       cppCommand(qmlJson);
     }else if(getCommand == "spinBoxDisplay"){
         int levelofligth = command["displayLight"].toInt();
         qDebug() << "levelofligth:" << levelofligth;

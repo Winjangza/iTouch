@@ -61,7 +61,7 @@ Item {
                     if (nameFile.length > 0) {
                         var NameSearch = JSON.stringify({
                                                             "objectName": "SearchName",
-                                                            "categories":"Pattern",
+                                                            "categories":"Manual",
                                                             "text": nameFile
                                                         });
 
@@ -101,7 +101,7 @@ Item {
                     if (nameFile.length > 0) {
                         var NameSearch = JSON.stringify({
                                                             "objectName":"SearchDate",
-                                                            "categories":"Pattern",
+                                                            "categories":"Manual",
                                                             "text": nameFile
                                                         });
 
@@ -148,7 +148,7 @@ Item {
                             isAscending = !isAscending;
                             console.log("Sorting by FILENAME:", isAscending ? "Ascending" : "Descending");
                             // sortPatternData("filename", isAscending);
-                            var getNamePasttern = '{"objectName":"sortnamePattern", "Sort":'+isAscending+' , "categories":"Pattern"}';
+                            var getNamePasttern = '{"objectName":"sortnamePattern", "Sort":'+isAscending+' , "categories":"Manual"}';
                             qmlCommand(getNamePasttern);
                             clearDatapattern();
                         }
@@ -159,7 +159,8 @@ Item {
                         property bool isAscending: false
                         text: isAscending ? "▲ EVENT DATE" : "▼ EVENT DATE"
                         font.pixelSize: 18
-                        Layout.leftMargin: 100
+                        Layout.rightMargin: 0
+                        Layout.leftMargin: 180
                         Layout.preferredWidth: -1
                         Layout.fillHeight: false
                         Layout.fillWidth: false
@@ -170,7 +171,7 @@ Item {
                             isAscending = !isAscending;
                             console.log("Sorting by EVENT DATE:", isAscending ? "Ascending" : "Descending");
                             // sortPatternData("event_datetime", isAscending);
-                            var getDatePasttern =  '{"objectName":"sortdatePattern", "Sort":'+isAscending+' , "categories":"Pattern"}';
+                            var getDatePasttern =  '{"objectName":"sortdatePattern", "Sort":'+isAscending+' , "categories":"Manual"}';
                             qmlCommand(getDatePasttern);
                             clearDatapattern();
                         }
@@ -188,7 +189,7 @@ Item {
 
                     TableViewColumn {
                         role: "filename"
-                        width: 230
+                        width: 300
 
                     }
 
