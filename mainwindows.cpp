@@ -124,9 +124,7 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this,SIGNAL(updataListOfMarginC(QString)),client,SLOT(sendMessage(QString)));
 
 
-<<<<<<< HEAD
-        serverAddress = "192.168.10.52";
-=======
+
     //------------------------------Send command to client----------------------------------//
     connect(this, SIGNAL(rawdataPlot(QString)),client, SLOT(sendMessage(QString)));
     connect(this,SIGNAL(clearPatternGraph(QString)),client, SLOT(sendMessage(QString)));
@@ -145,7 +143,6 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     // connect(this,SIGNAL(sendMessage(QString)),client,SLOT(sendMessage(QString)));
 
         serverAddress = "192.168.10.51";
->>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
         serverPort = 5520;
 //        qDebug() << "serverAddress:" << serverAddress << " serverPort:" << serverPort;
         client->createConnection(serverAddress,serverPort);
@@ -232,11 +229,8 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     QString getCommand2 =  QJsonValue(command["objectNames"]).toString();
     QString getEventAndAlert =  QJsonValue(command["TrapsAlert"]).toString();
     QJsonDocument doc = QJsonDocument::fromJson(qmlJson.toUtf8());
-<<<<<<< HEAD
     qDebug() << "cppSubmitTextFiled:" << qmlJson;
-=======
     // qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
->>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
 
     if(qmlJson == "testRawData"){
         rawdataPlot("testRawData");
@@ -1283,7 +1277,6 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingA"){
         qDebug() << "dataPlotingA:";
-<<<<<<< HEAD
         cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingB"){
         qDebug() << "dataPlotingB:";
@@ -1291,17 +1284,13 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "dataPlotingC"){
         qDebug() << "dataPlotingC:";
         cppCommand(qmlJson);
-=======
-       cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingB"){
         qDebug() << "dataPlotingB:";
 
        cppCommand(qmlJson);
     }else if(getCommand == "dataPlotingC"){
         qDebug() << "dataPlotingC:";
-
        cppCommand(qmlJson);
->>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
     }else if(getCommand == "patternA"){
         qDebug() << "patternA:";
        cppCommand(qmlJson);

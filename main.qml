@@ -267,8 +267,6 @@ Window {
         property bool statusEventandAlram
     }
 
-<<<<<<< HEAD
-=======
     ListModel {
         id: patternDataStorage
         property string  event_datetime: ""
@@ -292,7 +290,6 @@ Window {
 
 
 
->>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
     //         property string globalPhaseA: ""
     //         property bool globalStatusA: false
     //         property int globalTempNumA: 0
@@ -511,23 +508,13 @@ Window {
             arrRawB = JsonObject.dataPlotingB || [];
             distanceRawB = JsonObject.distance;
             voltageRawB = JsonObject.voltage;
-<<<<<<< HEAD
-            console.log("Debug_RawdataB:", message , arrRawB, distanceRawB, voltageRawB);
-            onPlotdataBChanged();
-=======
             console.log("Debug_RawdataA_dataPlotingB:", message , arrRawB, distanceRawB, voltageRawB);
->>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
         } else if (objectName === 'dataPlotingC') {
             console.log("RawdataC:", message);
             arrRawC = JsonObject.dataPlotingC || [];
             distanceRawC = JsonObject.distance;
             voltageRawC = JsonObject.voltage;
-<<<<<<< HEAD
-            console.log("Debug_RawdataC:", message , arrRawC, distanceRawC, voltageRawC);
-            onPlotdataCChanged();
-=======
             console.log("Debug_RawdataA_dataPlotingC:", message , arrRawC, distanceRawC, voltageRawC);
->>>>>>> 66920cd1f75da6a70642d264c64958bc09f89ab8
         }else if (objectName === 'patternA') {
             console.log("patthernA_check_debug:", message);
             var arrA = JsonObject.data || [];
