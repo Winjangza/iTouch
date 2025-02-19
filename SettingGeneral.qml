@@ -586,44 +586,54 @@ Item {
 
             Rectangle {
                 id: checklflfail
-                color: isActive ? "#00FF00" : "#f2f2f2"
+                color: checklflfail.isActive ? "#00FF00" : "#f2f2f2"
                 radius: 5
                 border.color: "#b7b7b7"
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: lflFail
+                property bool isActive: false // ✅ กำหนดค่าเริ่มต้นให้แน่ใจว่ามีค่า
+                property bool lflFail: false  // ✅ ตรวจสอบค่าเริ่มต้น
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        checklflfail.isActive = !checklflfail.isActive
-//                        checkoperate.isActive = false
-//                        checkAct = true
-                        var CheckStatusFail = '{"objectName":"statusFail","LFLFAIL":'+checklflfail.isActive+'}'
-                        qmlCommand(CheckStatusFail)
+                        console.log("🔄 Before Click | isActive:", checklflfail.isActive, "| lflFail:", lflFail);
+
+                        checklflfail.isActive = !checklflfail.isActive;
+                        lflFail = checklflfail.isActive; // ✅ อัปเดต lflFail ด้วย
+
+                        console.log("✅ After Click | isActive:", checklflfail.isActive, "| lflFail:", lflFail);
+
+                        var CheckStatusFail = '{"objectName":"statusFail","LFLFAIL":'+checklflfail.isActive+'}';
+                        qmlCommand(CheckStatusFail);
                     }
                 }
             }
 
             Rectangle {
                 id: checkoperate
-                color: isActive ? "#00FF00" : "#f2f2f2"
+                color: checkoperate.isActive ? "#00FF00" : "#f2f2f2"
                 radius: 5
                 border.color: "#a6a6a6"
                 border.width: 1
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 40
-                property bool isActive: lflOperate
+                property bool isActive: false // ✅ กำหนดค่าเริ่มต้นให้แน่ใจว่ามีค่า
+                property bool lflOperate: false  // ✅ ตรวจสอบค่าเริ่มต้น
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        checkoperate.isActive = !checkoperate.isActive
-//                        checklflfail.isActive = false
-//                        checkAct = false
-                        var CheckStatusOperate = '{"objectName":"statusOperate","LFLOPERATE":'+checkoperate.isActive+'}'
-                        qmlCommand(CheckStatusOperate)
+                        console.log("🔄 Before Click | isActive:", checkoperate.isActive, "| lflOperate:", lflOperate);
+
+                        checkoperate.isActive = !checkoperate.isActive;
+                        lflOperate = checkoperate.isActive; // ✅ อัปเดต lflOperate ด้วย
+
+                        console.log("✅ After Click | isActive:", checkoperate.isActive, "| lflOperate:", lflOperate);
+
+                        var CheckStatusOperate = '{"objectName":"statusOperate","LFLOPERATE":'+checkoperate.isActive+'}';
+                        qmlCommand(CheckStatusOperate);
                     }
                 }
             }

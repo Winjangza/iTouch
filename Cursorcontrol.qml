@@ -51,9 +51,9 @@ Item {
 
         RowLayout {
             x: 128
-            y: 117
+            y: 121
             width: 212
-            height: 103
+            height: 99
 
             RowLayout {
                 x: 128
@@ -213,9 +213,9 @@ Item {
         }
 
         ColumnLayout {
-            x: 128
+            x: 105
             y: 27
-            width: 233
+            width: 256
             height: 94
 
             RowLayout {
@@ -407,6 +407,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:10}
+    D{i:0;formeditorZoom:4}
 }
 ##^##*/

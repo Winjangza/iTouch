@@ -64,6 +64,5 @@
         <file>images/arrowLeft.png</file>
         <file>images/arrowRigth.png</file>
         <file>images/button.png</file>
-        <file>images/search.png</file>
     </qresource>
 </RCC>

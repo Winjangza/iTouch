@@ -10,9 +10,11 @@ Item {
     height: 600
     property bool isOnDataStoragePage: false
     property string currentPage: "MainPage"
+    property string currentDataTime: datetime
+
 //    property string mainBarMasterSelect
 //    property string mainBarSlaveSelect
-//    property bool checkUser: checkUser
+//    property bool checkUser: checkUser  datetime
     property string typrUser: !usertypeSelect ? mainBarSlaveSelect : mainBarMasterSelect
 
     ListModel{
@@ -74,7 +76,7 @@ Item {
 
             Text {
                 id: textdataandtime
-                text: datetime
+                text: currentDataTime
                 anchors.fill: parent
                 font.pixelSize: 15
                 horizontalAlignment: Text.AlignHCenter

@@ -14,6 +14,7 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     Timer = new QTimer();
     QTimer *timer = new QTimer(this);
     TimerVerify = new QTimer();
+    networking = new NetworkMng(this);
     getSetting();
     connect(reconnectTimer,SIGNAL(timeout()),this,SLOT(reconnectTimerTimeout()));
     connect(Timer,SIGNAL(timeout()),this,SLOT(connectTimeOut()));
@@ -102,7 +103,7 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
 //------------------------------client command to Display----------------------------------//displaysetting
     connect(client,SIGNAL(newCommandProcess(QString)),this,SLOT(ServerCommand(QString)));
     connect(client,SIGNAL(newCommandProcess(QString)),this,SLOT(cppSubmitTextFiled(QString)));
-    connect(client,SIGNAL(newCommandProcess(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
+//    connect(client,SIGNAL(newCommandProcess(QString)),SocketServer,SLOT(boardcasttomessaege(QString)));
 
 //------------------------------Send command to client----------------------------------//
     connect(this, SIGNAL(rawdataPlot(QString)),client, SLOT(sendMessage(QString)));
@@ -124,27 +125,10 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(this,SIGNAL(updataListOfMarginC(QString)),client,SLOT(sendMessage(QString)));
 
 
-
-    //------------------------------Send command to client----------------------------------//
-    connect(this, SIGNAL(rawdataPlot(QString)),client, SLOT(sendMessage(QString)));
-    connect(this,SIGNAL(clearPatternGraph(QString)),client, SLOT(sendMessage(QString)));
-    connect(this,SIGNAL(clearDisplay(QString)),client, SLOT(sendMessage(QString)));
-    connect(mysql,SIGNAL(SetNetworkSNMP(QString)),client,SLOT(sendMessage(QString)));
-    connect(this,SIGNAL(settingdisplay(QString)),client,SLOT(sendMessage(QString)));
-    connect(this,SIGNAL(parameterThreshold(QString)),client,SLOT(sendMessage(QString)));
-    connect(this,SIGNAL(ButtonPattern(QString)),client,SLOT(sendMessage(QString)));
-
-    //----------------------------get pattern datastorag from DB ---------------------------//
-    connect(this,&mainwindows::getdatapatternDataDb,mysql,&Database::getdatapatternDataDb);
-    connect(this,&mainwindows::sortnamePattern,mysql,&Database::sortByName);
-    connect(this,&mainwindows::sortdatePattern,mysql,&Database::sortByDate);
-    connect(this,&mainwindows::searchByName,mysql,&Database::searchByName);
-    connect(this,&mainwindows::searchByDate,mysql,&Database::searchByDate);
-    // connect(this,SIGNAL(sendMessage(QString)),client,SLOT(sendMessage(QString)));
-
-        serverAddress = "192.168.10.51";
+        serverAddress = "192.168.10.52";
         serverPort = 5520;
 //        qDebug() << "serverAddress:" << serverAddress << " serverPort:" << serverPort;
+//        client->createConnection(networks->ip_address,serverPort);
         client->createConnection(serverAddress,serverPort);
 
     if (client->isConnected == true){
@@ -157,8 +141,8 @@ mainwindows::mainwindows(QObject *parent) : QObject(parent){
     connect(timer, &QTimer::timeout, this, &mainwindows::updateDateTime);
     timer->start(1000); // Update every 1000 milliseconds (1 second)
     reconnectTimer->start(3000);
-    Timer->start(100);
-
+//    Timer->start(100);
+    this->updateDateTime();
 }
 
 
@@ -167,7 +151,9 @@ void mainwindows::reconnectTimerTimeout(){
     if ((serverAddress != "") & (serverPort > 0) & (serverPort < 65536)){
         isVersion= false;
         cppCommand(isVersion);
+//        client->createConnection(networks->ip_address,serverPort);
         client->createConnection(serverAddress,serverPort);
+
     }
 //    qDebug() << "reconnectTimerTimeout" << isVersion;
 
@@ -214,7 +200,7 @@ void mainwindows::updateDateTime() {
                                  "}")
                           .arg(formattedDateTime);
 
-//        qDebug() << "Formatted Date and Time: " << formattedDateTime;
+        qDebug() << "Formatted Date and Time: " << datetime;
         cppCommand(datetime);
     } else {
 //        qDebug() << "Failed to parse date and time!";
@@ -230,7 +216,6 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     QString getEventAndAlert =  QJsonValue(command["TrapsAlert"]).toString();
     QJsonDocument doc = QJsonDocument::fromJson(qmlJson.toUtf8());
     qDebug() << "cppSubmitTextFiled:" << qmlJson;
-    // qDebug() << "cppSubmitTextFiled:" << qmlJson << QJsonValue(command["objectNames"]).toString() << QJsonValue(command["objectName"]).toString() << d.object() << "getEventAndAlert:" << getEventAndAlert << command << command.contains("PLC_DO_ERROR");
 
     if(qmlJson == "testRawData"){
         rawdataPlot("testRawData");
@@ -246,86 +231,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 //        qDebug() << "cppSubmitTextFiled UserM:" << selectMaster << userStatus << userType;
         cppCommand(selectMaster);
         emit updateUser(selectMaster);
-    }
-    else if(getCommand == "PatternData"){
-        // qDebug() << "patternA:";
-        cppCommand(qmlJson);
-    }
-    else if (getCommand == "SearchName"){
-        // bool Sort = QJsonValue(command["Sort"]).toBool();
-        QString Name = QJsonValue(command["text"]).toString();
-        QString categories = QJsonValue(command["categories"]).toString();
-        QString massage = QString("{"
-                                  "\"objectName\":\"SearchName\","
-                                  "\"categories\":\"%1\","
-                                  "\"text\":\"%2\""
-                                  "}").arg(categories).arg(Name);
-        emit sendMessage(massage);
-               qDebug()<<"iiiiixxxxxNAME"<<Name<<categories;
-        //        emit searchByName(Name,categories);
-
-    }
-    else if (getCommand == "SearchDate"){
-        // qDebug()<<"iiiiixxxxx";
-        QString Date = QJsonValue(command["text"]).toString();
-        QString categories = QJsonValue(command["categories"]).toString();
-        QString massage = QString("{"
-                                  "\"objectName\":\"SearchDate\","
-                                  "\"categories\":\"%1\","
-                                  "\"text\":\"%2\""
-                                  "}").arg(categories).arg(Date);
-        emit sendMessage(massage);
-               qDebug()<<"iiiiixxxxxDate"<<Date<<categories;
-        //        emit searchByDate(Date,categories);
-    }
-    else if (getCommand == "sortnamePattern"){
-
-        bool Sort = QJsonValue(command["Sort"]).toBool();
-        QString categories = QJsonValue(command["categories"]).toString();
-
-        QString message = QString("{"
-                                  "\"objectName\":\"sortnamePattern\","
-                                  "\"Sort\":%1,"
-                                  "\"categories\":\"%2\""
-                                  "}").arg(Sort ? "true" : "false").arg(categories);
-
-        emit sendMessage(message);
-        qDebug()<<"iiiii"<<message;
-        //        emit sortnamePattern(Sort,categories);
-    }
-    else if (getCommand == "sortdatePattern"){
-        bool Sort = QJsonValue(command["Sort"]).toBool();
-        QString categories = QJsonValue(command["categories"]).toString();
-
-        QString message = QString("{"
-                                  "\"objectName\":\"sortdatePattern\","
-                                  "\"Sort\":%1,"
-                                  "\"categories\":\"%2\""
-                                  "}").arg(Sort ? "true" : "false").arg(categories);
-
-        emit sendMessage(message);
-
-        // qDebug()<<"sortdatePattern"<<massage;
-        //        emit sortdatePattern(Sort,categories);
-    }
-    else if (getCommand == "ButtonPattern"){
-        QString state = QJsonValue(command["Onclicked"]).toString();
-        QString category = QJsonValue(command["category"]).toString();
-        QString event_time = QJsonValue(command["event_datetime"]).toString();
-        QString filename = QJsonValue(command["filename"]).toString();
-        qDebug()<<"ButtonPattern"<<state<<event_time<<filename;
-        QString buttonPattern = QString("{"
-                                        "\"objectName\":\"ButtonPattern\","
-                                        "\"category\":\"%1\","
-                                        "\"Onclicked\":\"%2\","
-                                        "\"event_datetime\":\"%3\","
-                                        "\"filename\":\"%4\""
-                                        "}").arg(category).arg(state).arg(event_time).arg(filename);
-        qDebug() << "testl"<< buttonPattern;
-        emit ButtonPattern(buttonPattern);
-
-    }
-    else if(getCommand.contains("UserSelectS")){
+    }else if(getCommand.contains("UserSelectS")){
         QString userType = QJsonValue(command["userType"]).toString();
         bool userStatus = QJsonValue(command["userStatusSlave"]).toBool();
         QString selectSlave = QString("{"
@@ -534,7 +440,9 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
         qDebug() << "Debug editDataPhaseA:" << EditDatalist << phase << checkedStates;
         emit getEditDatafromMySQLA(EditDatalist);
     }else if (getCommand.contains("marginCountA") || getCommand.contains("valueMarginVoltageA")) {
-        SettingAndUpdateMargin(qmlJson);
+        qDebug() << "marginCountA:" <<qmlJson;
+
+        emit SettingAndUpdateMargin(qmlJson);
 //        int marginA = QJsonValue(command["valueMarginA"]).toInt();
 //        int valueVoltageA = QJsonValue(command["valueVoltageA"]).toInt();
 //        int focusIndex = QJsonValue(command["focusIndex"]).toInt();
@@ -602,7 +510,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 //        qDebug() << "Debug marginCountA:" << marginA << phase;
 //        emit parameterMarginA(parameterA);
     }else if (getCommand.contains("marginCountB") || getCommand.contains("valueMarginVoltageB")) {
-        SettingAndUpdateMargin(qmlJson);
+        emit SettingAndUpdateMargin(qmlJson);
 
 //        int marginB = QJsonValue(command["valueMarginB"]).toInt();
 //        int valueVoltageB = QJsonValue(command["valueVoltageB"]).toInt();
@@ -676,7 +584,7 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 //        emit parameterMarginB(parameterB);
 
     } else if (getCommand.contains("marginCountC") || getCommand.contains("valueMarginVoltageC")) {
-        SettingAndUpdateMargin(qmlJson);
+        emit SettingAndUpdateMargin(qmlJson);
 
 //        int marginC = QJsonValue(command["valueMarginC"]).toInt();
 //        int valueVoltageC = QJsonValue(command["valueVoltageC"]).toInt();
@@ -993,21 +901,22 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
 
         qDebug() << "taggingdata:" << taggingdata << "tagging:" << tagging << "statuslist:" << statuslist;
         emit taggingpoint(taggingdata);
-    }else if (getCommand.contains("editSettingNetwork")){
+    }else if (getCommand.contains("editSettingNetwork")) {
         QString IPaddress = command.value("editsIPAddress").toString();
         QString GateWsys = command.value("editsGateWays").toString();
         qDebug() << "IPaddress:" << IPaddress << "GateWsys:" << GateWsys;
 
+        // สร้าง JSON string
         QString settingNetwork = QString("{"
                                           "\"objectName\":\"updateSettingNetwork\","
-                                          "\"ipaddress\":\"%1\","
-                                          "\"gateway\":\"%2\""
+                                          "\"ip_address\":\"%1\","
+                                          "\"ip_gateway\":\"%2\""
                                           "}")
                                      .arg(IPaddress)
                                      .arg(GateWsys);
 
         qDebug() << "settingNetwork:" << settingNetwork;
-//         emit settingNetWorkandSNMP(settingNetwork);
+        emit sendMessage(settingNetwork);
     }else if (getCommand == "editSetSNMPServerIP") {
         QString snmpIP = command.value("editsSNMPServer").toString();
         qDebug() << "snmpIP:" << snmpIP;
@@ -1284,21 +1193,14 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "dataPlotingC"){
         qDebug() << "dataPlotingC:";
         cppCommand(qmlJson);
-    }else if(getCommand == "dataPlotingB"){
-        qDebug() << "dataPlotingB:";
-
-       cppCommand(qmlJson);
-    }else if(getCommand == "dataPlotingC"){
-        qDebug() << "dataPlotingC:";
-       cppCommand(qmlJson);
     }else if(getCommand == "patternA"){
         qDebug() << "patternA:";
-       cppCommand(qmlJson);
+//        cppCommand(qmlJson);
     }else if(getCommand == "patternB"){
 //        qDebug() << "patternB:";
-       cppCommand(qmlJson);
+//        cppCommand(qmlJson);
     }else if(getCommand == "patternC"){
-       cppCommand(qmlJson);
+//        cppCommand(qmlJson);
     }else if(getCommand == "spinBoxDisplay"){
         int levelofligth = command["displayLight"].toInt();
         qDebug() << "levelofligth:" << levelofligth;
@@ -1326,18 +1228,24 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "getPeriodicInfo"){
         cppCommand(qmlJson);
     }else if(getCommand == "TrapsEnabling"){
+        qDebug() << "Received command keys:" << command.keys();
+        cppCommand(qmlJson);
+        qDebug() << "TrapsEnabling:" << qmlJson;
+    }else if(getCommand == "Network"){
         networks->ip_address = command["ip_address"].toString();
-        networks->ip_gateway = command["ip_gateway"].toString();
-        networks->ip_snmp = command["ip_snmp"].toString();
-        networks->ip_timeserver = command["ip_timeserver"].toString();
-        qDebug() <<networks->ip_address << networks->ip_gateway << networks->ip_snmp<< networks->ip_timeserver << command["ip_address"].toString() << command["ip_snmp"].toString();
+        networks->ip_gateway =command["ip_gateway"].toString();
+        networks->ip_timeserver =command["ip_timeserver"].toString();
+        networking->setNTPServer(networks->ip_timeserver);
         updateNetwork();
         cppCommand(qmlJson);
-        qDebug()<< "TrapsEnabling:" << qmlJson;
+        qDebug() << "Network:" << qmlJson << networks->ip_timeserver;
+
     }else if(getCommand == "statusFail"){
         cppCommand(qmlJson);
+        sendMessage(qmlJson);
     }else if(getCommand == "statusOperate"){
         cppCommand(qmlJson);
+        sendMessage(qmlJson);
     }else if(getCommand == "autoSetValueMarginA"){
         qDebug()<< "AutoValueA:" << qmlJson;
         emit updataListOfMarginA(qmlJson);
@@ -1362,7 +1270,8 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "marginlistCountC"){
         qDebug()<< "marginlistCountC:" << qmlJson;
         cppCommand(qmlJson);
-    }else if(getCommand == "updateParameterMargin"){
+    }if (getCommand.trimmed() == "updateParameterMargin") {
+        qDebug()<< "updateParameterMargin Triggered!";
         qDebug()<< "updateParameterMargin:" << qmlJson;
         cppCommand(qmlJson);
     }else if(getEventAndAlert == "PLC_DO_ERROR") {
@@ -1766,11 +1675,30 @@ void mainwindows::cppSubmitTextFiled(QString qmlJson){
     }else if(getCommand == "realDistanceC") {
         qDebug() << "Check Data realDistanceC:" << qmlJson;
         cppCommand(qmlJson);
+    } else if(getCommand == "updateNTPServer"){
+        networks->ip_timeserver = command["ntpServer"].toString();
+        networking->setNTPServer(networks->ip_timeserver);
+        updateNTP();
     }
 
 }
 
-
+void mainwindows::updateNTP(){
+    qDebug() << "updateSMTP";
+    QSettings *settings;
+    const QString cfgfile = FILESETTING;
+    qDebug() << "Loading configuration from:" << cfgfile;
+    if(QDir::isAbsolutePath(cfgfile))
+    {
+        settings = new QSettings(cfgfile,QSettings::IniFormat);
+        settings->setValue(QString("%1/IP_ADDRESS").arg(TIME_SERVER),networks->ip_timeserver);
+    }
+    else{
+        qDebug() << "Loading configuration from:" << cfgfile << " FILE NOT FOUND!";
+    }
+    qDebug() << "Loading configuration completed";
+    delete settings;
+}
 void mainwindows::ServerCommand(QString qmlJson){
     qDebug()<< "ServerCommand" << qmlJson;
     QJsonDocument d = QJsonDocument::fromJson(qmlJson.toUtf8());
@@ -1861,7 +1789,7 @@ void mainwindows::calculate(QString msg) { // รับค่าจาก Databa
         if ((isThresholdAChanged || isAnyParameterChanged) && thresholdA > 0) {
             qDebug() << "Threshold A triggered.";
 //            plotGraphA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
-            plotPatternA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
+//            plotPatternA(sagFactor, samplingRate, distanceToStart, distanceToShow, fulldistance, thresholdA);
         }
         if ((isThresholdBChanged || isAnyParameterChanged) && thresholdB > 0) {
             qDebug() << "Threshold B triggered.";
@@ -3373,6 +3301,8 @@ void mainwindows::getSetting()
     delete settings;
 }
 
+
+
 void mainwindows::updateNetwork()
 {
     qDebug() << "updateNetwork";
@@ -3386,7 +3316,7 @@ void mainwindows::updateNetwork()
         settings->setValue(QString("%1/IP_ADDRESS").arg(NETWORK_SERVER),networks->ip_address);
         settings->setValue(QString("%1/IP_GATEWAY").arg(NETWORK_SERVER),networks->ip_gateway);
         settings->setValue(QString("%1/NETMASK").arg(NETWORK_SERVER),networks->subnet);
-        settings->setValue(QString("%1/PRIDNS").arg(NETWORK_SERVER),networks->pridns);
+        settings->setValue(QString("%1/PRIDNS").arg(NETWORK_SERVER),"192.168.10.100");
         settings->setValue(QString("%1/SECDNS").arg(NETWORK_SERVER),networks->secdns);
         settings->setValue(QString("%1/PHYNAME").arg(NETWORK_SERVER),networks->phyName);
 
@@ -3402,8 +3332,6 @@ void mainwindows::updateNetwork()
     networks->printinfo();
     delete settings;
 }
-
-
 
 
 //void mainwindows::RecalculateWithMargin(QString msg) {

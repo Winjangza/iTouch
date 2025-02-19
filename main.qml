@@ -188,7 +188,8 @@ Window {
     property string timeEventAlarm: ""
     signal sendEventToTable(string date, string time, string message, string priority)
     property var eventListeners:[];
-    property var fullEventData:[];
+    property var fullEventData : []; // เก็บข้อมูลต้นฉบับ
+    property var hiddenEventData : []; // เก็บข้อมูลที่ถูกซ่อน
     property double realDistanceA: 0.0
     property double realDistanceB: 0.0
     property double realDistanceC: 0.0
@@ -267,29 +268,6 @@ Window {
         property bool statusEventandAlram
     }
 
-    ListModel {
-        id: patternDataStorage
-        property string  event_datetime: ""
-        property string  filename: ""
-    }
-    ListModel {
-        id : periodicDataStorage
-        property string  event_datetime: ""
-        property string  filename: ""
-    }
-    ListModel {
-        id : relayDataStorage
-        property  string  event_datatime: ""
-        property  string  filename: ""
-    }
-    ListModel {
-        id : surgeDataStorage
-        property  string event_dtaatime : ""
-        property  string filename: ""
-    }
-
-
-
     //         property string globalPhaseA: ""
     //         property bool globalStatusA: false
     //         property int globalTempNumA: 0
@@ -364,24 +342,11 @@ Window {
             mainBarMasterSelect = userTypeMaster;
             usertypeSelect = JsonObject.userStatusMaster
         }
-        else if  (objectName === "PatternData"){
-            console.log("PatternDataQML:", message);
-            // const { filename, event_datetime } = JsonObject;
-            // var category = JsonObject.category_name;
-            // console.log("📌 Adding to patternDataStorage:",category_name, filename, event_datetime);
-            // patternDataStorage.append({
-            //     "filename": filename,
-            //     "event_datetime": event_datetime
-            // });
-
-            // appendPattern(message)
-            appendDatStorage(message)
-            }
         else if (objectName === "UserSelectS") {
             mainBarSlaveSelect = userTypeSlave;
             usertypeSelect = !JsonObject.userStatusSlave
-        }else if (objectName === "broadcastLocalTime") {
-            datetime = JsonObject.currentDate
+        }else if (objectName === "DateTime") {
+            datetime = JsonObject.formattedDateTime
             console.log("check Date and Time:", message,datetime);
         }else if (objectName === "getMySqlPhaseA") {
             statusA = JsonObject.status;
@@ -508,13 +473,15 @@ Window {
             arrRawB = JsonObject.dataPlotingB || [];
             distanceRawB = JsonObject.distance;
             voltageRawB = JsonObject.voltage;
-            console.log("Debug_RawdataA_dataPlotingB:", message , arrRawB, distanceRawB, voltageRawB);
+            console.log("Debug_RawdataB:", message , arrRawB, distanceRawB, voltageRawB);
+            onPlotdataBChanged();
         } else if (objectName === 'dataPlotingC') {
             console.log("RawdataC:", message);
             arrRawC = JsonObject.dataPlotingC || [];
             distanceRawC = JsonObject.distance;
             voltageRawC = JsonObject.voltage;
-            console.log("Debug_RawdataA_dataPlotingC:", message , arrRawC, distanceRawC, voltageRawC);
+            console.log("Debug_RawdataC:", message , arrRawC, distanceRawC, voltageRawC);
+            onPlotdataCChanged();
         }else if (objectName === 'patternA') {
             console.log("patthernA_check_debug:", message);
             var arrA = JsonObject.data || [];
@@ -578,10 +545,7 @@ Window {
                 surage_start_event              = JsonObject.SURGE_START_EVENT;
                 system_initial                  = JsonObject.SYSTEM_INITIAL;
 
-//                ip_address                      = JsonObject.ipaddress? JsonObject.ip_address: "";
-//                ip_gateway                      = JsonObject.ip_gateway;
-//                ip_snmp                         = JsonObject.ip_snmp;
-//                ip_timeserver                   = JsonObject.ip_timeserver;
+
             console.log("TrapsEnabling:", message,JsonObject.SYSTEM_INITIAL,JsonObject.ip_address,JsonObject.COMMUNICATION_ERROR,JsonObject.GPS_MODULE_FAIL,JsonObject.INTERNAL_PHASE_A_ERROR, JsonObject.INTERNAL_PHASE_B_ERROR);
         }else if (objectName === 'updateParameterMargin') {
             if(JsonObject.PHASE === "A"){
@@ -634,7 +598,7 @@ Window {
 
         }else if ((TrapsAlert === 'GPS_MODULE_FAIL')) {
             addEvent(message);
-//            console.log("TrapsAlert GPS_MODULE_FAIL:", message,alarm_gps_module_fail,timeEventAlarm);
+            console.log("TrapsAlert GPS_MODULE_FAIL:", message,alarm_gps_module_fail,timeEventAlarm);
 
         }else if ((TrapsAlert === 'SYSTEM_INITIAL')) {
             addEvent(message);
@@ -682,53 +646,16 @@ Window {
             realDistanceC = JsonObject.valueDistanceC;
             realDistanceC = realDistanceC/1000;
 
+        }else if ((objectName === 'Network')) {
+            console.log("Network:", message);
+            ip_address                      = JsonObject.ip_address;
+            ip_gateway                      = JsonObject.ip_gateway;
+            ip_snmp                         = JsonObject.ip_snmp;
+            ip_timeserver                   = JsonObject.ip_timeserver;
+
         }
     }
 
-
-    function appendDatStorage(message){
-        console.log("debug_pattern_SQL");
-        var JsonObject = JSON.parse(message);
-        var filename = JsonObject.filename;
-        var event_datetime = JsonObject.event_datetime;
-        var category_name = JsonObject.category_name;
-        if (category_name === "Manual"){ //Pattern
-            console.log("datastorage Pattern");
-            patternDataStorage.append({
-                                    "filename": filename,
-                                    "event_datetime": event_datetime
-                                    });
-        }
-        else if (category_name === "Periodic" ){
-            console.log("datastorage Periodic");
-            periodicDataStorage.append({
-                                        "filename": filename,
-                                        "event_datetime": event_datetime
-                                    });
-
-        }
-        else if (category_name === "Relay"){
-            console.log("datastorage Relay");
-            relayDataStorage.append({
-                                    "filename": filename,
-                                    "event_datetime": event_datetime
-                                    });
-        }
-        else if (category_name === "Surge"){
-            console.log("datastorage Surge");
-            surgeDataStorage.append({
-                                    "filename": filename,
-                                    "event_datetime": event_datetime
-                                    });
-        }
-
-        // console.log("datastorage JsonObject:", filename,event_datetime);
-
-        // patternDataStorage.append({
-        //                         "filename": filename,
-        //                         "event_datetime": event_datetime
-        //                         });
-    }
 
     function setpropertyIDTableA(checkIDtable) {
         console.log("setpropertyCheckTable:", checkIDtable);
@@ -971,134 +898,185 @@ Window {
             console.log("⚠️ No items to clear.");
         }
     }
+
     function fliterRelayStart(checkfliter) {
         console.error("fliterRelayStart:", checkfliter);
         if (fullEventData.length === 0) {
-            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
-            return;
-        }
-        if (checkfliter) {
-            fullEventData = [];
+            console.warn(" fullEventData is empty, initializing with eventAlarmLog.");
             for (var i = 0; i < eventAlarmLog.count; i++) {
-                var item = eventAlarmLog.get(i);
-                if (item.logDetail === "RELAY_START_EVENT") {
-                    fullEventData.push(item);
+                let item = eventAlarmLog.get(i);
+                fullEventData.push(JSON.parse(JSON.stringify(item))); // ✅ แปลงให้เป็น JSON Object
+            }
+        }
+
+        if (checkfliter) {
+            hiddenEventData = [];
+            var filteredData = [];
+            for (var i = 0; i < fullEventData.length; i++) {
+                if (fullEventData[i].logDetail === "RELAY_START_EVENT") {
+                    filteredData.push(fullEventData[i]);
+                } else {
+                    hiddenEventData.push(fullEventData[i]);
                 }
             }
+            console.log("Filtered Data:", filteredData);
+            console.log("Hidden Data (ซ่อนอยู่):", hiddenEventData);
             eventAlarmLog.clear();
-            for (var j = 0; j < fullEventData.length; j++) {
-                eventAlarmLog.append(fullEventData[j]);
+            for (var j = 0; j < filteredData.length; j++) {
+                eventAlarmLog.append(filteredData[j]);
             }
         } else {
-            eventAlarmLog.clear();
-            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
-                var item = eventAlarmHistoryLog.get(k);
-                eventAlarmLog.append(item);
+            console.log("Restoring hidden data:", hiddenEventData);
+            for (var k = 0; k < hiddenEventData.length; k++) {
+                var item = hiddenEventData[k];
+
+                if (item.logDetail !== undefined && item.datetEventandAlram !== undefined
+                    && item.timeEventandAlram !== undefined && item.statusEventandAlram !== undefined) {
+                    eventAlarmLog.append(item);
+                } else {
+                    console.warn("⚠️ Skipping invalid data:", item);
+                }
             }
+            hiddenEventData = [];
         }
     }
-
-//    function fliterRelayStart(checkfliter) {
-//        console.error("fliterRelayStart:", checkfliter);
-//        if (checkfliter) {
-//            fullEventData = [];
-//            for (var i = 0; i < eventAlarmLog.count; i++) {
-//                var item = eventAlarmLog.get(i);
-//                if (item.logDetail === "RELAY_START_EVENT") {
-//                    fullEventData.push(item);
-//                }
-//            }
-//            eventAlarmLog.clear();
-//            for (var j = 0; j < fullEventData.length; j++) {
-//                eventAlarmLog.append(fullEventData[j]);
-//            }
-//        } else {
-//            eventAlarmLog.clear();
-//            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
-//                var item = eventAlarmHistoryLog.get(k);
-//                eventAlarmLog.append(item);
-//            }
-//        }
-//    }
     function fliterPeriodicStart(checkfliter) {
-        console.error("fliterRelayStart:", checkfliter);
+        console.error("fliterPeriodicStart:", checkfliter);
+
         if (fullEventData.length === 0) {
-            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
-            return;
-        }
-        if (checkfliter) {
-            fullEventData = [];
+            console.warn("fullEventData is empty, initializing with eventAlarmLog.");
             for (var i = 0; i < eventAlarmLog.count; i++) {
-                var item = eventAlarmLog.get(i);
-                if (item.logDetail === "PERIODIC_TEST_EVENT") {
-                    fullEventData.push(item);
+                fullEventData.push(JSON.parse(JSON.stringify(eventAlarmLog.get(i))));
+            }
+        }
+
+        if (checkfliter) {
+            hiddenEventData = [];
+            var filteredData = [];
+
+            for (var i = 0; i < fullEventData.length; i++) {
+                if (fullEventData[i].logDetail === "PERIODIC_TEST_EVENT") {
+                    filteredData.push(fullEventData[i]);
+                } else {
+                    hiddenEventData.push(fullEventData[i]);
                 }
             }
+
+            console.log("Filtered Data:", filteredData);
+            console.log("Hidden Data:", hiddenEventData);
+
             eventAlarmLog.clear();
-            for (var j = 0; j < fullEventData.length; j++) {
-                eventAlarmLog.append(fullEventData[j]);
+            for (var j = 0; j < filteredData.length; j++) {
+                eventAlarmLog.append(filteredData[j]);
             }
         } else {
-            eventAlarmLog.clear();
-            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
-                var item = eventAlarmHistoryLog.get(k);
-                eventAlarmLog.append(item);
-            }
-        }
-    }
-    function fliterManualStart(checkfliter) {
-        console.error("fliterRelayStart:", checkfliter);
-        if (fullEventData.length === 0) {
-            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
-            return;
-        }
-        if (checkfliter) {
-            fullEventData = [];
-            for (var i = 0; i < eventAlarmLog.count; i++) {
-                var item = eventAlarmLog.get(i);
-                if (item.logDetail === "MANUAL_TEST_EVENT") {
-                    fullEventData.push(item);
+            console.log("Restoring hidden data:", hiddenEventData);
+
+            for (var k = 0; k < hiddenEventData.length; k++) {
+                var item = hiddenEventData[k];
+
+                if (item.logDetail !== undefined) {
+                    eventAlarmLog.append(item);
+                } else {
+                    console.warn("Skipping invalid data:", item);
                 }
             }
-            eventAlarmLog.clear();
-            for (var j = 0; j < fullEventData.length; j++) {
-                eventAlarmLog.append(fullEventData[j]);
-            }
-        } else {
-            eventAlarmLog.clear();
-            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
-                var item = eventAlarmHistoryLog.get(k);
-                eventAlarmLog.append(item);
-            }
-        }
-    }
-    function fliterSurageStart(checkfliter) {
-        console.error("fliterRelayStart:", checkfliter);
-        if (fullEventData.length === 0) {
-            console.warn("fullEventData is empty. Aborting filter operation.",fullEventData.length);
-            return;
-        }
-        if (checkfliter) {
-            fullEventData = [];
-            for (var i = 0; i < eventAlarmLog.count; i++) {
-                var item = eventAlarmLog.get(i);
-                if (item.logDetail === "SURGE_START_EVENT") {
-                    fullEventData.push(item);
-                }
-            }
-            eventAlarmLog.clear();
-            for (var j = 0; j < fullEventData.length; j++) {
-                eventAlarmLog.append(fullEventData[j]);
-            }
-        } else {
-            eventAlarmLog.clear();
-            for (var k = 0; k < eventAlarmHistoryLog.count; k++) {
-                var item = eventAlarmHistoryLog.get(k);
-                eventAlarmLog.append(item);
-            }
+
+            hiddenEventData = [];
         }
     }
 
+    function fliterManualStart(checkfliter) {
+        console.error("fliterManualStart:", checkfliter);
+
+        if (fullEventData.length === 0) {
+            console.warn("fullEventData is empty, initializing with eventAlarmLog.");
+            for (var i = 0; i < eventAlarmLog.count; i++) {
+                fullEventData.push(JSON.parse(JSON.stringify(eventAlarmLog.get(i))));
+            }
+        }
+
+        if (checkfliter) {
+            hiddenEventData = [];
+            var filteredData = [];
+
+            for (var i = 0; i < fullEventData.length; i++) {
+                if (fullEventData[i].logDetail === "MANUAL_TEST_EVENT") {
+                    filteredData.push(fullEventData[i]);
+                } else {
+                    hiddenEventData.push(fullEventData[i]);
+                }
+            }
+
+            console.log("Filtered Data:", filteredData);
+            console.log("Hidden Data (ซ่อนอยู่):", hiddenEventData);
+
+            eventAlarmLog.clear();
+            for (var j = 0; j < filteredData.length; j++) {
+                eventAlarmLog.append(filteredData[j]);
+            }
+        } else {
+            console.log("Restoring hidden data:", hiddenEventData);
+
+            for (var k = 0; k < hiddenEventData.length; k++) {
+                var item = hiddenEventData[k];
+
+                if (item.logDetail !== undefined) {
+                    eventAlarmLog.append(item);
+                } else {
+                    console.warn("Skipping invalid data:", item);
+                }
+            }
+
+            hiddenEventData = [];
+        }
+    }
+
+    function fliterSurageStart(checkfliter) {
+        console.error("fliterSurageStart:", checkfliter);
+
+        if (fullEventData.length === 0) {
+            console.warn("fullEventData is empty, initializing with eventAlarmLog.");
+            for (var i = 0; i < eventAlarmLog.count; i++) {
+                fullEventData.push(JSON.parse(JSON.stringify(eventAlarmLog.get(i))));
+            }
+        }
+
+        if (checkfliter) {
+            hiddenEventData = [];
+            var filteredData = [];
+
+            for (var i = 0; i < fullEventData.length; i++) {
+                if (fullEventData[i].logDetail === "SURGE_START_EVENT") {
+                    filteredData.push(fullEventData[i]);
+                } else {
+                    hiddenEventData.push(fullEventData[i]);
+                }
+            }
+
+            console.log("Filtered Data:", filteredData);
+            console.log("Hidden Data:", hiddenEventData);
+
+            eventAlarmLog.clear();
+            for (var j = 0; j < filteredData.length; j++) {
+                eventAlarmLog.append(filteredData[j]);
+            }
+        } else {
+            console.log("Restoring hidden data:", hiddenEventData);
+
+            for (var k = 0; k < hiddenEventData.length; k++) {
+                var item = hiddenEventData[k];
+
+                if (item.logDetail !== undefined) {
+                    eventAlarmLog.append(item);
+                } else {
+                    console.warn("Skipping invalid data:", item);
+                }
+            }
+
+            hiddenEventData = [];
+        }
+    }
 
 
     // function refreshTableData(message) {

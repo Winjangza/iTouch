@@ -326,7 +326,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:2}D{i:38}
+    D{i:0;formeditorZoom:1.66}
 }
 ##^##*/
-

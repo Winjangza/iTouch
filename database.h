@@ -123,14 +123,6 @@ public slots:
     void updataListOfMarginB(QString);
     void updataListOfMarginC(QString);
 
-    ////////////////////pattern datastorage//////////////////////////
-    void getdatapatternDataDb();
-    void sortByName(bool ascending,const QString &categoryName);
-    void sortByDate(bool descending,const QString &categoryDate);
-    void searchByName(const QString &name, const QString &categoryName);
-    void searchByDate(const QString &date, const QString &categoryDate);
-    void patternDataDb(QSqlQuery query);
-    // void getdataStorage(QString &category);
 //    void emitEvent();
 
 private:

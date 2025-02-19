@@ -27,7 +27,7 @@
 #include <QPointer>
 #include <QtMath>
 #include <QTextStream>
-
+#include "NetworkMng.h"
 #define SwVersion "V0.2 26122024"
 #define HwVersion "Raspberry Pi"
 #define HwName "Monitor"
@@ -43,6 +43,7 @@
 #define NETWORK_SERVER "NETWORK"
 #define SNMP_SERVER "SNMP_SERVER"
 #define TIME_SERVER "TIME_SERVER"
+#define FILESETTING "/etc/systemd/timesyncd.conf"
 typedef int		pj_status_t;
 class mainwindows : public QObject
 {
@@ -98,14 +99,6 @@ signals:
      void updataListOfMarginC(QString);
      void SettingAndUpdateMargin(QString);
 
-     ////////////////////pattern datastorage//////////////////////////
-     void getdatapatternDataDb();
-     void sortnamePattern(bool Sort, const QString &categoryName);
-     void sortdatePattern(bool Sort, const QString &categoryDate);
-     void searchByName(const QString &name, const QString &categoryName);
-     void searchByDate(const QString &date, const QString &categoryDate);
-     void ButtonPattern(QString);
-     // void sendMessage(QString);
 
 public:
     explicit mainwindows(QObject *parent = nullptr);
@@ -148,6 +141,8 @@ public slots:
     void RecalculateWithMargin(QString);
     void getSetting();
     void updateNetwork();
+//    void updateNetwork(QString ip_network, QString gateway, QString snmp, QString timeserver);
+    void updateNTP();
 private:
     ChatServer *SocketServer;
     Database *mysql;
@@ -157,7 +152,7 @@ private:
     QTimer *reconnectTimer;
     QTimer *Timer;
     QTimer *TimerVerify;
-
+    NetworkMng *networking;
     double sagFactor = 0.0;       // SAG factor
     double samplingRate = 0.0; // Sampling rate (meters per sample)
     double distanceToStart = 0.0; // ระยะตั้งต้น (เมตร)
