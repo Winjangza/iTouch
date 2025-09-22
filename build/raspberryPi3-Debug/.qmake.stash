@@ -1,0 +1,27 @@
+QMAKE_CXX.QT_COMPILER_STDCXX = 201402L
+QMAKE_CXX.QMAKE_GCC_MAJOR_VERSION = 7
+QMAKE_CXX.QMAKE_GCC_MINOR_VERSION = 4
+QMAKE_CXX.QMAKE_GCC_PATCH_VERSION = 1
+QMAKE_CXX.COMPILER_MACROS = \
+    QT_COMPILER_STDCXX \
+    QMAKE_GCC_MAJOR_VERSION \
+    QMAKE_GCC_MINOR_VERSION \
+    QMAKE_GCC_PATCH_VERSION
+QMAKE_CXX.INCDIRS = \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/7.4.1 \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/7.4.1/arm-linux-gnueabihf \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/7.4.1/backward \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/7.4.1/include \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/7.4.1/include-fixed \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include \
+    /media/ubuntu/Piyanon/raspberrypi/sysroot/usr/include/arm-linux-gnueabihf \
+    /media/ubuntu/Piyanon/raspberrypi/sysroot/usr/include
+QMAKE_CXX.LIBDIRS = \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/7.4.1 \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/lib/gcc \
+    /media/ubuntu/Piyanon/raspberrypi/gcc-linaro-7.4.1-2019.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/lib \
+    /media/ubuntu/Piyanon/raspberrypi/sysroot/lib/arm-linux-gnueabihf \
+    /media/ubuntu/Piyanon/raspberrypi/sysroot/lib \
+    /media/ubuntu/Piyanon/raspberrypi/sysroot/usr/lib/arm-linux-gnueabihf \
+    /media/ubuntu/Piyanon/raspberrypi/sysroot/usr/lib
