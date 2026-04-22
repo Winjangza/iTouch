@@ -16,6 +16,9 @@ Item {
     property string ip_gateway_Network: ip_gateway
     property string ip_snmp_Network: ip_snmp
     property string ip_timeserver_Network: ip_timeserver
+    property string ip_address_Display: ipAddressOfiTouch
+    property string ip_gateway_Display: ipGatewatOfiTouch
+    property string lastSwVersion: swversionupdate
 
     onFocustextInformationChanged: {
         if(focustextInformation == false){
@@ -23,6 +26,8 @@ Item {
             editTimeSyncServer.color = "#000000"
             settingIPaddress.color = "#000000"
             settinggateway.color = "#000000"
+            settingIPaddressDisplay.color = "#000000"
+            settinggatewayDisplay.color = "#000000"
         }
     }
     onTextforinformationChanged: {
@@ -38,6 +43,12 @@ Item {
         if(settinggateway.color == "#ff0000"){
             settinggateway.text = textforinformation
         }
+        if(settingIPaddressDisplay.color == "#ff0000"){
+            settingIPaddressDisplay.text = textforinformation
+        }
+        if(settinggatewayDisplay.color == "#ff0000"){
+            settinggatewayDisplay.text = textforinformation
+        }
         console.log("onTextforinformationChanged",textforinformation)
     }
     Rectangle {
@@ -45,81 +56,76 @@ Item {
         color: "#f2f2f2"
         anchors.fill: parent
 
-        ColumnLayout {
-            x: 8
-            y: 0
-            width: 126
-            height: 475
-            Layout.fillWidth: true
-
-            Text {
-                id: text1
-                text: qsTr("NETWORK SETTING")
-                font.pixelSize: 18
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-                Layout.bottomMargin: -18
-            }
-
-            Text {
-                id: text6
-                text: qsTr("SNMP SETTING")
-                font.pixelSize: 18
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-                Layout.bottomMargin: 17
-            }
-        }
-
         Text {
             id: text7
             x: 0
-            y: 281
+            y: 330
             text: qsTr("SNMP SERVER IP")
-            font.pixelSize: 14
+            font.pixelSize: 13
         }
 
         Text {
             id: text8
             x: 0
-            y: 370
+            y: 400
             text: qsTr("TIME SYCHONIZATION SERVER")
-            font.pixelSize: 14
+            font.pixelSize: 13
         }
 
         RowLayout {
             x: 84
-            y: 304
+            y: 350
             width: 430
             height: 45
 
             TextField {
                 id: currentSNMP
                 horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
                 Layout.preferredWidth: 148
                 Layout.preferredHeight: 40
-                placeholderText: qsTr("Current SNMP Server")
                 Layout.fillWidth: true
+                placeholderText: qsTr("Current SNMP Server")
                 text: ip_snmp_Network
-                readOnly: true // ป้องกันการแก้ไขโดยตรง
+                readOnly: true
+                color: "#ffffff"
+                background: Rectangle {
+                    color: "#bcbcbc"
+                    border.color: "#f7f7f7"
+                    radius: 5
+                }
             }
 
             TextField {
                 id: editsSNMPServer
                 horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
                 Layout.preferredWidth: 148
                 Layout.preferredHeight: 40
-                placeholderText: qsTr("Edit SNMP Server")
                 Layout.fillWidth: true
+
+                placeholderText: qsTr("Edit SNMP Server")
                 focus: false
 
+                readOnly: userLevelGlobalVars.count === 0 ||
+                          userLevelGlobalVars.get(0).userLevel !== 1
+
+                color: (userLevelGlobalVars.count > 0 &&
+                        userLevelGlobalVars.get(0).userLevel !== 1)
+                       ? "#808080" : "#000000"
+
+                background: Rectangle {
+                    color: editsSNMPServer.readOnly ? "#d3d3d3" : "#ffffff"
+                    border.color: "#bcbcbc"
+                    radius: 5
+                }
+
                 onTextChanged: {
-                    // เมื่อแก้ไขค่าใน editsSNMPServer จะอัปเดต currentSNMP ทันที
                     currentSNMP.text = text
                 }
 
                 onFocusChanged: {
-                    if (focus) {
+                    if (focus && !editsSNMPServer.readOnly) {
                         editsSNMPServer.focus = false;
                         currentField = "editsSNMPServer";
                         inputPanel.visible = true;
@@ -128,10 +134,11 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        editsSNMPServer.color = "#ff0000"
+                        editsSNMPServer.color = "#ff0000";
                     }
                 }
             }
+
 
             ToolButton {
                 id: setSNMPServerIP
@@ -149,35 +156,58 @@ Item {
 
         RowLayout {
             x: 84
-            y: 399
+            y: 420
             width: 430
             height: 46
 
             TextField {
                 id: currentTimeSyncServer
                 horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
                 Layout.preferredWidth: 148
                 Layout.preferredHeight: 40
-                placeholderText: qsTr("Current Time Sync Server")
                 Layout.fillWidth: true
+                placeholderText: qsTr("Current Time Sync Server")
                 text: ip_timeserver_Network
                 readOnly: true
+                color: "#ffffff"
+                background: Rectangle {
+                    color: "#bcbcbc"
+                    border.color: "#f7f7f7"
+                    radius: 5
+                }
             }
+
             TextField {
                 id: editTimeSyncServer
                 horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
                 Layout.preferredWidth: 148
                 Layout.preferredHeight: 40
-                placeholderText: qsTr("Edit Time Sync Server")
                 Layout.fillWidth: true
                 focus: false
+
+                placeholderText: qsTr("Edit Time Sync Server")
+
+                readOnly: userLevelGlobalVars.count === 0 ||
+                          userLevelGlobalVars.get(0).userLevel !== 1
+
+                color: (userLevelGlobalVars.count > 0 &&
+                        userLevelGlobalVars.get(0).userLevel !== 1)
+                       ? "#808080" : "#000000"
+
+                background: Rectangle {
+                    color: editTimeSyncServer.readOnly ? "#d3d3d3" : "#ffffff"
+                    border.color: "#bcbcbc"
+                    radius: 5
+                }
 
                 onTextChanged: {
                     currentTimeSyncServer.text = text
                 }
 
                 onFocusChanged: {
-                    if (focus) {
+                    if (focus && !editTimeSyncServer.readOnly) {
                         editTimeSyncServer.focus = false;
                         currentField = "editTimeSyncServer";
                         inputPanel.visible = true;
@@ -186,10 +216,11 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        editTimeSyncServer.color = "#ff0000"
+                        editTimeSyncServer.color = "#ff0000";
                     }
                 }
             }
+
             ToolButton {
                 id: timesyncServer
                 text: qsTr("SET")
@@ -214,8 +245,8 @@ Item {
 
         ToolButton {
             id: setIPandGateway
-            x: 474
-            y: 153
+            x: 516
+            y: 135
             width: 52
             height: 40
             text: qsTr("SET")
@@ -229,68 +260,179 @@ Item {
             Layout.fillWidth: false
         }
 
-        RowLayout {
-            x: 100
-            y: 85
-            width: 283
-            height: 16
+        Text {
+            id: text1
+            x: 8
+            y: 14
+            text: qsTr("NETWORK SETTING")
+            font.pixelSize: 18
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            Layout.bottomMargin: -293
+        }
+
+        Text {
+            id: text6
+            x: 8
+            y: 305
+            text: qsTr("SNMP SETTING")
+            font.pixelSize: 18
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            Layout.bottomMargin: -16
+        }
+
+        ToolButton {
+            id: setIPandGatewayDisplay
+            x: 516
+            y: 234
+            width: 52
+            height: 41
+            text: qsTr("SET")
+            font.pointSize: 12
+            Layout.preferredHeight: 35
+            Layout.fillWidth: false
+            onClicked: {
+                var setIPAddressGatewayDisplay = '{"objectName":"setIPAddressGatewayDisplay", "editsIPAddressDisplay":"'+settingIPaddressDisplay.text+'", "editsGateWaysDisplay":"'+settinggatewayDisplay.text+'"}';
+                console.log("QMLsetIPAddressGatewayDisplay:", setIPAddressGatewayDisplay)
+                qmlCommand(setIPAddressGatewayDisplay)
+            }
+        }
+
+        ColumnLayout {
+            x: 143
+            y: 50
+            width: 192
+            height: 214
 
             Text {
                 id: text2
                 text: qsTr("CURRENT")
                 font.pixelSize: 13
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
                 Layout.fillHeight: false
-                Layout.leftMargin: 30
-                Layout.fillWidth: false
+                Layout.fillWidth: true
             }
+
+            TextField {
+                id: currentIPaddress
+                color: "#ffffff"
+                text: ip_address_Network
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+                readOnly: true
+                Layout.preferredHeight: 40
+                background: Rectangle {
+                    color: "#bcbcbc"
+                    radius: 5
+                    border.color: "#f7f7f7"
+                }
+                Layout.fillWidth: true
+                placeholderText: qsTr("Current IP Address")
+            }
+
+
+            TextField {
+                id: currentgateway
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+                Layout.preferredHeight: 40
+                Layout.fillWidth: true
+                placeholderText: qsTr("Current GateWay")
+                text: ip_gateway_Network
+                readOnly: true
+                color: "#ffffff"
+                background: Rectangle {
+                    color: "#bcbcbc"
+                    radius: 5
+                    border.color: "#f7f7f7"
+                }
+            }
+
+
+            TextField {
+                id: currentIPaddressDisplay
+                color: "#ffffff"
+                text: ip_address_Display
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+                readOnly: true
+                Layout.preferredHeight: 40
+                background: Rectangle {
+                    color: "#bcbcbc"
+                    radius: 5
+                    border.color: "#f7f7f7"
+                }
+                Layout.fillWidth: true
+                placeholderText: qsTr("Current IP Address")
+            }
+
+
+            TextField {
+                id: currentgateway1
+                color: "#ffffff"
+                text: ip_gateway_Display
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+                readOnly: true
+                Layout.preferredHeight: 40
+                background: Rectangle {
+                    color: "#bcbcbc"
+                    radius: 5
+                    border.color: "#f7f7f7"
+                }
+                Layout.fillWidth: true
+                placeholderText: qsTr("Current GateWay")
+            }
+
+        }
+
+        ColumnLayout {
+            x: 341
+            y: 50
+            width: 173
+            height: 214
+
 
             Text {
                 id: text4
                 text: qsTr("SETTING")
                 font.pixelSize: 13
-                Layout.fillWidth: false
-                Layout.rightMargin: 10
-                Layout.leftMargin: 100
-            }
-        }
-
-        RowLayout {
-            x: 0
-            y: 107
-            width: 462
-            height: 40
-
-            Text {
-                id: ipAddress
-                text: qsTr("IP ADDRESS")
-                font.pixelSize: 14
-                Layout.fillWidth: false
-            }
-
-            TextField {
-                id: currentIPaddress
-                text: ip_address_Network
                 horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
-                Layout.leftMargin: 3
-                Layout.rightMargin: 1
-                Layout.preferredWidth: 148
-                Layout.preferredHeight: 40
-                readOnly: true
-                placeholderText: qsTr("Current IP Address")
             }
 
             TextField {
                 id: settingIPaddress
                 horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
                 Layout.preferredWidth: 148
+                Layout.preferredHeight: 40
+                Layout.fillWidth: true
                 focus: false
+                placeholderText: qsTr("Setting IP")
+
+                readOnly: userLevelGlobalVars.count === 0 ||
+                          userLevelGlobalVars.get(0).userLevel !== 1
+
+                color: (userLevelGlobalVars.count > 0 &&
+                        userLevelGlobalVars.get(0).userLevel !== 1)
+                       ? "#808080" : "#000000"
+
+                background: Rectangle {
+                    color: settingIPaddress.readOnly ? "#d3d3d3" : "#ffffff"
+                    border.color: "#bcbcbc"
+                    radius: 5
+                }
+
                 onTextChanged: {
                     currentIPaddress.text = text
                 }
-                Layout.preferredHeight: 40
+
                 onFocusChanged: {
-                    if (focus) {
+                    if (focus && !settingIPaddress.readOnly) {
                         settingIPaddress.focus = false;
                         currentField = "settingIPaddress";
                         inputPanel.visible = true;
@@ -299,53 +441,41 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        settingIPaddress.color = "#ff0000"
-
+                        settingIPaddress.color = "#ff0000";
                     }
                 }
-                placeholderText: qsTr("Setting IP")
-                Layout.fillWidth: true
-            }
-        }
-
-        RowLayout {
-            x: 0
-            y: 153
-            width: 462
-            height: 40
-
-            Text {
-                id: ipGateways
-                text: qsTr("IP GATEWAY")
-                font.pixelSize: 14
-                Layout.fillWidth: false
             }
 
-            TextField {
-                id: currentgateway
-                horizontalAlignment: Text.AlignHCenter
-                Layout.preferredWidth: 148
-                Layout.preferredHeight: 40
-                placeholderText: qsTr("Current GateWay")
-                Layout.fillWidth: true
-                text: ip_gateway_Network
-                readOnly: true // เพื่อป้องกันการเปลี่ยนแปลงค่าจากผู้ใช้
-            }
 
             TextField {
                 id: settinggateway
                 horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
                 Layout.preferredWidth: 148
                 Layout.preferredHeight: 40
-                placeholderText: qsTr("Setting GateWays")
                 Layout.fillWidth: true
                 focus: false
+                placeholderText: qsTr("Setting GateWays")
+
+                readOnly: userLevelGlobalVars.count === 0 ||
+                          userLevelGlobalVars.get(0).userLevel !== 1
+
+                color: (userLevelGlobalVars.count > 0 &&
+                        userLevelGlobalVars.get(0).userLevel !== 1)
+                       ? "#808080" : "#000000"
+
+                background: Rectangle {
+                    color: settinggateway.readOnly ? "#d3d3d3" : "#ffffff"
+                    border.color: "#bcbcbc"
+                    radius: 5
+                }
+
                 onTextChanged: {
                     currentgateway.text = text
                 }
 
                 onFocusChanged: {
-                    if (focus) {
+                    if (focus && !settinggateway.readOnly) {
                         settinggateway.focus = false;
                         currentField = "settinggateway";
                         inputPanel.visible = true;
@@ -354,10 +484,161 @@ Item {
                         textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
                         textInformation.text = "";
                         textInformation.focus = true;
-                        settinggateway.color = "#ff0000"
-
+                        settinggateway.color = "#ff0000";
                     }
                 }
+            }
+
+
+            TextField {
+                id: settingIPaddressDisplay
+                color: (userLevelGlobalVars.count > 0 &&
+                        userLevelGlobalVars.get(0).userLevel !== 1)
+                       ? "#808080" : "#000000"
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+                readOnly: userLevelGlobalVars.count === 0 ||
+                          userLevelGlobalVars.get(0).userLevel !== 1
+                focus: false
+                onFocusChanged: {
+                    if (focus && !settingIPaddressDisplay.readOnly) {
+                        settingIPaddressDisplay.focus = false;
+                        currentField = "settingIPaddressDisplay";
+                        inputPanel.visible = true;
+                        textInformation.visible = true;
+                        textInformation.placeholderText = qsTr("Enter IP Display Address");
+                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                        textInformation.text = "";
+                        textInformation.focus = true;
+                        settingIPaddressDisplay.color = "#ff0000";
+                    }
+                }
+                Layout.preferredHeight: 40
+                Layout.preferredWidth: 148
+                background: Rectangle {
+                    color: settingIPaddressDisplay.readOnly ? "#d3d3d3" : "#ffffff"
+                    radius: 5
+                    border.color: "#bcbcbc"
+                }
+                Layout.fillWidth: true
+                onTextChanged: {
+                    currentIPaddressDisplay.text = text
+                }
+                placeholderText: qsTr("IP Display Address")
+            }
+
+
+            TextField {
+                id: settinggatewayDisplay
+                color: (userLevelGlobalVars.count > 0 &&
+                        userLevelGlobalVars.get(0).userLevel !== 1)
+                       ? "#808080" : "#000000"
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 10
+                readOnly: userLevelGlobalVars.count === 0 ||
+                          userLevelGlobalVars.get(0).userLevel !== 1
+                focus: false
+                onFocusChanged: {
+                    if (focus && !settinggatewayDisplay.readOnly) {
+                        settinggatewayDisplay.focus = false;
+                        currentField = "settinggatewayDisplay";
+                        inputPanel.visible = true;
+                        textInformation.visible = true;
+                        textInformation.placeholderText = qsTr("Enter GateWays DIsplay");
+                        textInformation.inputMethodHints = Qt.ImhFormattedNumbersOnly;
+                        textInformation.text = "";
+                        textInformation.focus = true;
+                        settinggatewayDisplay.color = "#ff0000";
+                    }
+                }
+                Layout.preferredHeight: 40
+                Layout.preferredWidth: 148
+                background: Rectangle {
+                    color: settinggatewayDisplay.readOnly ? "#d3d3d3" : "#ffffff"
+                    radius: 5
+                    border.color: "#bcbcbc"
+                }
+                Layout.fillWidth: true
+                onTextChanged: {
+                    currentgateway1.text = text
+                }
+                placeholderText: qsTr("Setting GateWays Display")
+            }
+
+        }
+
+        ColumnLayout {
+            x: 0
+            y: 68
+            width: 137
+            height: 196
+
+            Text {
+                id: ipAddress
+                text: qsTr("IP ADDRESS PLC")
+                font.pixelSize: 13
+                Layout.fillWidth: true
+            }
+
+            Text {
+                id: ipGateways
+                text: qsTr("IP GATEWAY PLC")
+                font.pixelSize: 13
+                Layout.fillWidth: true
+            }
+
+            Text {
+                id: ipAddressDisplay
+                text: qsTr("IP ADDRESS DISPLAY ")
+                font.pixelSize: 13
+                Layout.fillWidth: true
+            }
+
+            Text {
+                id: ipGatewaysDisplay
+                text: qsTr("IP GATEWAY DISPLAY")
+                font.pixelSize: 13
+                Layout.fillWidth: true
+            }
+        }
+
+        Button {
+            id: button
+            x: 0
+            y: 270
+            width: 335
+            height: 29
+            text: qsTr("RESET  DEFAULT IP")
+            onClicked: {
+                var resetIP = '{"objectName":"resetDefalutIP","defalutip": "192.168.1.4","defalutgateways": "192.168.1.254","defalutnetmask": "255.255.255.0"}'
+                qmlCommand(resetIP);
+            }
+        }
+
+        RowLayout {
+            x: 222
+            y: 14
+            width: 292
+            height: 21
+
+            Text {
+                id: swversion
+                text: qsTr("Software version:")
+                font.pixelSize: 14
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                Layout.preferredHeight: 21
+                Layout.preferredWidth: 104
+            }
+
+            Text {
+                id: numberswversion
+                text: swversionupdate
+                font.pixelSize: 14
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                Layout.preferredHeight: 21
+                Layout.preferredWidth: 129
             }
         }
     }
@@ -418,8 +699,10 @@ Item {
 
 
 
+
+
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.1}D{i:21}D{i:25}
+    D{i:0;formeditorZoom:0.9}
 }
 ##^##*/

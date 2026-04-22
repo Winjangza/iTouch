@@ -1,23 +1,29 @@
-#ifndef IMAGEPROVIDER_H
-#define IMAGEPROVIDER_H
+#ifndef SCREENCAPTURE_H
+#define SCREENCAPTURE_H
 
 #include <QQuickImageProvider>
-#include <QQuickView>
 #include <QImage>
+#include <QMap>
+#include <QObject>
+#include <QString>
+#include <QJsonObject>
+#include <QJsonDocument>
 
-class ImageProvider : public QObject, public QQuickImageProvider
-{
+
+
+class ImageProvider : public QObject, public QQuickImageProvider {
     Q_OBJECT
+
 public:
-    ImageProvider(QObject *parent = 0, Flags flags = Flags());
-    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
+    explicit ImageProvider(QObject *parent = nullptr, Flags flags = Flags());
+
+    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
+
+public slots:
+    void makeScreenshot();
 
 protected:
     QMap<int, QImage> m_images;
 
-public slots:
-    void makeScreenshot();
 };
-
-#endif // IMAGEPROVIDER_H
-
+#endif // SCREENCAPTURE_H

@@ -1,19 +1,31 @@
 import QtQuick 2.0
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+//import QtQuick.Controls 2.15
+//import QtQuick.Layouts 1.15
 import QtWebSockets 1.0
 import QtQuick.Extras 1.4
-import QtQuick.Controls 1.4
+//import QtQuick.Controls 1.4
 import QtQuick.VirtualKeyboard 2.15
 import QtQuick.VirtualKeyboard.Styles 2.15
 import QtQuick.VirtualKeyboard.Settings 2.15
 import QtGraphicalEffects 1.0
+// import "main.qml" as Globals
+// import QtQuick 2.0
+// import QtQuick.Controls 2.15
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 Item {
-    width: 1024
-    height: 600
+//    property string currentPage:""
+    property bool loginInProgress: false
     property bool focustextInformation: inputPanel.visible
     property string textforinformation:  textInformation.text
+    signal userLoggedOut()
+
+    id: _item
+    objectName: "LoginPage"
+    width: 1024
+    height: 600
 
     onFocustextInformationChanged: {
         if(focustextInformation == false){
@@ -32,102 +44,209 @@ Item {
     }
 
     ColumnLayout {
-        anchors.fill: parent
-        anchors.rightMargin: 284
-        anchors.bottomMargin: 355
-        anchors.leftMargin: 284
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 331
+        anchors.rightMargin: 329
         anchors.topMargin: 156
+        anchors.bottomMargin: 248
+        spacing: 20
 
         RowLayout {
-            Layout.preferredHeight: 45
             Layout.preferredWidth: 363
 
             Text {
-                id: userName
                 text: qsTr("USER NAME")
                 font.pixelSize: 18
+                Layout.preferredWidth: 120
             }
 
             TextField {
                 id: textUserName
-                property color color: "#ffffff"
-                Layout.fillHeight: true
                 Layout.fillWidth: true
+                Layout.preferredWidth: 243
                 placeholderText: qsTr("Enter Username")
-                focus: false
+                Keys.onReturnPressed: Qt.inputMethod.hide();
+                activeFocusOnTab: false
                 onFocusChanged: {
                     if (focus) {
-                        textUserName.focus = true;
-                        currentField = "textUserName";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.text = qsTr("Enter UserName");
-                        textInformation.inputMethodHints = Qt.ImhPreferUppercase;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        textUserName.color = "#ff0000";
+                        Qt.callLater(function() {
+                            textUserName.focus = false;
+                            currentField = "UserLevelName";
+                            inputPanel.visible = true;
+                            textInformation.visible = true;
+                            textInformation.placeholderText = qsTr("Enter UserName");
+                            textInformation.inputMethodHints = Qt.ImhPreferLowercase;
+                            textInformation.focus = true;
+                            textUserName.color = "#ff0000";
+                        })
                     }
                 }
             }
         }
 
         RowLayout {
-            Layout.preferredHeight: 45
             Layout.preferredWidth: 363
 
             Text {
-                id: password
                 text: qsTr("PASSWORD")
                 font.pixelSize: 18
-                Layout.rightMargin: 4
-                Layout.fillWidth: false
+                Layout.preferredWidth: 120
             }
 
             TextField {
                 id: textPassword
-                property color color: "#ffffff"
-                Layout.fillHeight: true
                 Layout.fillWidth: true
+                Layout.preferredWidth: 193
                 placeholderText: qsTr("Enter Password")
-                focus: false
+                echoMode: TextInput.Password
+                activeFocusOnTab: false
                 onFocusChanged: {
-                    if (focus) {
-                        textPassword.focus = true;
-                        currentField = "textPassword";
-                        inputPanel.visible = true;
-                        textInformation.visible = true;
-                        textInformation.text = qsTr("Enter Password");
-                        textInformation.inputMethodHints = Qt.ImhPreferUppercase;
-                        textInformation.text = "";
-                        textInformation.focus = true;
-                        textPassword.color = "#ff0000";
+                    if (focus && currentField !== "PasswordLevelName") {
+                        Qt.callLater(function() {
+                            textPassword.focus = false
+                            currentField = "PasswordLevelName"
+                            inputPanel.visible = true
+                            textInformation.visible = true
+                            textInformation.placeholderText = qsTr("Enter Password")
+                            textInformation.inputMethodHints = Qt.ImhPreferLowercase
+                            textInformation.focus = true
+                            textPassword.color = "#ff0000"
+                        })
                     }
                 }
+
             }
+
+            Button {
+                id: togglePasswordButton
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 30
+                text: ""
+                icon.source: textPassword.echoMode === TextInput.Password ? "qrc:/images/invisible.png" : "qrc:/images/show.png"
+                icon.width: 24
+                icon.height: 24
+                onClicked: {
+                    textPassword.echoMode = textPassword.echoMode === TextInput.Password ? TextInput.Normal : TextInput.Password;
+                    togglePasswordButton.icon.source = textPassword.echoMode === TextInput.Password ? "qrc:/images/invisible.png" : "qrc:/images/show.png";
+                }
+            }
+
         }
-    }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.bottomMargin: 275
-        anchors.leftMargin: 284
-        anchors.rightMargin: 284
-        anchors.topMargin: 275
-
-        ToolButton {
-            id: logOutButton
-            text: qsTr("LOG-OUT")
-            Layout.fillHeight: true
+        RowLayout {
             Layout.fillWidth: true
+            spacing: 10
+
+            Button {
+                text: "Log In"
+                Layout.fillWidth: true
+                function hideKeyboard() {
+                    currentField = ""
+                    userEditing = false
+
+                    // ตัด focus จากทุกตัว
+                    textPassword.focus = false
+                    textUserName.focus = false
+                    textInformation.focus = false
+
+                    // ปิด input method จริง ๆ
+                    Qt.inputMethod.hide()
+
+                    // ซ่อน panel
+                    inputPanel.visible = false
+                }
+                onClicked: {
+                    loginInProgress = true
+
+                    var username = textUserName.text;
+                    var password = textPassword.text;
+
+                    var login = JSON.stringify({
+                        "objectName": "login",
+                        "username": username,
+                        "password": password
+                    });
+
+                    console.log("Login JSON:", login);
+                    qmlCommand(login);
+
+                    Qt.callLater(function() {
+
+                        hideKeyboard()   // ⭐ สำคัญ
+
+                        if (userLevelGlobalVars.count > 0 &&
+                            userLevelGlobalVars.get(0).userLevel > 0) {
+
+                            currentPage = "MainPage"
+                            mainBar.mainListView.currentIndex = -1
+                            Eventspage.eventsalarms.visible = false
+                            DataStoragePage.dataStorage.visible = true
+                            SettingPage.imageSetting.visible = true
+                            LoginPage.imageUnlock.visible = true
+
+                            console.log("Navigated to MainPage")
+                        } else {
+                            console.warn("Login failed or userLevel is invalid.")
+                        }
+                    });
+                }
+            }
+
+
+
+            Button {
+                text: "Log Out"
+                Layout.fillWidth: true
+                function hideKeyboard() {
+                    currentField = ""
+                    userEditing = false
+
+                    // ตัด focus จากทุกตัว
+                    textPassword.focus = false
+                    textUserName.focus = false
+                    textInformation.focus = false
+
+                    // ปิด input method จริง ๆ
+                    Qt.inputMethod.hide()
+
+                    // ซ่อน panel
+                    inputPanel.visible = false
+                }
+                onClicked: {
+                    console.log("User logged out");
+
+                    currentUserLevel = 3
+                    currentPage = "MainPage"
+                    mainBar.mainListView.currentIndex = -1
+
+                    userLoggedOut()
+
+                    hideKeyboard()   // ⭐ สำคัญมาก
+                    textPassword.color = "#000000"
+
+                    var logout = JSON.stringify({"objectName": "logout"});
+                    var logoutDefaultUser = JSON.stringify({
+                        objectName: "DefaultUserLevel",
+                        usertype: "VIEWER",
+                        loginby: "LOCKED\nBY VIEWER"
+                    });
+
+                    qmlCommand(logout)
+                    qmlCommand(logoutDefaultUser)
+                }
+            }
 
         }
 
-        ToolButton {
-            id: logInButton
-            text: qsTr("LOG-IN")
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-        }
+        // Text {
+        //     text: "Current User Level: " + (userLevelGlobalVars.count > 0 ? userLevelGlobalVars.get(0).userLevel : "incorrect")
+        //     color: "blue"
+        //     font.pixelSize: 18
+        // }
     }
-
 }
+
+
